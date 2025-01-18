@@ -14,14 +14,14 @@ export default [
       parserOptions: {
         ecmaVersion: "latest",
         ecmaFeatures: { jsx: true },
-        sourceType: "module",
-      },
+        sourceType: "module"
+      }
     },
     settings: { react: { version: "18.3" } },
     plugins: {
       react,
       "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
+      "react-refresh": reactRefresh
     },
     rules: {
       ...js.configs.recommended.rules,
@@ -31,12 +31,33 @@ export default [
       "react/jsx-no-target-blank": "off",
       "react-refresh/only-export-components": [
         "warn",
-        { allowConstantExport: true },
+        { allowConstantExport: true }
       ],
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
       "react/prop-types": 0,
       "react/display-name": 0,
+
+      "react/jsx-pascal-case": ["error", {
+        allowAllCaps: true,
+        ignore: []
+      }],
+
+      // Validate closing bracket location in JSX
+      // https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/jsx-closing-bracket-location.md
+      "react/jsx-closing-bracket-location": ["error", "line-aligned"],
+
+      // Validate closing tag location in JSX
+      // https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/jsx-closing-tag-location.md
+      "react/jsx-closing-tag-location": "error",
+
+      // Prevent duplicate props in JSX
+      // https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/jsx-no-duplicate-props.md
+      "react/jsx-no-duplicate-props": ["error", { ignoreCase: true }],
+
+      // Disallow undeclared variables in JSX
+      // https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/jsx-no-undef.md
+      "react/jsx-no-undef": "error",
 
       "no-console": 1,
       "no-lonely-if": 1,
@@ -56,6 +77,6 @@ export default [
       "comma-dangle": 1,
       "comma-spacing": 1,
       "arrow-spacing": 1
-    },
-  },
+    }
+  }
 ]

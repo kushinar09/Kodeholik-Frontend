@@ -2,10 +2,10 @@
 //   <img src="./src/assets/logo/logo_nobackground.png" alt="Logo" {...props} />
 // )
 
-const globalState = {
-  WebsiteName: import.meta.env.VITE_APP_NAME,
-  Sponsor: ["FPT University"],
-  Reference: [
+const GLOBALS = {
+  APPLICATION_NAME: import.meta.env.VITE_APP_NAME,
+  SPONSORS: ["FPT University"],
+  REFERENCES: [
     {
       name: "Leetcode",
       link: "https://leetcode.com"
@@ -48,7 +48,7 @@ const CONSTANTS = {
 
 export {
   //   LogoSite,
-  globalState,
+  GLOBALS,
   ENDPOINTS,
   CONSTANTS
 }

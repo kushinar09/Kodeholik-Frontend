@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-import ProblemList from "./components/pages/ProblemList"
-import CreateProblem from "./components/pages/CreateProblem"
-import EditProblem from "./components/pages/EditProblem"
+import ProblemList from "./components/pages/problems/ProblemList"
+import CreateProblem from "./components/pages/problems/CreateProblem"
+import EditProblem from "./components/pages/problems/EditProblem"
 
 
 function App() {

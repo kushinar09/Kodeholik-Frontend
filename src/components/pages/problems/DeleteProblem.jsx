@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog"
-import { Button } from "../ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../ui/dialog"
+import { Button } from "../../ui/button"
 import { deleteProblem } from "@/lib/api"
 
 function DeleteProblem({ id, onDelete }) {

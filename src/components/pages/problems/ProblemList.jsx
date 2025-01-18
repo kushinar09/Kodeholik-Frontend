@@ -1,15 +1,15 @@
 import { getProblemList } from "@/lib/api"
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { Button } from "../ui/button"
+import { Button } from "../../ui/button"
 import DeleteProblem from "./DeleteProblem"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
-import { globalState } from "@/constants"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table"
+import { GLOBALS } from "@/constants"
 
 
 function ProblemList() {
   useEffect(() => {
-    document.title = `Problems - ${globalState.WebsiteName}`
+    document.title = `Problems - ${GLOBALS.APPLICATION_NAME}`
   }, [])
 
   const [problems, setProblems] = useState([])
@@ -51,7 +51,8 @@ function ProblemList() {
                 </Link>
                 <DeleteProblem id={problem.id} onDelete={() => {
                   setProblems(problems.filter(p => p.id !== problem.id))
-                }} />
+                }}
+                />
               </TableCell>
             </TableRow>
           ))}

@@ -1,11 +1,11 @@
 import { useEffect } from "react"
-import ProblemForm from "../common/ProblemForm"
-import { globalState } from "@/constants"
+import ProblemForm from "../../common/ProblemForm"
+import { GLOBALS } from "@/constants"
 
 
 function CreateProblem() {
   useEffect(() => {
-    document.title = `Create Problem - ${globalState.WebsiteName}`
+    document.title = `Create Problem - ${GLOBALS.APPLICATION_NAME}`
   }, [])
 
   return (

@@ -1,12 +1,12 @@
 import { getProblem } from "@/lib/api"
 import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
-import ProblemForm from "../common/ProblemForm"
-import { globalState } from "@/constants"
+import ProblemForm from "../../common/ProblemForm"
+import { GLOBALS } from "@/constants"
 
 function EditProblem() {
   useEffect(() => {
-    document.title = `Edit Problem - ${globalState.WebsiteName}`
+    document.title = `Edit Problem - ${GLOBALS.APPLICATION_NAME}`
   }, [])
 
   const [problem, setProblem] = useState(null)
