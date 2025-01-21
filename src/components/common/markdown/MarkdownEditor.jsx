@@ -6,7 +6,6 @@ import { keymap } from "@codemirror/view"
 import { indentWithTab } from "@codemirror/commands"
 import { markdown } from "@codemirror/lang-markdown"
 import { EditorState } from "@codemirror/state"
-import { marked } from "marked"
 import { Button } from "@/components/ui/button"
 import {
   Bold,
@@ -24,7 +23,11 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import "./styles.css"
 import { Separator } from "@/components/ui/separator"
-import { java } from "@codemirror/lang-java"
+import { marked } from "marked"
+
+//highlight.js
+import hljs from "highlight.js"
+import "highlight.js/styles/default.css"
 
 const MarkdownEditor = () => {
   marked.use({
@@ -56,12 +59,17 @@ const MarkdownEditor = () => {
   }
 
   useEffect(() => {
+    document.querySelectorAll("pre code").forEach(block => {
+      hljs.highlightBlock(block)
+    })
+  }, [markdownContent])
+
+  useEffect(() => {
     const state = EditorState.create({
       doc: markdownContent,
       linesNumber: false,
       extensions: [
         basicSetup,
-        java(),
         keymap.of([indentWithTab]),
         markdown(),
         EditorView.updateListener.of((update) => {
@@ -104,7 +112,7 @@ const MarkdownEditor = () => {
       }
       document.removeEventListener("keydown", handleKeyDown)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const applyMarkdown = (syntax) => {
@@ -120,6 +128,7 @@ const MarkdownEditor = () => {
 
     let newText = ""
     let linkRegex
+    let lines
     switch (syntax) {
     case "**":
       if (from === to) {
@@ -215,12 +224,33 @@ const MarkdownEditor = () => {
       }
       break
     case "1.":
-      if (text.startsWith("1. ")) {
-        newText = text.slice(3)
+      // Check if text has multiple lines
+      lines = text.split("\n")
+      if (lines.length > 1) {
+        // Check if first line starts with any number followed by dot and space
+        const numberMatch = lines[0].match(/^\d+\.\s/)
+        if (numberMatch) {
+          // Remove the numbering from all lines
+          newText = lines.map((line) => line.replace(/^\d+\.\s/, "")).join("\n")
+        } else {
+          // Add incrementing numbers to each line
+          newText = lines.map((line, index) => `${index + 1}. ${line}`).join("\n")
+          if (from > 0 && state.doc.sliceString(from - 1, from) !== "\n") {
+            newText = "\n" + newText
+          }
+        }
       } else {
-        newText = `1. ${text}`
-        if (from > 0 && state.doc.sliceString(from - 1, from) !== "\n") {
-          newText = "\n" + newText
+        // Single line case
+        const numberMatch = text.match(/^\d+\.\s/)
+        if (numberMatch) {
+          // Remove the numbering
+          newText = text.replace(/^\d+\.\s/, "")
+        } else {
+          // Add numbering
+          newText = `1. ${text}`
+          if (from > 0 && state.doc.sliceString(from - 1, from) !== "\n") {
+            newText = "\n" + newText
+          }
         }
       }
       break
