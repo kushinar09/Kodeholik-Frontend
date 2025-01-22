@@ -29,7 +29,13 @@ import { marked } from "marked"
 import hljs from "highlight.js"
 import "highlight.js/styles/default.css"
 
+//save cookie
+import { setCookie, getCookie } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
+import { Toaster } from "@/components/ui/toaster"
+
 const MarkdownEditor = () => {
+  const { toast } = useToast()
   marked.use({
     // ALLOWS LINE BREAKS WITH RETURN BUTTON
     breaks: true,
@@ -43,8 +49,31 @@ const MarkdownEditor = () => {
   })
 
   // INITIAL MARKDOWN CONTENT
-  const [markdownContent, setMarkdownContent] = useState("## Description")
+  const [markdownContent, setMarkdownContent] = useState(() => {
+    const draft = getCookie("draft")
+    return draft || "## Description"
+  })
+  //const [isSaving, setIsSaving] = useState(false)
   const editorViewRef = useRef(null)
+
+  // Load draft on mount
+  useEffect(() => {
+    const draft = getCookie("draft")
+    if (draft) {
+      setMarkdownContent(draft)
+      // Update the editor content
+      if (editorViewRef.current) {
+        const transaction = editorViewRef.current.state.update({
+          changes: {
+            from: 0,
+            to: editorViewRef.current.state.doc.length,
+            insert: draft
+          }
+        })
+        editorViewRef.current.dispatch(transaction)
+      }
+    }
+  }, [])
 
   // Define keyboard shortcuts
   const shortcuts = {
@@ -55,14 +84,23 @@ const MarkdownEditor = () => {
     h: { key: "H", action: "#", label: "Heading" },
     l: { key: "L", action: "-", label: "List" },
     o: { key: "O", action: "1.", label: "Ordered List" },
-    q: { key: "Q", action: ">", label: "Quote" }
+    q: { key: "Q", action: ">", label: "Quote" },
+    s: { key: "S", action: "save", label: "Save" }
   }
 
   useEffect(() => {
-    document.querySelectorAll("pre code").forEach(block => {
-      hljs.highlightBlock(block)
+    document.querySelectorAll("pre code").forEach((block) => {
+      if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") == "yes"))
+        hljs.highlightBlock(block)
     })
   }, [markdownContent])
+
+  // // Save draft version
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     setCookie("draft", markdownContent)
+  //   }, 5000)
+  // })
 
   useEffect(() => {
     const state = EditorState.create({
@@ -78,7 +116,7 @@ const MarkdownEditor = () => {
           }
         }),
         EditorView.theme({
-          "&": { height: "calc(100vh - 8rem)" },
+          "&": { height: "100%" },
           ".cm-content": { fontFamily: "monospace" },
           ".cm-cursor, .cm-dropCursor": {
             borderLeftColor: "#000000",
@@ -98,9 +136,21 @@ const MarkdownEditor = () => {
     // Add keyboard event listener
     const handleKeyDown = (e) => {
       // Check if Ctrl/Cmd key is pressed
-      if ((e.ctrlKey || e.metaKey) && shortcuts[e.key.toLowerCase()]) {
-        e.preventDefault()
-        applyMarkdown(shortcuts[e.key.toLowerCase()].action)
+      if (e.ctrlKey || e.metaKey) {
+        if (shortcuts[e.key.toLowerCase()]) {
+          if (e.key.toLowerCase() !== "s") {
+            e.preventDefault()
+            applyMarkdown(shortcuts[e.key.toLowerCase()].action)
+          } else {
+            e.preventDefault()
+            const currentContent = editorViewRef.current.state.doc.toString()
+            setCookie("draft", currentContent)
+            toast({
+              description: "Saved.",
+              duration: 1000
+            })
+          }
+        }
       }
     }
 
@@ -399,6 +449,11 @@ const MarkdownEditor = () => {
               </Tooltip>
             </div>
           </div>
+          {/* {isSaving && (
+            <div className="ml-auto mr-4 text-sm text-muted-foreground animate-fade-in">
+              Saving...
+            </div>
+          )} */}
         </TooltipProvider>
       </div>
 
@@ -412,6 +467,7 @@ const MarkdownEditor = () => {
           />
         </div>
       </div>
+      <Toaster />
     </div>
   )
 }
