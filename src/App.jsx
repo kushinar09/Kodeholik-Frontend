@@ -3,6 +3,7 @@ import ProblemList from "./components/pages/problems/ProblemList"
 import CreateProblem from "./components/pages/problems/CreateProblem"
 import EditProblem from "./components/pages/problems/EditProblem"
 import MarkdownEditor from "./components/common/markdown/MarkdownEditor"
+import CodeEditor from "./components/common/editor-code/CodeEditor"
 
 
 function App() {
@@ -10,7 +11,8 @@ function App() {
     <Router>
       <div className="container mx-auto p-4">
         <Routes>
-          <Route path="/" element={<ProblemList />} />
+          <Route path="/" element={<CodeEditor />} />
+          <Route path="/problems" element={<ProblemList />} />
           <Route path="/create" element={<CreateProblem />} />
           <Route path="/edit/:id" element={<EditProblem />} />
           <Route path="/markdown" element={<MarkdownEditor />} />

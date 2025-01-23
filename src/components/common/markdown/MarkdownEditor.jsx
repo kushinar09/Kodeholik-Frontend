@@ -95,12 +95,12 @@ const MarkdownEditor = () => {
     })
   }, [markdownContent])
 
-  // // Save draft version
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     setCookie("draft", markdownContent)
-  //   }, 5000)
-  // })
+  // Save draft to cookie every 10s
+  useEffect(() => {
+    setTimeout(() => {
+      setCookie("draft", markdownContent)
+    }, 10000)
+  })
 
   useEffect(() => {
     const state = EditorState.create({
