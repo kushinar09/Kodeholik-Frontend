@@ -35,16 +35,16 @@ export function RadialChart({
       name: mainLabel,
       value: (mainCount / mainTotal) * 100,
       fill: mainColor
-    },
+    }
   ]
 
   return (
-    <div className={`h-full flex items-center justify-between gap-8 p-4 bg-none text-foreground ${className}`}>
+    <div className={`h-full flex items-center gap-8 bg-none text-foreground ${className}`}>
       <ChartContainer
         config={{
           value: {
             color: mainColor
-          },
+          }
         }}
         className="h-full aspect-square"
       >
@@ -52,15 +52,15 @@ export function RadialChart({
           data={chartData}
           startAngle={90}
           endAngle={90 + mainCount / mainTotal * 360}
-          innerRadius={80}
-          outerRadius={110}
+          innerRadius={70}
+          outerRadius={90}
         >
           <PolarGrid
             gridType="circle"
             radialLines={false}
             stroke="none"
-            className="first:fill-muted last:fill-background"
-            polarRadius={[86, 74]}
+            className="bg-primary-card first:fill-[#cbccc466] last:fill-primary-card"
+            polarRadius={[74, 64]}
           />
           <RadialBar
             dataKey="value"
@@ -113,7 +113,7 @@ export function RadialChart({
         {sideStats.map((stat, index) => (
           <div key={index} className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: stat.color }} />
-            <div className="text-sm font-medium text-foreground">
+            <div className="text-sm font-medium text-primary-text">
               {stat.label}
             </div>
             <div className="text-sm text-muted-foreground">

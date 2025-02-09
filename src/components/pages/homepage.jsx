@@ -17,7 +17,8 @@ import { RadialChart } from "../common/radial-chart"
 
 export default function HomePage() {
   const stats = {
-    mainLabel: "Solve",
+    title: "Solve",
+    description: "Statistics",
     mainCount: 100,
     mainTotal: 3406,
     mainColor: "rgb(74, 222, 128)", // Main chart color (green)
@@ -73,7 +74,7 @@ export default function HomePage() {
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           <div className="grid auto-rows-min gap-4 md:grid-cols-3">
             <div className="aspect-video rounded-xl bg-muted/50">
-            <RadialChart {...stats} />
+              <RadialChart {...stats} />
             </div>
             <div className="aspect-video rounded-xl bg-muted/50" />
             <div className="aspect-video rounded-xl bg-muted/50" />

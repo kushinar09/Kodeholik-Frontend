@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubButton,
-  SidebarMenuSubItem,
+  SidebarMenuSubItem
 } from "@/components/ui/sidebar"
 
 // This is sample data.
@@ -23,13 +23,13 @@ const data = {
       items: [
         {
           title: "Installation",
-          url: "#",
+          url: "#"
         },
         {
           title: "Project Structure",
-          url: "#",
-        },
-      ],
+          url: "#"
+        }
+      ]
     },
     {
       title: "Building Your Application",
@@ -37,54 +37,54 @@ const data = {
       items: [
         {
           title: "Routing",
-          url: "#",
+          url: "#"
         },
         {
           title: "Data Fetching",
           url: "#",
-          isActive: true,
+          isActive: true
         },
         {
           title: "Rendering",
-          url: "#",
+          url: "#"
         },
         {
           title: "Caching",
-          url: "#",
+          url: "#"
         },
         {
           title: "Styling",
-          url: "#",
+          url: "#"
         },
         {
           title: "Optimizing",
-          url: "#",
+          url: "#"
         },
         {
           title: "Configuring",
-          url: "#",
+          url: "#"
         },
         {
           title: "Testing",
-          url: "#",
+          url: "#"
         },
         {
           title: "Authentication",
-          url: "#",
+          url: "#"
         },
         {
           title: "Deploying",
-          url: "#",
+          url: "#"
         },
         {
           title: "Upgrading",
-          url: "#",
+          url: "#"
         },
         {
           title: "Examples",
-          url: "#",
-        },
-      ],
+          url: "#"
+        }
+      ]
     },
     {
       title: "API Reference",
@@ -92,29 +92,29 @@ const data = {
       items: [
         {
           title: "Components",
-          url: "#",
+          url: "#"
         },
         {
           title: "File Conventions",
-          url: "#",
+          url: "#"
         },
         {
           title: "Functions",
-          url: "#",
+          url: "#"
         },
         {
           title: "next.config.js Options",
-          url: "#",
+          url: "#"
         },
         {
           title: "CLI",
-          url: "#",
+          url: "#"
         },
         {
           title: "Edge Runtime",
-          url: "#",
-        },
-      ],
+          url: "#"
+        }
+      ]
     },
     {
       title: "Architecture",
@@ -122,25 +122,25 @@ const data = {
       items: [
         {
           title: "Accessibility",
-          url: "#",
+          url: "#"
         },
         {
           title: "Fast Refresh",
-          url: "#",
+          url: "#"
         },
         {
           title: "Next.js Compiler",
-          url: "#",
+          url: "#"
         },
         {
           title: "Supported Browsers",
-          url: "#",
+          url: "#"
         },
         {
           title: "Turbopack",
-          url: "#",
-        },
-      ],
+          url: "#"
+        }
+      ]
     },
     {
       title: "Community",
@@ -148,11 +148,11 @@ const data = {
       items: [
         {
           title: "Contribution Guide",
-          url: "#",
-        },
-      ],
-    },
-  ],
+          url: "#"
+        }
+      ]
+    }
+  ]
 }
 
 export function AppSidebar(...props) {
