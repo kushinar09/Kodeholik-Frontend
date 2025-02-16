@@ -59,7 +59,7 @@ export function RadialChart({
             gridType="circle"
             radialLines={false}
             stroke="none"
-            className="bg-primary-card first:fill-[#cbccc466] last:fill-primary-card"
+            className="bg-bg-card first:fill-[#cbccc466] last:fill-bg-card"
             polarRadius={[74, 64]}
           />
           <RadialBar

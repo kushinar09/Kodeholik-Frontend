@@ -11,7 +11,7 @@ import HomePage from "./components/pages/HomePage"
 function App() {
   return (
     <Router>
-      <div className="container mx-auto">
+      <div className="mx-auto">
         <Routes>
           <Route path="/" element={<ProblemPage />} />
           <Route path="/problems" element={<ProblemPage />} />
