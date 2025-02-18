@@ -6,6 +6,7 @@ import MarkdownEditor from "./components/common/markdown/MarkdownEditor"
 import CodeEditor from "./components/common/editor-code/CodeEditor"
 import ProblemPage from "./components/pages/problems/ProblemPage"
 import HomePage from "./components/pages/HomePage"
+import Login from "./components/pages/authentications/login"
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path="/edit/:id" element={<EditProblem />} />
           <Route path="/markdown" element={<MarkdownEditor />} />
           <Route path="/template" element={<HomePage />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </div>
     </Router>

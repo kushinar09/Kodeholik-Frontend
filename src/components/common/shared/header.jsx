@@ -2,6 +2,11 @@ import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 
 export default function Header() {
+
+  function handleLogin() {
+    window.location.href = "/login"
+  }
+
   return (
     <div className="z-10 w-full sticky top-0 px-24 pt-4 pb-2 bg-primary-bg">
       <div className="absolute inset-x-0 -bottom-4 h-4 bg-gradient-to-b from-primary-bg to-transparent pointer-events-none" />
@@ -24,10 +29,7 @@ export default function Header() {
           </Link>
         </div>
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" className="text-primary font-bold hover:bg-primary transition hover:text-black">
-            Sign in
-          </Button>
-          <Button className="bg-primary text-black font-bold hover:bg-primary-button-hover">Sign up</Button>
+          <Button onClick={handleLogin} className="bg-primary text-black font-bold hover:bg-primary-button-hover">Sign in</Button>
         </div>
       </nav>
     </div>
