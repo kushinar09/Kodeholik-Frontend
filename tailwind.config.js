@@ -4,13 +4,10 @@ export default {
   content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
     extend: {
-
       fontFamily: {
         mono: ["Anonymous Pro", "monospace"]
       },
-
       colors: {
-        input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -38,33 +35,80 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))"
         },
-        // Border colors
-        border: {
-          DEFAULT: "hsl(var(--border))",
-          hover: "#98ff99"
-        },
-        // Base colors for components
         primary: {
           DEFAULT: "#98ff99",
-          button: "#98ff99",
+          button: {
+            DEFAULT: "#98ff99",
+            hover: "#7acc7a"
+          },
           text: "#b9c5e5",
           bg: "#333333",
-          card: "#121221",
-          hover: "#7acc7a"
+          card: "#121221"
         },
-        // Link color
-        link: "#7888B0",
-        // Text colors
+        button: {
+          DEFAULT: "#98ff99",
+          primary: "#98ff99",
+          hover: "#7acc7a",
+          active: "#5fa35f",
+          disabled: "#c7eac7",
+          secondary: "#b9c5e5",
+          secondaryHover: "#97a3cc",
+          outline: "#98ff99",
+          outlineHover: "#7acc7a",
+          ghost: "transparent",
+          ghostHover: "#2a2a2a"
+        },
         text: {
-          DEFAULT: "#b9c5e5",
-          primary: "#b9c5e5"
+          primary: "#b9c5e5",
+          secondary: "#d0d7f2",
+          muted: "#8995b0",
+          error: "#ff6b6b",
+          warning: "#ffcc66",
+          success: "#66ff99",
+          info: "#66ccff",
+          placeholder: "#777a8b",
+          link: "#66ccff",
+          linkHover: "#5599cc"
         },
-        // Background colors
         bg: {
-          DEFAULT: "#333333",
-          card: "#121221e6",
-          topic: "#121221"
-        }
+          primary: "#333333",
+          secondary: "#1e1e1e",
+          muted: "#252525",
+          card: "#121221",
+          error: "#441111",
+          warning: "#664411",
+          success: "#114411",
+          info: "#113355",
+          gradientStart: "#98ff99",
+          gradientEnd: "#7acc7a"
+        },
+        border: {
+          DEFAULT: "hsl(var(--border))",
+          primary: "#98ff99",
+          secondary: "#7acc7a",
+          muted: "#444444",
+          error: "#ff6b6b",
+          warning: "#ffcc66",
+          success: "#66ff99",
+          info: "#66ccff"
+        },
+        shadow: {
+          soft: "rgba(0, 0, 0, 0.1)",
+          medium: "rgba(0, 0, 0, 0.2)",
+          strong: "rgba(0, 0, 0, 0.4)",
+          primary: "rgba(152, 255, 153, 0.4)",
+          secondary: "rgba(185, 197, 229, 0.4)"
+        },
+        input: {
+          DEFAULT: "hsl(var(--input))",
+          border: "#444444",
+          borderFocus: "#98ff99",
+          bg: "#222222",
+          bgDisabled: "#1a1a1a",
+          text: "#b9c5e5",
+          placeholder: "#777a8b",
+          focusRing: "#7acc7a"
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

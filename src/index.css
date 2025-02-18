@@ -175,4 +175,15 @@
     @apply font-mono;
     @apply bg-background text-foreground;
   }
+  p {
+    @apply leading-6;
+    @apply antialiased;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-fade {
+    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) calc(100% - 32px), rgba(0, 0, 0, 0));
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) calc(100% - 32px), rgba(0, 0, 0, 0));
+  }
 }
