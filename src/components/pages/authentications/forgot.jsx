@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,7 @@ import LoadingScreen from "@/components/common/shared/loading"
 import { ENDPOINTS } from "@/lib/constants"
 import { MESSAGES } from "@/lib/messages"
 import { cn } from "@/lib/utils"
+import { toast } from "@/hooks/use-toast"
 
 // Form validation
 const forgotPasswordSchema = z.object({
@@ -23,6 +24,18 @@ const forgotPasswordSchema = z.object({
 export default function ForgotPassword() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
+
+  const location = useLocation()
+
+  useEffect(() => {
+    if (location.state?.tokenExpired) {
+      toast({
+        title: "Error",
+        description: "Your reset link has expired. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }, [location])
 
   const form = useForm({
     resolver: zodResolver(forgotPasswordSchema),
@@ -41,6 +54,7 @@ export default function ForgotPassword() {
       })
 
       if (response.ok) {
+        setLoading(true)
         setTimeout(() => {
           navigate("/login", { state: { sendEmail: true } })
         }, 500)
@@ -104,6 +118,14 @@ export default function ForgotPassword() {
                   disabled={loading}
                 >
                   {loading ? "Sending..." : "Send"}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => navigate("/login")}
+                  className="w-full bg-white border-black shadow-md hover:bg-button-secondaryHover text-black font-semibold"
+                  disabled={loading}
+                >
+                  Back
                 </Button>
               </div>
             </form>

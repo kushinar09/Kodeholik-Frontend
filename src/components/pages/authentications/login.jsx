@@ -33,6 +33,14 @@ export default function LoginPage() {
         variant: "default"
       })
     }
+
+    if (location.state?.resetSuccess) {
+      toast({
+        title: "Success",
+        description: "Your password has been reset successfully. You can now log in with your new password.",
+        variant: "default"
+      })
+    }
   }, [location])
 
   const handleInputChange = (e) => {
