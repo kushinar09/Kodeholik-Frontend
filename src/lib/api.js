@@ -1,4 +1,4 @@
-import { ENDPOINTS } from "./../constants"
+import { ENDPOINTS } from "./constants"
 
 export async function getProblemList() {
   const response = await fetch(ENDPOINTS.GET_PROBLEMS)
@@ -53,3 +53,10 @@ export async function deleteProblem(id) {
   }
 }
 
+export async function getCourseList() {
+  const response = await fetch(ENDPOINTS.GET_COURSES)
+  if (!response.ok) {
+    throw new Error("Failed to fetch courses")
+  }
+  return response.json()
+}

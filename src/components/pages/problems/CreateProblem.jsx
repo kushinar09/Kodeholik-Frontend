@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import ProblemForm from "../../common/ProblemForm"
-import { GLOBALS } from "@/constants"
+import { GLOBALS } from "@/lib/constants"
 
 
 function CreateProblem() {

@@ -2,7 +2,7 @@ import { getProblem } from "@/lib/api"
 import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import ProblemForm from "../../common/ProblemForm"
-import { GLOBALS } from "@/constants"
+import { GLOBALS } from "@/lib/constants"
 
 function EditProblem() {
   useEffect(() => {
