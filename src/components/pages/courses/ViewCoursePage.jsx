@@ -49,9 +49,16 @@ const courses = [
               value={searchQuery} 
               onChange={(e) => setSearchQuery(e.target.value)} 
             />
-            <Button onClick={() => setSelectedLanguage("All")}>All</Button>
-            <Button onClick={() => setSelectedLanguage("C")}>C</Button>
-            <Button onClick={() => setSelectedLanguage("Java")}>Java</Button>
+            {['All', 'C', 'Java'].map(language => (
+              <Button  variant="ghost"
+                key={language} 
+                onClick={() => { setSelectedLanguage(language); setCurrentPage(1); }}
+                className={cn("text-primary font-bold hover:bg-primary transition hover:text-black",
+                selectedLanguage === language && "bg-button-primary text-bg-primary hover:bg-button-hover")}
+              >
+                {language}
+              </Button>
+            ))}
           </div>
           <div className="grid grid-cols-4 gap-6">
             {filteredCourses.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((course) => (
