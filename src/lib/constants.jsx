@@ -38,7 +38,7 @@ const ENDPOINTS = {
 
   FORGOT_PASSWORD: `${API_URL}/auth/reset-password-init?username=:gmail`,
   CHECK_RESET_TOKEN: `${API_URL}/auth/reset-password-check?token=:token`,
-  RESET_PASSWORD: `${API_URL}//auth/reset-password-finish?token=:token`,
+  RESET_PASSWORD: `${API_URL}/auth/reset-password-finish?token=:token`,
 
   GET_USER_INFO: `${API_URL}/user/info`,
   UPDATE_USER_PROFILE: `${API_URL}/user/update`,
