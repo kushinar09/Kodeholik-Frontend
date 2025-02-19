@@ -62,7 +62,7 @@ const courses = [
               >
                 <img src={course.image} alt={course.title} className="w-full h-40 object-cover rounded-lg" />
                 <p className="mt-2 text-center text-lg font-semibold">{course.title}</p>
-                <Button className="mt-2 w-full">Enroll</Button>
+                
               </Card>
             ))}
           </div>

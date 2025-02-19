@@ -32,6 +32,7 @@ export default function CourseDetail() {
                 <img src={course.image} alt={course.title} className="w-64 h-40 object-cover mx-auto mb-4 rounded-lg" />
                 <p className="text-white text-lg">{course.description}</p>
                 <div className="flex justify-center mt-6">
+                    <Button >Enroll</Button>
                     <Button onClick={() => navigate(-1)}>Back</Button>
                 </div>
             </div>
