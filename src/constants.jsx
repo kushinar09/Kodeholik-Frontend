@@ -38,8 +38,18 @@ const ENDPOINTS = {
   SEARCH_PROBLEM: `${API_URL}/problem/search`,
   CREATE_PROBLEM: `${API_URL}/problem/create`,
   UPDATE_PROBLEM: `${API_URL}/problem/update/:id`,
-  DELETE_PROBLEM: `${API_URL}/problem/delete/:id`
+  DELETE_PROBLEM: `${API_URL}/problem/delete/:id`,
+
+  // courses
+  GET_COURSES:   `${API_URL}/course/list`,
+  GET_COURSE:    `${API_URL}/course/description/:id`,
+  SEARCH_COURSE: `${API_URL}/course/search`,
+  CREATE_COURSE: `${API_URL}/course/create`,
+  UPDATE_COURSE: `${API_URL}/course/update/:id`,
+  DELETE_COURSE: `${API_URL}/course/delete/:id`
 }
+
+ 
 
 const CONSTANTS = {
   ACCESS_TOKEN: "accessToken",

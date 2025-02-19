@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import ViewCoursePage from "./components/pages/courses/ViewCoursePage"
+import ViewCourseDetail from "./components/pages/courses/ViewCourseDetail"
 import ProblemList from "./components/pages/problems/ProblemList"
 import CreateProblem from "./components/pages/problems/CreateProblem"
 import EditProblem from "./components/pages/problems/EditProblem"
@@ -19,6 +21,8 @@ function App() {
           <Route path="/edit/:id" element={<EditProblem />} />
           <Route path="/markdown" element={<MarkdownEditor />} />
           <Route path="/template" element={<HomePage />} />
+          <Route path="/courses" element={<ViewCoursePage />} />
+          <Route path="/courses/:id" element={<ViewCourseDetail />} />
         </Routes>
       </div>
     </Router>
