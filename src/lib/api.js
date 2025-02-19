@@ -1,4 +1,4 @@
-import { ENDPOINTS } from "./../constants"
+import { ENDPOINTS } from "./constants"
 
 export async function getProblemList() {
   const response = await fetch(ENDPOINTS.GET_PROBLEMS)

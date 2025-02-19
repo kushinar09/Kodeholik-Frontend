@@ -1,11 +1,11 @@
 import { Card } from "@/components/ui/card"
 import Header from "@/components/common/shared/header"
 import FooterSection from "@/components/common/shared/footer"
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 import { useState } from "react"
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"
 
 const courses = [
     { id: 1, title: "C Tutorial 1",instructor: "A",rate: "5", image: "/c.png", language: "C" },
@@ -77,6 +77,10 @@ const courses = [
           <div className="flex justify-center mt-6 gap-2">
             <Button variant="ghost" className="text-primary font-bold hover:bg-primary transition hover:text-black" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
               Previous
+          </Button>
+          {[...Array(totalPages)].map((_, index) => (
+            <Button key={index} onClick={() => handlePageChange(index + 1)} className={cn(currentPage === index + 1 && "bg-green-500")}>
+              {index + 1}
             </Button>
             {[...Array(totalPages)].map((_, index) => (
               <Button variant="ghost" key={index} onClick={() => handlePageChange(index + 1)}  className={cn("text-primary font-bold hover:bg-primary transition hover:text-black",
@@ -86,10 +90,10 @@ const courses = [
             ))}
             <Button variant="ghost" className="text-primary font-bold hover:bg-primary transition hover:text-black" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
               Next
-            </Button>
-          </div>
+          </Button>
         </div>
-        <FooterSection />
       </div>
-    );
+      <FooterSection />
+    </div>
+  )
 }

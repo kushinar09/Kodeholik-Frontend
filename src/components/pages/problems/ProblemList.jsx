@@ -4,7 +4,7 @@ import { Link } from "react-router-dom"
 import { Button } from "../../ui/button"
 import DeleteProblem from "./DeleteProblem"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table"
-import { GLOBALS } from "@/constants"
+import { GLOBALS } from "@/lib/constants"
 
 
 function ProblemList() {
