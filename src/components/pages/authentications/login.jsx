@@ -116,9 +116,13 @@ export default function LoginPage() {
     }
   }
 
-  function handleLoginGoogle() { }
+  function handleLoginGoogle() {
+    window.location.href = ENDPOINTS.LOGIN_GOOGLE
+  }
 
-  function handleLoginGithub() { }
+  function handleLoginGithub() {
+    window.location.href = ENDPOINTS.LOGIN_GOOGLE
+  }
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">

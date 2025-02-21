@@ -9,9 +9,10 @@ import CodeEditor from "./components/common/editor-code/CodeEditor"
 import ProblemPage from "./components/pages/problems/ProblemPage"
 import HomePage from "./components/pages/HomePage"
 import Login from "./components/pages/authentications/login"
-import ForgotPassword from "./components/pages/authentications/forgot"
+import ForgotPassword from "./components/pages/authentications/Forgot"
 import ResetPassword from "./components/pages/authentications/reset"
 import { Toaster } from "./components/ui/toaster"
+import ProblemDetail from "./components/pages/problems/ProblemDetail"
 
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
           <Routes>
             <Route path="/" element={<ProblemPage />} />
             <Route path="/problems" element={<ProblemPage />} />
+            <Route path="/problem/:id" element={<ProblemDetail />} />
             <Route path="/create" element={<CreateProblem />} />
             <Route path="/edit/:id" element={<EditProblem />} />
             <Route path="/markdown" element={<MarkdownEditor />} />
