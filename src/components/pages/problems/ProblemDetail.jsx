@@ -17,8 +17,8 @@ export default function ProblemDetail() {
   const tabs = [
     { id: "description", label: "Description", icon: FileText },
     { id: "editorial", label: "Editorial", icon: Edit },
-    { id: "solutions", label: "Solutions", icon: Lightbulb },
-    { id: "submissions", label: "Submissions", icon: CheckCircle }
+    { id: "solution", label: "Solutions", icon: Lightbulb },
+    { id: "submission", label: "Submissions", icon: CheckCircle }
   ]
 
 
@@ -108,6 +108,5 @@ export default function ProblemDetail() {
         </Split>
       </div>
     </>
-
   )
 }
