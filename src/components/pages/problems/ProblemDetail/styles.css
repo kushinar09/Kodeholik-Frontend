@@ -1,0 +1,84 @@
+.split {
+  display: flex;
+  flex-direction: row;
+}
+
+.split-vertical {
+  display: flex;
+  flex-direction: column;
+}
+
+.gutter {
+  background-color: hsl(var(--border));
+  transition: background-color 0.2s;
+}
+
+.gutter:hover {
+  @apply bg-bg-card;
+}
+
+.gutter.gutter-horizontal {
+  cursor: col-resize;
+  @apply bg-bg-primary;
+}
+
+.gutter.gutter-vertical {
+  cursor: row-resize;
+  @apply bg-bg-primary;
+}
+
+/* Add this for vertical text when minimized */
+.writing-mode-vertical {
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  white-space: nowrap;
+}
+
+.splitter.splitter_vert::after {
+  height: 30px;
+}
+
+.splitter.splitter_horz::after {
+  width: 30px;
+}
+
+.splitter::after {
+  @apply bg-bg-primary;
+  border-radius: 2px;
+  content: "";
+  height: 2px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+}
+
+.splitter.splitter_vert:hover::after {
+  @apply bg-primary h-full;
+}
+
+.splitter.splitter_horz:hover::after {
+  @apply bg-primary w-full;
+}
+
+.splitter.splitter_vert[data-resize-handle-active]::after {
+  @apply bg-primary h-full;
+}
+
+.splitter.splitter_horz[data-resize-handle-active]::after {
+  @apply bg-primary w-full;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}

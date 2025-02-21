@@ -230,11 +230,7 @@ export default function LoginPage() {
         </div>
       </div>
       <div className="relative hidden bg-bg-primary lg:block">
-        <img
-          src={logo || "/placeholder.svg"}
-          alt="Image"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-        />
+        <LOGO className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale" />
       </div>
     </div>
   )

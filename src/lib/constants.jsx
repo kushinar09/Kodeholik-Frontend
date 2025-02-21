@@ -1,11 +1,9 @@
 import React from "react"
 
+import logo from "@/assets/images/logo/kodeholik_logo.png"
+
 const LOGO = React.forwardRef(({ className, ...props }, ref) => {
-  return (
-    (
-      <img src="./src/assets/images/logo/kodeholik_logo.png" className={className} alt="Kodeholik" ref={ref} {...props} />
-    )
-  )
+  return <img src={logo} className={className} alt="Kodeholik" ref={ref} {...props} />
 })
 
 const GLOBALS = {
@@ -53,15 +51,14 @@ const ENDPOINTS = {
   DELETE_PROBLEM: `${API_URL}/problem/delete/:id`,
 
   // courses
-  GET_COURSES:   `${API_URL}/course/list`,
-  GET_COURSE:    `${API_URL}/course/description/:id`,
+  GET_COURSES: `${API_URL}/course/list`,
+  GET_COURSE: `${API_URL}/course/description/:id`,
   SEARCH_COURSE: `${API_URL}/course/search`,
   CREATE_COURSE: `${API_URL}/course/create`,
   UPDATE_COURSE: `${API_URL}/course/update/:id`,
   DELETE_COURSE: `${API_URL}/course/delete/:id`
 }
 
- 
 
 const CONSTANTS = {
   ACCESS_TOKEN: "accessToken",

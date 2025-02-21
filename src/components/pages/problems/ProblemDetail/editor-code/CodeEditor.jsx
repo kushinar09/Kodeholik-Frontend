@@ -18,6 +18,8 @@ export default function CodeEditor() {
 
   useEffect(() => {
     if (editorRef.current && !editor) {
+      // console.log(JSON.stringify(INITIAL_CODE))
+      // JSON.stringify to convert to type /n /t
       // Configure Monaco editor
       monaco.languages.register({ id: "java" })
 
@@ -51,19 +53,19 @@ export default function CodeEditor() {
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
+    <div className="w-full h-full">
+      <div ref={editorRef} className="w-full h-full"/>
+      {/* <CardHeader>
         <CardTitle>Java Code Editor</CardTitle>
       </CardHeader>
       <CardContent>
-        <div ref={editorRef} className="w-full border rounded-md" style={{ height: "500px" }} />
       </CardContent>
       <CardFooter className="flex justify-end space-x-2">
         <Button onClick={handleReset} variant="outline">
           Reset Code
         </Button>
-      </CardFooter>
-    </Card>
+      </CardFooter> */}
+    </div>
   )
 }
 

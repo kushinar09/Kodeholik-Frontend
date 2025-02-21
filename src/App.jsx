@@ -5,14 +5,14 @@ import ProblemList from "./components/pages/problems/ProblemList"
 import CreateProblem from "./components/pages/problems/CreateProblem"
 import EditProblem from "./components/pages/problems/EditProblem"
 import MarkdownEditor from "./components/common/markdown/MarkdownEditor"
-import CodeEditor from "./components/common/editor-code/CodeEditor"
+import CodeEditor from "./components/pages/problems/ProblemDetail/editor-code/CodeEditor"
 import ProblemPage from "./components/pages/problems/ProblemPage"
 import HomePage from "./components/pages/HomePage"
 import Login from "./components/pages/authentications/login"
 import ForgotPassword from "./components/pages/authentications/Forgot"
 import ResetPassword from "./components/pages/authentications/reset"
 import { Toaster } from "./components/ui/toaster"
-import ProblemDetail from "./components/pages/problems/ProblemDetail"
+import ProblemDetail from "./components/pages/problems/ProblemDetail/ProblemDetail"
 
 
 function App() {
