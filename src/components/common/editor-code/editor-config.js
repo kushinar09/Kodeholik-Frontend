@@ -8,7 +8,7 @@ export const editorConfig = {
   padding: { top: 10 },
   fontSize: 14,
   lineNumbers: "on",
-  lineNumbersMinChars: 4,
+  lineNumbersMinChars: 0,
   roundedSelection: false,
   scrollBeyondLastLine: false,
   readOnly: false,

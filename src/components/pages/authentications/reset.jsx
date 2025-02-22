@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { PasswordInput } from "@/components/ui/password-input"
 import { toast } from "@/hooks/use-toast"
-import { ENDPOINTS } from "@/lib/constants"
 import LoadingScreen from "@/components/common/shared/loading"
+
+import { validateResetToken, resetPassword } from "@/lib/api/auth_api"
 
 // Schema for password validation
 const formSchema = z
@@ -29,7 +30,7 @@ const formSchema = z
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
     message: "Passwords do not match"
-  });
+  })
 
 export default function ResetPassword() {
   const navigate = useNavigate()
@@ -48,53 +49,22 @@ export default function ResetPassword() {
   })
 
   useEffect(() => {
-    async function validateToken() {
-      if (!token) {
-        navigate("/login")
-        return
+    async function checkToken() {
+      const result = await validateResetToken(token)
+      if (!result.valid) {
+        navigate(result.expired ? "/forgot" : "/login", { state: { tokenExpired: result.expired } })
       }
-
-      try {
-        const response = await fetch(ENDPOINTS.CHECK_RESET_TOKEN.replace(":token", token), {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json"
-          }
-        })
-
-        if (response.status === 401) {
-          navigate("/forgot", { state: { tokenExpired: true } })
-        }
-
-        setIsValidating(false)
-      } catch (error) {
-        // console.error("Token validation error:", error)
-        navigate("/login")
-      }
+      setIsValidating(false)
     }
 
-    validateToken()
+    checkToken()
   }, [token, navigate])
 
   async function onSubmit(values) {
-    if (!token) return
-
     try {
-      const response = await fetch(ENDPOINTS.RESET_PASSWORD.replace(":token", token), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: values.password
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to reset password")
-      }
-
+      await resetPassword(token, values.password)
       navigate("/login", { state: { resetSuccess: true } })
     } catch (error) {
-      // console.error("Error resetting password:", error)
       toast({
         title: "Error",
         description: error.message,
@@ -115,7 +85,6 @@ export default function ResetPassword() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <div className="grid gap-4">
-                {/* New Password Field */}
                 <FormField
                   control={form.control}
                   name="password"
@@ -129,8 +98,6 @@ export default function ResetPassword() {
                     </FormItem>
                   )}
                 />
-
-                {/* Confirm Password Field */}
                 <FormField
                   control={form.control}
                   name="confirmPassword"
@@ -138,23 +105,13 @@ export default function ResetPassword() {
                     <FormItem className="grid gap-2">
                       <FormLabel htmlFor="confirmPassword">Confirm Password</FormLabel>
                       <FormControl>
-                        <PasswordInput
-                          id="confirmPassword"
-                          autoComplete="new-password"
-                          disabled={isValidating}
-                          {...field}
-                        />
+                        <PasswordInput id="confirmPassword" autoComplete="new-password" {...field} disabled={isValidating} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
-                <Button
-                  type="submit"
-                  className="w-full bg-button-secondary hover:bg-button-secondaryHover font-semibold"
-                  disabled={form.formState.isSubmitting}
-                >
+                <Button type="submit" className="w-full bg-button-secondary hover:bg-button-secondaryHover font-semibold" disabled={form.formState.isSubmitting}>
                   {form.formState.isSubmitting ? "Resetting..." : "Reset Password"}
                 </Button>
               </div>
@@ -165,4 +122,3 @@ export default function ResetPassword() {
     </div>
   )
 }
-

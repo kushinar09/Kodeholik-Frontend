@@ -1,4 +1,4 @@
-import { getProblem } from "@/lib/api"
+import { getProblem } from "@/lib/api/problem_api"
 import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import ProblemForm from "../../common/ProblemForm"

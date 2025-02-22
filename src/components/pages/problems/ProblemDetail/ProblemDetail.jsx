@@ -9,15 +9,23 @@ import { Button } from "@/components/ui/button"
 import { LOGO } from "@/lib/constants"
 
 import "./styles.css"
-import CodeEditor from "./editor-code/CodeEditor"
+import CodeEditor from "../../../common/editor-code/CodeEditor"
+import { getProblemDescription, getProblemInitCode } from "@/lib/api/problem_api"
+import { useParams } from "react-router-dom"
+import { marked } from "marked"
+import { runCode, submitCode } from "@/lib/api/code_api"
 
 
 export default function ProblemDetail() {
+  const { id } = useParams()
   const [leftSize, setLeftSize] = useState(50)
   const [activeTab, setActiveTab] = useState("description")
   const [leftWidth, setLeftWidth] = useState(0)
   const leftPanelRef = useRef(null)
   const [isCompactRight, setIsCompactRight] = useState(false)
+  const [description, setDescription] = useState("")
+  const [initCode, setInitCode] = useState("")
+  const [code, setCode] = useState(initCode || "")
 
   useEffect(() => {
     if (leftPanelRef.current?.parentElement) {
@@ -50,6 +58,48 @@ export default function ProblemDetail() {
     { id: "submissions", label: "Submissions", icon: CheckCircle }
   ]
 
+  const handleCodeChange = (newCode) => {
+    setCode(newCode)
+    // console.log("Updated Code:", newCode)
+  }
+  useEffect(() => {
+    const fetchProblemDescription = async () => {
+      if (!id) {
+        // TODO: Redirect to 404 page
+      }
+      const result = await getProblemDescription(id)
+      if (result.status && result.data) {
+        setDescription(result.data.description)
+      } else {
+        // TODO: Redirect to 404 page
+      }
+    }
+
+    const fetchProblemInitCode = async () => {
+      if (!id) {
+        // TODO: Redirect to 404 page
+      }
+      const result = await getProblemInitCode(id, "Java")
+      if (result.status && result.data) {
+        setInitCode(result.data.template)
+      } else {
+        // TODO: Redirect to 404 page
+      }
+    }
+    fetchProblemDescription()
+    fetchProblemInitCode()
+  }, [id])
+
+  async function RunCode() {
+    const result = await runCode(id, code, "Java")
+    console.log(result)
+  }
+
+  async function SubmitCode() {
+    const result = await submitCode(id, code, "Java")
+    console.log(result)
+  }
+
   return (
     <div className="h-screen flex flex-col">
       <div className="relative h-12 w-full bg-bg-primary/50">
@@ -72,11 +122,11 @@ export default function ProblemDetail() {
           <Button variant="ghost" title="Debug" size="icon" className="h-8 w-8 bg-button-primary hover:bg-button-hover text-black transition">
             <Bug className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" title="Run" className="h-8 bg-button-primary hover:bg-button-hover text-black transition">
+          <Button onClick={RunCode} variant="ghost" title="Run" className="h-8 bg-button-primary hover:bg-button-hover text-black transition">
             <Play className="h-4 w-4" />
             Run
           </Button>
-          <Button title="Submit" className="h-8 bg-button-primary hover:bg-button-hover text-black text-sm transition">
+          <Button onClick={SubmitCode} title="Submit" className="h-8 bg-button-primary hover:bg-button-hover text-black text-sm transition">
             <Upload className="size-4" />
             Submit
           </Button>
@@ -123,10 +173,12 @@ export default function ProblemDetail() {
                   {activeTab === "description" && (
                     <div className="prose dark:prose-invert min-w-[420px]">
                       <h2 className="text-xl font-bold mb-4">Problem Description</h2>
-                      <p>
-                        Given an array of integers nums and an integer target, return indices of the two numbers such that
-                        they add up to target.
-                      </p>
+                      <div>
+                        <div
+                          className="markdown prose prose-sm dark:prose-invert max-w-none p-4"
+                          dangerouslySetInnerHTML={{ __html: marked(description) }}
+                        />
+                      </div>
                     </div>
                   )}
                   {activeTab === "editorial" && <div>Editorial content</div>}
@@ -168,7 +220,7 @@ export default function ProblemDetail() {
                   </div>
                   <div className={cn("overflow-auto flex-1", isCompactRight ? "flex justify-center hidden" : "")}>
                     <div className="font-mono min-w-[420px] h-full">
-                      <CodeEditor />
+                      {initCode && <CodeEditor initialCode={initCode} onChange={handleCodeChange} />}
                     </div>
                   </div>
                 </div>
