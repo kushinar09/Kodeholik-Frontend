@@ -11,10 +11,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import LoadingScreen from "@/components/common/shared/loading"
-import { ENDPOINTS } from "@/lib/constants"
 import { MESSAGES } from "@/lib/messages"
 import { cn } from "@/lib/utils"
 import { toast } from "@/hooks/use-toast"
+import { requestResetPassword } from "@/lib/api/auth_api"
 
 // Form validation
 const forgotPasswordSchema = z.object({
@@ -48,20 +48,17 @@ export default function ForgotPassword() {
     setLoading(true)
 
     try {
-      const response = await fetch(ENDPOINTS.FORGOT_PASSWORD.replace(":gmail", data.email), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" }
-      })
 
-      if (response.ok) {
+      const result = await requestResetPassword(data.email)
+      if (result.status) {
         setLoading(true)
         setTimeout(() => {
           navigate("/login", { state: { sendEmail: true } })
         }, 500)
-      } else if (response.status === 400) {
+      } else if (result.field === "email") {
         form.setError("email", {
           type: "manual",
-          message: MESSAGES["MSG08"].content
+          message: result.message ? result.message : MESSAGES["MSG08"].content
         })
       } else {
         throw new Error("An error occurred while processing your request")

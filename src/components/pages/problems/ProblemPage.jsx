@@ -6,9 +6,27 @@ import { RadialChart } from "@/components/common/radial-chart"
 import { Check, CheckCircle, Search, XCircle } from "lucide-react"
 import FooterSection from "@/components/common/shared/footer"
 import { Input } from "@/components/ui/input"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { getProblemList } from "@/lib/api/problem_api"
 
 export default function ProblemPage() {
+  const [problems, setProblems] = useState([])
+
+  const [searchQuery, setSearchQuery] = useState({
+    "title": "",
+    "difficulty": [],
+    "topics": [],
+    "skills": []
+  })
+
+  useEffect(() => {
+    const fetchProblems = async () => {
+      const data = await getProblemList(0, null, null, null, searchQuery)
+      setProblems(data.content)
+    }
+    fetchProblems()
+  }, [])
+
   const stats = {
     mainLabel: "Solve",
     mainCount: 140,
@@ -81,10 +99,14 @@ export default function ProblemPage() {
     setSelectedTopics((prev) => prev.filter((t) => t !== topic))
   }
 
+  function handleProblemDetail(id) {
+    window.location.href = `/problem/${id}`
+  }
+
   return (
     <>
       <div className="min-h-screen bg-bg-primary">
-        <Header/>
+        <Header />
         {/* Main Content */}
         <main className="p-4 px-24">
           {/* Study Plan Section */}
@@ -134,16 +156,19 @@ export default function ProblemPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr className="text-white cursor-pointer hover:bg-gray-800 gap-10">
-                        <td className="py-2" title="Solved">
-                          <Check className="w-5 h-5 text-green-500"/>
-                          {/* <XCircle className="w-5 h-5 text-red-500"/> */}
-                        </td>
-                        <td className="py-2 truncate pe-4 max-w-24">Two Sum</td>
-                        <td className="py-2">45%</td>
-                        <td className="py-2 text-green-500">Easy</td>
-                        <td className="py-2">1.2M</td>
-                      </tr>
+                      {problems.map((problem) => (
+                        <tr key={problem.id} onClick={() => handleProblemDetail(problem.id)} className="text-white cursor-pointer hover:bg-gray-800 gap-10">
+                          <td className="py-2" title="Solved">
+
+                            <Check className="w-5 h-5 text-green-500" />
+                            {/* <XCircle className="w-5 h-5 text-red-500"/> */}
+                          </td>
+                          <td className="py-2 truncate pe-4 max-w-24">{problem.title}</td>
+                          <td className="py-2">{problem.acceptanceRate}%</td>
+                          <td className="py-2 text-green-500">{problem.difficulty}</td>
+                          <td className="py-2">{problem.participants}</td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>

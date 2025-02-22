@@ -108,7 +108,7 @@ export default {
           text: "#b9c5e5",
           placeholder: "#777a8b",
           focusRing: "#7acc7a"
-        },
+        }
       },
       borderRadius: {
         lg: "var(--radius)",

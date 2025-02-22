@@ -2,32 +2,29 @@
 
 import { useEffect, useRef, useState } from "react"
 import * as monaco from "monaco-editor"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { INITIAL_CODE_DEFAULT } from "./constants"
+import { editorConfig } from "./editor-config"
 import { JavaCompletionProvider } from "./completion-provider"
 import { JavaDiagnosticsProvider } from "./diagnostics-provider"
 import { JavaFormatter } from "./format-config"
-import { INITIAL_CODE } from "./constants"
-import { editorConfig } from "./editor-config"
 
 let isCompletionProviderRegistered = false
 
-export default function CodeEditor() {
+export default function CodeEditor({ initialCode, onChange }) {
   const editorRef = useRef(null)
   const [editor, setEditor] = useState(null)
+  const [breakpoints, setBreakpoints] = useState(new Map()) // Track breakpoints
 
   useEffect(() => {
     if (editorRef.current && !editor) {
-      // Configure Monaco editor
       monaco.languages.register({ id: "java" })
 
-      // Initialize the editor with configuration
-      const editor = monaco.editor.create(editorRef.current, {
+      const editorInstance = monaco.editor.create(editorRef.current, {
         ...editorConfig,
-        value: INITIAL_CODE
+        value: initialCode ? initialCode : INITIAL_CODE_DEFAULT,
+        glyphMargin: true // Enable breakpoints
       })
 
-      // Register completion and diagnostics providers
       if (!isCompletionProviderRegistered) {
         JavaCompletionProvider(monaco)
         isCompletionProviderRegistered = true
@@ -35,35 +32,74 @@ export default function CodeEditor() {
       JavaDiagnosticsProvider(monaco)
       JavaFormatter(monaco)
 
-      setEditor(editor)
+      editorInstance.onDidChangeModelContent(() => {
+        const updatedCode = editorInstance.getValue()
+        if (onChange) {
+          onChange(updatedCode)
+        }
+      })
+
+      // Listen for gutter clicks to toggle breakpoints
+      editorInstance.onMouseDown((e) => {
+        if (e.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
+          const lineNumber = e.target.position.lineNumber
+          toggleBreakpoint(editorInstance, lineNumber)
+        }
+      })
+
+      setEditor(editorInstance)
 
       return () => {
-        editor.dispose()
+        editorInstance.getModel()?.dispose() // Dispose the model
+        editorInstance.dispose()
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleReset = () => {
-    if (editor) {
-      editor.setValue(INITIAL_CODE)
-    }
+  const toggleBreakpoint = (editor, lineNumber) => {
+    setBreakpoints((prev) => {
+      const updatedBreakpoints = new Map(prev)
+
+      if (updatedBreakpoints.has(lineNumber)) {
+        const decorationId = updatedBreakpoints.get(lineNumber)
+        editor.deltaDecorations([decorationId], [])
+        updatedBreakpoints.delete(lineNumber)
+      } else {
+        const newDecorations = editor.deltaDecorations([], [
+          {
+            range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+            options: {
+              glyphMarginClassName: "breakpoint-icon"
+            }
+          }
+        ])
+        updatedBreakpoints.set(lineNumber, newDecorations[0])
+      }
+
+      return new Map(updatedBreakpoints)
+    })
   }
 
+
+
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle>Java Code Editor</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div ref={editorRef} className="w-full border rounded-md" style={{ height: "500px" }} />
-      </CardContent>
-      <CardFooter className="flex justify-end space-x-2">
-        <Button onClick={handleReset} variant="outline">
-          Reset Code
-        </Button>
-      </CardFooter>
-    </Card>
+    <div className="w-full h-full">
+      <div ref={editorRef} className="w-full h-full" />
+      <style>
+        {`
+          .breakpoint-icon::after {
+            border-radius: 100%;
+            content: "";
+            cursor: pointer;
+            display: block;
+            margin-left: 4px;
+            height: 10px;
+            width: 10px;
+            background-color:rgb(226, 74, 66);
+          }
+        `}
+      </style>
+    </div>
   )
 }
-

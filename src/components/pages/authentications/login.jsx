@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import logo from "@/assets/images/logo/kodeholik_logo.png"
 import LoadingScreen from "@/components/common/shared/loading"
 import { useLocation, useNavigate } from "react-router-dom"
 import { toast } from "@/hooks/use-toast"
-import { ENDPOINTS, LOGO } from "@/lib/constants"
+import { LOGO } from "@/lib/constants"
 import { MESSAGES } from "@/lib/messages"
 
+import { login, loginWithGithub, loginWithGoogle } from "@/lib/api/auth_api"
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
@@ -87,22 +87,15 @@ export default function LoginPage() {
       if (Object.keys(newErrors).length > 0) {
         setErrors(newErrors)
       } else {
-        const response = await fetch(ENDPOINTS.LOGIN, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(formData)
-        })
-
-        if (response.status === 204) {
-          navigate("/")
-        } else if (response.status === 401) {
-          newErrors.general = MESSAGES["MSG03"].content
-        } else if (response.status === 400) {
-          newErrors.general = MESSAGES["MSG01"].content
+        const result = await login(formData)
+        if (!result.status) {
+          if (result.error) {
+            newErrors.general = result.error
+          } else {
+            throw new Error("Login failed. Please check your credentials and try again.")
+          }
         } else {
-          throw new Error("Login failed. Please check your credentials and try again.")
+          navigate("/")
         }
         setErrors(newErrors)
       }
@@ -116,9 +109,13 @@ export default function LoginPage() {
     }
   }
 
-  function handleLoginGoogle() { }
+  function handleLoginGoogle() {
+    loginWithGoogle()
+  }
 
-  function handleLoginGithub() { }
+  function handleLoginGithub() {
+    loginWithGithub()
+  }
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
@@ -226,11 +223,7 @@ export default function LoginPage() {
         </div>
       </div>
       <div className="relative hidden bg-bg-primary lg:block">
-        <img
-          src={logo || "/placeholder.svg"}
-          alt="Image"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-        />
+        <LOGO className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale" />
       </div>
     </div>
   )

@@ -1,7 +1,26 @@
-import { ENDPOINTS } from "./constants"
+import { ENDPOINTS } from "../constants"
 
-export async function getProblemList() {
-  const response = await fetch(ENDPOINTS.GET_PROBLEMS)
+export async function getProblemDescription(id) {
+  const response = await fetch(ENDPOINTS.GET_PROBLEM_DESCRIPTION.replace(":id", id))
+  if (response.ok) {
+    return { status: true, data: await response.json() }
+  }
+
+  if (response.status === 404) {
+    return { status: false, message: "Problem not found" }
+  }
+  return { status: false }
+}
+
+export async function getProblemList(page = 0, size, sortBy, ascending, body) {
+  const url = `${ENDPOINTS.POST_PROBLEMS_LIST}${"?page=" + page}${size ? "&size=" + size : ""}${sortBy ? "&sortBy=" + sortBy : ""}${ascending ? "&ascending=" + ascending : ""}`
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  })
   if (!response.ok) {
     throw new Error("Failed to fetch problems")
   }
@@ -14,6 +33,18 @@ export async function getProblem(id) {
     throw new Error("Failed to fetch problem")
   }
   return response.json()
+}
+
+export async function getProblemInitCode(id, language) {
+  const response = await fetch(ENDPOINTS.GET_PROBLEM_INIT_CODE.replace(":id", id) + "?languageName=" + language)
+  if (response.ok) {
+    return { status: true, data: await response.json() }
+  }
+
+  if (response.status === 404) {
+    return { status: false, message: "Problem not found" }
+  }
+  return { status: false }
 }
 
 export async function createProblem(data) {

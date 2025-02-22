@@ -1,4 +1,4 @@
-import { getProblemList } from "@/lib/api"
+import { getProblemList } from "@/lib/api/problem_api"
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "../../ui/button"
