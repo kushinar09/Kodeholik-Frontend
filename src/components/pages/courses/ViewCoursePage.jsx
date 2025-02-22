@@ -40,7 +40,7 @@ const courses = [
       <div className="min-h-screen bg-bg-primary">
         <Header />
         <div className="container mx-auto px-24 p-6">
-          <h1 className="text-2xl font-bold text-white mb-6">COURSES</h1>
+          <h1 className="text-3xl font-bold text-white mb-6">COURSES</h1>
           <div className="flex gap-4 mb-4">
             <Input 
               type="text" 
