@@ -16,6 +16,7 @@ export async function getProblemList(page = 0, size, sortBy, ascending, body) {
   const url = `${ENDPOINTS.POST_PROBLEMS_LIST}${"?page=" + page}${size ? "&size=" + size : ""}${sortBy ? "&sortBy=" + sortBy : ""}${ascending ? "&ascending=" + ascending : ""}`
   const response = await fetch(url, {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json"
     },

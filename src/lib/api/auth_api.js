@@ -73,10 +73,37 @@ export async function login(formData) {
   try {
     const response = await fetch(ENDPOINTS.POST_LOGIN, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(formData)
+    })
+
+    if (response.status === 204) {
+      return { status: true }
+    } else if (response.status === 401) {
+      return { status: false, error: MESSAGES["MSG03"].content }
+    } else if (response.status === 400) {
+      return { status: false, error: MESSAGES["MSG01"].content }
+    } else {
+      return { status: false, error: "Network error. Please try again later." }
+    }
+  } catch (error) {
+    throw new Error("Login failed. Please check your credentials and try again.")
+  }
+}
+
+export async function getInfor() {
+  try {
+    const response = await fetch(ENDPOINTS.GET_INFOR, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Access-Control-Allow-Origin": "http://localhost:5174",
+        "Access-Control-Allow-Credentials": "true",
+        "Content-Type": "application/json"
+      }
     })
 
     if (response.status === 204) {

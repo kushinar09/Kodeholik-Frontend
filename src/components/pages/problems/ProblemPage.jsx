@@ -157,10 +157,9 @@ export default function ProblemPage() {
                     </thead>
                     <tbody>
                       {problems.map((problem) => (
-                        <tr key={problem.id} onClick={() => handleProblemDetail(problem.id)} className="text-white cursor-pointer hover:bg-gray-800 gap-10">
+                        <tr key={problem.id} onClick={() => handleProblemDetail(problem.link)} className="text-white cursor-pointer hover:bg-gray-800 gap-10">
                           <td className="py-2" title="Solved">
-
-                            <Check className="w-5 h-5 text-green-500" />
+                            {problem.solved && <Check className="w-5 h-5 text-green-500" />}
                             {/* <XCircle className="w-5 h-5 text-red-500"/> */}
                           </td>
                           <td className="py-2 truncate pe-4 max-w-24">{problem.title}</td>

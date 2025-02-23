@@ -4,7 +4,12 @@ export async function runCode(id, code, languageName) {
   try {
     const response = await fetch(ENDPOINTS.POST_RUN_CODE.replace(":id", id), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:5174",
+        "Access-Control-Allow-Credentials": "true"
+      },
       body: JSON.stringify({ code, languageName })
     })
 

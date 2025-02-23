@@ -33,6 +33,8 @@ const ENDPOINTS = {
   POST_LOGIN: `${API_URL}/auth/login`,
   LOGIN_GOOGLE: `${BACKEND_URL}/oauth2/authorization/google`,
   LOGIN_GITHUB: `${BACKEND_URL}/oauth2/authorization/github`,
+  GET_INFOR: `${API_URL}/user/current`,
+  ROTATE_TOKEN: `${API_URL}/auth/rotate-token`,
 
   POST_FORGOT_PASSWORD: `${API_URL}/auth/reset-password-init?username=:gmail`,
   GET_CHECK_RESET_TOKEN: `${API_URL}/auth/reset-password-check?token=:token`,
@@ -70,8 +72,8 @@ const ENDPOINTS = {
 
 
 const CONSTANTS = {
-  ACCESS_TOKEN: "accessToken",
-  REFRESH_TOKEN: "refreshToken",
+  ACCESS_TOKEN: "access_token",
+  REFRESH_TOKEN: "refresh_token",
   USERNAME: "username",
   USER_ID: "uid"
 }

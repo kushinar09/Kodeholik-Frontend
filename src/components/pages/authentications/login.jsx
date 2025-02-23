@@ -95,7 +95,8 @@ export default function LoginPage() {
             throw new Error("Login failed. Please check your credentials and try again.")
           }
         } else {
-          navigate("/")
+          const redirectPath = location.state?.redirectPath || "/"
+          navigate(redirectPath)
         }
         setErrors(newErrors)
       }
