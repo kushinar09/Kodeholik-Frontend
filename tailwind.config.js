@@ -64,11 +64,14 @@ export default {
           muted: "#8995b0",
           error: "#ff6b6b",
           warning: "#ffcc66",
-          success: "#66ff99",
+          success: "rgb(11, 198, 74)",
           info: "#66ccff",
           placeholder: "#777a8b",
           link: "#66ccff",
-          linkHover: "#5599cc"
+          linkHover: "#5599cc",
+          difficultEasy: "rgb(74, 222, 128)",
+          difficultMedium: "rgb(234, 179, 8)",
+          difficultHard: "rgb(239, 68, 68)"
         },
         bg: {
           primary: "#333333",

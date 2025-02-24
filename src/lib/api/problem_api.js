@@ -25,7 +25,9 @@ export async function getProblemList(page = 0, size, sortBy, ascending, body) {
   if (!response.ok) {
     throw new Error("Failed to fetch problems")
   }
-  return response.json()
+  const text = await response.text()
+  if (!text) return null
+  return JSON.parse(text)
 }
 
 export async function getProblem(id) {

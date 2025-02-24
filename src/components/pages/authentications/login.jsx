@@ -10,20 +10,38 @@ import { cn } from "@/lib/utils"
 import LoadingScreen from "@/components/common/shared/loading"
 import { useLocation, useNavigate } from "react-router-dom"
 import { toast } from "@/hooks/use-toast"
-import { LOGO } from "@/lib/constants"
+import { ENDPOINTS, LOGO } from "@/lib/constants"
 import { MESSAGES } from "@/lib/messages"
 
 import { login, loginWithGithub, loginWithGoogle } from "@/lib/api/auth_api"
+import { useAuth } from "@/context/AuthProvider"
 export default function LoginPage() {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [errors, setErrors] = useState({})
   const [formData, setFormData] = useState({
     username: "",
     password: ""
   })
 
+  const { apiCall } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const response = await apiCall(ENDPOINTS.GET_INFOR, { credentials: "include" })
+        if (response.ok) {
+          window.location.href = "/"
+        }
+      } catch (error) {
+        console.error("Error checking authentication:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    checkAuth()
+  }, [])
 
   useEffect(() => {
     if (location.state?.sendEmail) {
@@ -38,6 +56,14 @@ export default function LoginPage() {
       toast({
         title: "Success",
         description: "Your password has been reset successfully. You can now log in with your new password.",
+        variant: "default"
+      })
+    }
+
+    if (location.state?.loginRequire) {
+      toast({
+        title: "Login Required",
+        description: "You need to be logged in to continue.",
         variant: "default"
       })
     }
