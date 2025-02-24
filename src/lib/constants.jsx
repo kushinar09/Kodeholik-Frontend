@@ -35,14 +35,11 @@ const ENDPOINTS = {
   LOGIN_GITHUB: `${BACKEND_URL}/oauth2/authorization/github`,
   GET_INFOR: `${API_URL}/user/current`,
   ROTATE_TOKEN: `${API_URL}/auth/rotate-token`,
+  POST_LOGOUT: `${API_URL}/auth/logout`,
 
   POST_FORGOT_PASSWORD: `${API_URL}/auth/reset-password-init?username=:gmail`,
   GET_CHECK_RESET_TOKEN: `${API_URL}/auth/reset-password-check?token=:token`,
   POST_RESET_PASSWORD: `${API_URL}/auth/reset-password-finish?token=:token`,
-
-  GET_USER_INFO: `${API_URL}/user/info`,
-  POST_UPDATE_USER_PROFILE: `${API_URL}/user/update`,
-  POST_LOGOUT: `${API_URL}/logout`,
 
   // Problems
   POST_PROBLEMS_LIST: `${API_URL}/problem/search`,

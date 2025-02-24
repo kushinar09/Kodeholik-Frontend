@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
-import { ENDPOINTS } from "@/lib/constants"
+import { CONSTANTS, ENDPOINTS } from "@/lib/constants"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useAuth } from "@/context/AuthProvider"
 
 export default function Header() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState(null)
+  const { apiCall } = useAuth()
 
   useEffect(() => {
     async function checkAuth() {
       try {
-        const response = await fetch(ENDPOINTS.GET_INFOR, { credentials: "include" })
+        const response = await apiCall(ENDPOINTS.GET_INFOR, { credentials: "include" })
         if (response.ok) {
           const data = await response.json()
           setIsAuthenticated(true)
@@ -31,7 +33,12 @@ export default function Header() {
     window.location.href = "/login"
   }
 
-  function handleLogout() {
+  async function handleLogout() {
+    await apiCall(ENDPOINTS.POST_LOGOUT, {
+      method: "POST"
+    })
+    setIsAuthenticated(false)
+    setUser(null)
   }
 
   return (
@@ -88,7 +95,7 @@ export default function Header() {
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer">
+                  <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
                     <svg className="h-4 w-4 mr-2" width="24" height="24" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">  <path stroke="none" d="M0 0h24v24H0z" />  <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />  <path d="M7 12h14l-3 -3m0 6l3 -3" /></svg>
                     Log out
                   </DropdownMenuItem>

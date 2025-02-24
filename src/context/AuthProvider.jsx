@@ -1,53 +1,77 @@
 import { CONSTANTS, ENDPOINTS } from "@/lib/constants"
-import React, { createContext, useContext } from "react"
+import React, { createContext, useContext, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
 const AuthContext = createContext()
 
 const authenticatedEndpoints = [
-  ENDPOINTS.GET_USER_INFO,
+  ENDPOINTS.GET_INFOR,
   ENDPOINTS.POST_RUN_CODE,
   ENDPOINTS.POST_SUBMIT_CODE
 ]
 
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate()
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [refreshPromise, setRefreshPromise] = useState(null)
 
-  const logout = () => {
-    localStorage.removeItem(CONSTANTS.ACCESS_TOKEN)
-    localStorage.removeItem(CONSTANTS.REFRESH_TOKEN)
-    navigate("/login", { state: { redirectPath: window.location.pathname } })
+  const logout = (url = "") => {
+    document.cookie = `${CONSTANTS.ACCESS_TOKEN}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+    document.cookie = `${CONSTANTS.REFRESH_TOKEN}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+    if (url !== "" && url !== ENDPOINTS.GET_INFOR)
+      navigate("/login", { state: { loginRequire: true, redirectPath: window.location.pathname } })
   }
 
-  const refreshAccessToken = async () => {
-    try {
-      const response = await fetch(ENDPOINTS.ROTATE_TOKEN, {
-        method: "POST",
-        credentials: "include", // Ensure cookies are sent
-        headers: { "Content-Type": "application/json" }
+  const refreshAccessToken = async (url) => {
+    if (isRefreshing) {
+      return refreshPromise
+    }
+
+    setIsRefreshing(true)
+    const promise = fetch(ENDPOINTS.ROTATE_TOKEN, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Failed to refresh token")
+        }
+        return true // Token refreshed successfully
+      })
+      .catch(error => {
+        console.error("Refresh token failed:", error)
+        logout(url)
+        return false
+      })
+      .finally(() => {
+        setIsRefreshing(false)
+        setRefreshPromise(null)
       })
 
-      if (!response.ok) {
-        throw new Error("Failed to refresh token")
-      }
-
-      return true
-    } catch (error) {
-      console.error("Refresh token failed:", error)
-      logout()
-      return false
-    }
+    setRefreshPromise(promise)
+    return promise
   }
 
   const apiCall = async (url, options = {}) => {
+    if (!options.headers) {
+      options.headers = {}
+    }
 
-    if (authenticatedEndpoints.includes(url)) {
-      options.headers = {
-        ...(options.headers || {}),
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:5174",
-        "Access-Control-Allow-Credentials": "true"
-      }
+    // if (authenticatedEndpoints.includes(url)) {
+    //   options.headers = {
+    //     ...(options.headers || {}),
+    //     "Content-Type": "application/json",
+    //     "Access-Control-Allow-Origin": "http://localhost:5174",
+    //     "Access-Control-Allow-Credentials": "true"
+    //   }
+    // }
+
+    options.headers = {
+      ...(options.headers || {}),
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "http://localhost:5174",
+      "Access-Control-Allow-Credentials": "true"
     }
 
     options.credentials = "include"
@@ -58,9 +82,9 @@ export const AuthProvider = ({ children }) => {
       if (response.status === 401) {
         console.warn("Access token expired. Attempting refresh...")
 
-        const status = await refreshAccessToken()
+        const success = await refreshAccessToken(url)
 
-        if (status) {
+        if (success) {
           response = await fetch(url, options)
         } else {
           throw new Error("Authentication failed")
@@ -75,7 +99,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ apiCall }}>
+    <AuthContext.Provider value={{ apiCall, logout }}>
       {children}
     </AuthContext.Provider>
   )
