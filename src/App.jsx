@@ -11,7 +11,6 @@ import ProblemPage from "./components/pages/problems/ProblemPage"
 import HomePage from "./components/pages/HomePage"
 
 
-
 function App() {
   return (
     <Router>
@@ -25,7 +24,6 @@ function App() {
           <Route path="/template" element={<HomePage />} />
           <Route path="/courses" element={<ViewCoursePage />} />
           <Route path="/courses/:id" element={<ViewCourseDetail />} />
-          <Route path="/learn" element={<Learn />} />
         </Routes>
       </div>
     </Router>

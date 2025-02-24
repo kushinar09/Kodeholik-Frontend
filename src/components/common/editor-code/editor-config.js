@@ -3,10 +3,12 @@ export const editorConfig = {
   theme: "vs-dark",
   automaticLayout: true,
   minimap: {
-    enabled: true
+    enabled: false
   },
+  padding: { top: 10 },
   fontSize: 14,
   lineNumbers: "on",
+  lineNumbersMinChars: 0,
   roundedSelection: false,
   scrollBeyondLastLine: false,
   readOnly: false,

@@ -1,7 +1,6 @@
-export const INITIAL_CODE = `public class Main {
+export const INITIAL_CODE_DEFAULT = `public class Main {
   public static void main(String[] args) {
     System.out.println("Hello World!");
-    int[] arrs = new int[5];
   }
 }`
 
