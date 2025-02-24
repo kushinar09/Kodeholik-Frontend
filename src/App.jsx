@@ -24,6 +24,7 @@ function App() {
           <Route path="/template" element={<HomePage />} />
           <Route path="/courses" element={<ViewCoursePage />} />
           <Route path="/courses/:id" element={<ViewCourseDetail />} />
+          <Route path="/learn" element={<Learn />} />
         </Routes>
       </div>
     </Router>
