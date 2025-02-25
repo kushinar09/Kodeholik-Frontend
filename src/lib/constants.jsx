@@ -44,16 +44,18 @@ const ENDPOINTS = {
   // Problems
   POST_PROBLEMS_LIST: `${API_URL}/problem/search`,
   GET_PROBLEM_DESCRIPTION: `${API_URL}/problem/description/:id`,
+  GET_PROBLEM_EDITORIAL: `${API_URL}/problem/editorial/:id`,
   GET_PROBLEM_INIT_CODE: `${API_URL}/problem/compile-information/:id`,
   GET_PROBLEM_COMMENTS: `${API_URL}/comment/problem/:id?page=0&sortBy=createdAt&ascending=false`,
-  GET_PROBLEM_EDITORIAL: `${API_URL}/problem/description/:id`,
-  GET_PROBLEM_SOLUTIONS: `${API_URL}/problem/description/:id`,
-  GET_PROBLEM_SUBMISSIONS: `${API_URL}/problem/description/:id`,
+  GET_PROBLEM_SOLUTIONS: `${API_URL}/problem-solution/list/:id`,
+  GET_PROBLEM_SUBMISSIONS: `${API_URL}/problem/submissions/:id`,
   GET_SEARCH_PROBLEM: `${API_URL}/problem/search`,
   POST_CREATE_PROBLEM: `${API_URL}/problem/create`,
   POST_UPDATE_PROBLEM: `${API_URL}/problem/update/:id`,
   POST_DELETE_PROBLEM: `${API_URL}/problem/delete/:id`,
 
+  // Search
+  GET_SUGGEST_SEARCH: `${API_URL}/problem/suggest?searchText=:text`,
   // courses
   GET_COURSES: `${API_URL}/course/list`,
   GET_COURSE: `${API_URL}/course/description/:id`,

@@ -7,7 +7,7 @@ export async function runCode(apiCall, id, code, languageName) {
       credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code, languageName })
-    })
+    }, true)
 
     return response.json()
   } catch (error) {
@@ -21,7 +21,7 @@ export async function submitCode(apiCall, id, code, languageName) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code, languageName })
-    })
+    }, true)
 
     return response.json()
   } catch (error) {

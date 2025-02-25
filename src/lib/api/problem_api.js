@@ -12,8 +12,37 @@ export async function getProblemDescription(id) {
   return { status: false }
 }
 
+export async function getProblemEditorial(apiCall, id) {
+  const response = await apiCall(ENDPOINTS.GET_PROBLEM_EDITORIAL.replace(":id", id))
+  if (response.ok) {
+    const data = await response.json()
+    return { status: true, data: data.editorialDtos[0] }
+  }
+
+  if (response.status === 404) {
+    return { status: false, message: "Problem not found" }
+  }
+
+  return { status: false }
+}
+
+export async function getProblemSolutions(apiCall, id, page = 0, size = 15, title, languageName, sortBy, ascending) {
+  const response = await apiCall(`${ENDPOINTS.GET_PROBLEM_SOLUTIONS.replace(":id", id)}${"?page=" + page}${size ? "&size=" + size : ""}${title ? "&title=" + title : ""}${languageName ? "&languageName=" + languageName : ""}${sortBy ? "&sortBy=" + sortBy : ""}${ascending ? "&ascending=" + ascending : ""}`)
+  if (response.ok) {
+    const data = await response.json()
+    console.log(data)
+    return { status: true, data: data }
+  }
+
+  if (response.status === 404) {
+    return { status: false, message: "Problem not found" }
+  }
+
+  return { status: false }
+}
+
 export async function getProblemList(page = 0, size, sortBy, ascending, body) {
-  const url = `${ENDPOINTS.POST_PROBLEMS_LIST}${"?page=" + page}${size ? "&size=" + size : ""}${sortBy ? "&sortBy=" + sortBy : ""}${ascending ? "&ascending=" + ascending : ""}`
+  const url = `${ENDPOINTS.POST_PROBLEMS_LIST}${"?page=" + page}${size ? "&size=" + size : ""}${sortBy ? "&sortBy=" + sortBy : ""}${ascending != null ? "&ascending=" + ascending : ""}`
   const response = await fetch(url, {
     method: "POST",
     credentials: "include",
