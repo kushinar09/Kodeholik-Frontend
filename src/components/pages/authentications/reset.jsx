@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { PasswordInput } from "@/components/ui/password-input"
 import { toast } from "@/hooks/use-toast"
-import LoadingScreen from "@/components/common/shared/loading"
+import LoadingScreen from "@/components/common/shared/other/loading"
 
 import { validateResetToken, resetPassword } from "@/lib/api/auth_api"
 

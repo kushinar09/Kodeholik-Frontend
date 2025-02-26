@@ -1,6 +1,6 @@
 import { CONSTANTS, ENDPOINTS } from "@/lib/constants"
 import React, { createContext, useContext, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { redirect, useNavigate } from "react-router-dom"
 
 const AuthContext = createContext()
 
@@ -10,19 +10,29 @@ const authenticatedEndpoints = [
   ENDPOINTS.POST_SUBMIT_CODE
 ]
 
+const notCallRotateTokenEndpoints = [
+  ENDPOINTS.ROTATE_TOKEN,
+  ENDPOINTS.POST_LOGOUT
+]
+
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate()
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [refreshPromise, setRefreshPromise] = useState(null)
 
-  const logout = (url = "") => {
-    document.cookie = `${CONSTANTS.ACCESS_TOKEN}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-    document.cookie = `${CONSTANTS.REFRESH_TOKEN}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-    if (url !== "" && url !== ENDPOINTS.GET_INFOR)
+  function checkCookieExists(cookieName) {
+    return document.cookie.split("; ").some(cookie => cookie.startsWith(`${cookieName}=`))
+  }
+
+  const logout = async (redirect = false) => {
+    await apiCall(ENDPOINTS.POST_LOGOUT, {
+      method: "POST"
+    })
+    if (redirect)
       navigate("/login", { state: { loginRequire: true, redirectPath: window.location.pathname } })
   }
 
-  const refreshAccessToken = async (url) => {
+  const refreshAccessToken = async (redirect) => {
     if (isRefreshing) {
       return refreshPromise
     }
@@ -41,7 +51,7 @@ export const AuthProvider = ({ children }) => {
       })
       .catch(error => {
         console.error("Refresh token failed:", error)
-        logout(url)
+        logout(redirect)
         return false
       })
       .finally(() => {
@@ -53,19 +63,10 @@ export const AuthProvider = ({ children }) => {
     return promise
   }
 
-  const apiCall = async (url, options = {}) => {
+  const apiCall = async (url, options = {}, redirect = false) => {
     if (!options.headers) {
       options.headers = {}
     }
-
-    // if (authenticatedEndpoints.includes(url)) {
-    //   options.headers = {
-    //     ...(options.headers || {}),
-    //     "Content-Type": "application/json",
-    //     "Access-Control-Allow-Origin": "http://localhost:5174",
-    //     "Access-Control-Allow-Credentials": "true"
-    //   }
-    // }
 
     options.headers = {
       ...(options.headers || {}),
@@ -73,16 +74,15 @@ export const AuthProvider = ({ children }) => {
       "Access-Control-Allow-Origin": "http://localhost:5174",
       "Access-Control-Allow-Credentials": "true"
     }
-
     options.credentials = "include"
 
     try {
       let response = await fetch(url, options)
 
-      if (response.status === 401) {
+      if (response.status === 401 && checkCookieExists(CONSTANTS.REFRESH_TOKEN) && !notCallRotateTokenEndpoints.includes(url)) {
         console.warn("Access token expired. Attempting refresh...")
 
-        const success = await refreshAccessToken(url)
+        const success = await refreshAccessToken(redirect)
 
         if (success) {
           response = await fetch(url, options)

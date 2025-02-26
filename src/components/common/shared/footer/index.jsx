@@ -4,10 +4,10 @@ import {
   FooterBottom,
   FooterContent
 } from "@/components/ui/footer"
-import LaunchUI from "@/components/logos/launch-ui"
 import { Link } from "react-router-dom"
 import { Facebook, Mail } from "lucide-react"
 import { DiscordLogoIcon } from "@radix-ui/react-icons"
+import { LOGO } from "@/lib/constants"
 
 export default function FooterSection() {
   return (
@@ -17,7 +17,7 @@ export default function FooterSection() {
           <FooterContent className="sm:grid-cols-2 md:grid-cols-3">
             <FooterColumn className="col-span-2 flex-row items-center justify-between gap-8 border-b pb-8 md:col-span-1 md:flex-col md:items-start md:justify-start md:border-b-0">
               <div className="flex items-center gap-2">
-                <LaunchUI className="text-primary" />
+                <LOGO className="text-primary" />
                 <h3 className="text-primary text-xl font-bold">Kodeholik</h3>
               </div>
               <div className="ml-2.5 flex gap-4 sm:ml-0">
