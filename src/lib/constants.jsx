@@ -54,6 +54,10 @@ const ENDPOINTS = {
   POST_UPDATE_PROBLEM: `${API_URL}/problem/update/:id`,
   POST_DELETE_PROBLEM: `${API_URL}/problem/delete/:id`,
 
+  GET_TOPICS_PROBLEM: `${API_URL}/tag/all-topic`,
+  GET_SKILLS_PROBLEM: `${API_URL}/tag/all-skill`,
+  GET_STATS_PROBLEM: `${API_URL}/problem/no-achieved-info`,
+
   // Search
   GET_SUGGEST_SEARCH: `${API_URL}/problem/suggest?searchText=:text`,
   // courses

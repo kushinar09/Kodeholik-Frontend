@@ -16,8 +16,8 @@ export function DifficultyFilter({ difficulty, setDifficulty, onDifficultyChange
         <div className="flex items-center space-x-2 rounded-lg p-2 transition-colors hover:bg-gray-800/50">
           <Checkbox
             id="easy"
-            checked={difficulty.includes("easy")}
-            onCheckedChange={(checked) => handleDifficultyChange("easy", !!checked)}
+            checked={difficulty.includes("EASY")}
+            onCheckedChange={(checked) => handleDifficultyChange("EASY", !!checked)}
           />
           <Label htmlFor="easy" className="text-text-difficultEasy cursor-pointer">
             Easy
@@ -26,8 +26,8 @@ export function DifficultyFilter({ difficulty, setDifficulty, onDifficultyChange
         <div className="flex items-center space-x-2 rounded-lg p-2 transition-colors hover:bg-gray-800/50">
           <Checkbox
             id="medium"
-            checked={difficulty.includes("medium")}
-            onCheckedChange={(checked) => handleDifficultyChange("medium", !!checked)}
+            checked={difficulty.includes("MEDIUM")}
+            onCheckedChange={(checked) => handleDifficultyChange("MEDIUM", !!checked)}
           />
           <Label htmlFor="medium" className="text-text-difficultMedium cursor-pointer">
             Medium
@@ -36,8 +36,8 @@ export function DifficultyFilter({ difficulty, setDifficulty, onDifficultyChange
         <div className="flex items-center space-x-2 rounded-lg p-2 transition-colors hover:bg-gray-800/50">
           <Checkbox
             id="hard"
-            checked={difficulty.includes("hard")}
-            onCheckedChange={(checked) => handleDifficultyChange("hard", !!checked)}
+            checked={difficulty.includes("HARD")}
+            onCheckedChange={(checked) => handleDifficultyChange("HARD", !!checked)}
           />
           <Label htmlFor="hard" className="text-text-difficultHard cursor-pointer">
             Hard

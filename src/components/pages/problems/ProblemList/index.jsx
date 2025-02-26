@@ -7,6 +7,7 @@ import { ProblemHeader } from "./components/problems/problem-header"
 import { ProblemSection } from "./components/problems/problem-section"
 import FooterSection from "@/components/common/shared/footer"
 import HeaderSection from "@/components/common/shared/header"
+import { ENDPOINTS } from "@/lib/constants"
 
 export default function ProblemPage() {
   const [problems, setProblems] = useState([])
@@ -17,6 +18,38 @@ export default function ProblemPage() {
     topics: [],
     skills: []
   })
+
+  const [topics, setTopics] = useState([])
+  const [skills, setKkills] = useState([])
+  const [stats, setStats] = useState(
+    {
+      mainLabel: "Solve",
+      mainCount: 0,
+      mainTotal: 0,
+      mainColor: "#98ff99",
+      sideStats: [
+        {
+          label: "Easy",
+          count: 0,
+          total: 0,
+          color: "rgb(74, 222, 128)"
+        },
+        {
+          label: "Medium",
+          count: 0,
+          total: 0,
+          color: "rgb(234, 179, 8)"
+        },
+        {
+          label: "Hard",
+          count: 0,
+          total: 0,
+          color: "rgb(239, 68, 68)"
+        }
+      ],
+      className: ""
+    }
+  )
 
   const [selectedTopics, setSelectedTopics] = useState([])
   const [selectedSkills, setSelectedSkills] = useState([])
@@ -45,6 +78,72 @@ export default function ProblemPage() {
   )
 
   useEffect(() => {
+    const getColorForLabel = (label) => {
+      switch (label) {
+        case "EASY":
+          return "rgb(74, 222, 128)"
+        case "MEDIUM":
+          return "rgb(234, 179, 8)"
+        case "HARD":
+          return "rgb(239, 68, 68)"
+        default:
+          return "#ccc"
+      }
+    }
+
+    const fetchTopics = async () => {
+      try {
+        const response = await fetch(ENDPOINTS.GET_TOPICS_PROBLEM)
+        const data = await response.json()
+        setTopics(data)
+      } catch (error) {
+        console.error("Error fetching topics:", error)
+      }
+    }
+
+    const fetchSkills = async () => {
+      try {
+        const response = await fetch(ENDPOINTS.GET_SKILLS_PROBLEM)
+        const data = await response.json()
+        setKkills(data)
+      } catch (error) {
+        console.error("Error fetching skills:", error)
+      }
+    }
+
+    const fetchStats = async () => {
+      try {
+        const response = await fetch(ENDPOINTS.GET_STATS_PROBLEM)
+        const data = await response.json()
+
+        const transformedStats = {
+          mainLabel: "Solve",
+          mainCount: data.find(item => item.name === "ALL")?.noAchived || 0,
+          mainTotal: data.find(item => item.name === "ALL")?.noTotal || 0,
+          mainColor: "#98ff99",
+          sideStats: data
+            .filter(item => item.name !== "ALL")
+            .map(item => ({
+              label: item.name.charAt(0) + item.name.slice(1).toLowerCase(),
+              count: item.noAchived,
+              total: item.noTotal,
+              color: getColorForLabel(item.name)
+            })),
+          className: ""
+        }
+
+        setStats(transformedStats)
+      } catch (error) {
+        console.error("Error fetching stats:", error)
+      }
+    }
+
+    fetchStats()
+    fetchTopics()
+    fetchSkills()
+  }, [])
+
+  useEffect(() => {
     setCurrentPage(0)
   }, [searchQuery])
 
@@ -58,58 +157,6 @@ export default function ProblemPage() {
   useEffect(() => {
     fetchProblems(currentPage, pageSize, sortConfig.key, sortConfig.ascending, searchQuery)
   }, [searchQuery, currentPage, pageSize, sortConfig, fetchProblems])
-
-  const stats = {
-    mainLabel: "Solve",
-    mainCount: 140,
-    mainTotal: 3406,
-    mainColor: "#98ff99",
-    sideStats: [
-      {
-        label: "Easy",
-        count: 40,
-        total: 846,
-        color: "rgb(74, 222, 128)"
-      },
-      {
-        label: "Medium",
-        count: 40,
-        total: 1775,
-        color: "rgb(234, 179, 8)"
-      },
-      {
-        label: "Hard",
-        count: 20,
-        total: 785,
-        color: "rgb(239, 68, 68)"
-      }
-    ],
-    className: ""
-  }
-
-  const topics = [
-    "Arrays",
-    "Strings",
-    "Hash Table",
-    "Dynamic Programming",
-    "Math",
-    "Sorting",
-    "Greedy",
-    "Depth-First Search",
-    "Binary Search",
-    "Database",
-    "Binary Tree",
-    "Stack"
-  ]
-
-  const skills = [
-    "Problem Solving",
-    "Data Structures",
-    "Algorithms",
-    "Time Complexity",
-    "Space Complexity",
-    "System Design"
-  ]
 
   const toggleTopic = (topic) => {
     const newTopics = selectedTopics.includes(topic)
