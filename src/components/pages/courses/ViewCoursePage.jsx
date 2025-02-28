@@ -4,8 +4,9 @@ import FooterSection from "@/components/common/shared/footer"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils";
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom";
+import { GLOBALS } from "@/lib/constants"
 
 const courses = [
     { id: 1, title: "C Tutorial 1",instructor: "A",rate: "5", image: "/c.png", language: "C" },
@@ -17,18 +18,39 @@ const courses = [
     { id: 7, title: "C Tutorial 4",instructor: "H",rate: "2", image: "/c.png", language: "C" },
     { id: 8, title: "Java Tutorial 4",instructor: "I",rate: "4", image: "/java.png", language: "Java" }
   ];
+
+  const languages = [
+    { name: "All", count: courses.length },
+    { name: "C", count: courses.filter(c => c.language === "C").length },
+    { name: "Java", count: courses.filter(c => c.language === "Java").length },
+  ];
   
   const ITEMS_PER_PAGE = 4;
   
   export default function CoursePage() {
+    useEffect(() => {
+        document.title = `CoursesPage - ${GLOBALS.APPLICATION_NAME}`
+      }, [])
+
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedLanguage, setSelectedLanguage] = useState("All");
+    const [isFilterExpanded, setIsFilterExpanded] = useState(false);
     const navigate = useNavigate();
     const totalPages = Math.ceil(courses.length / ITEMS_PER_PAGE);
   
     const handlePageChange = (page) => {
       setCurrentPage(page);
+    };
+
+    const handleFilterClick = () => {
+      setIsFilterExpanded(!isFilterExpanded);
+    };
+  
+    const handleLanguageClick = (language) => {
+      setSelectedLanguage(language.name);
+      setCurrentPage(1);
+      setIsFilterExpanded(false); // Close filter after selection
     };
     
     const filteredCourses = courses.filter(course => 
@@ -39,26 +61,46 @@ const courses = [
     return (
       <div className="min-h-screen bg-bg-primary">
         <Header />
-        <div className="container mx-auto px-24 p-6">
+        <div className="container mx-auto p-6">
           <h1 className="text-3xl font-bold text-white mb-6">COURSES</h1>
-          <div className="flex gap-4 mb-4">
-            <Input 
-              type="text" 
-              placeholder="Search courses..." 
-              className="p-2 flex-grow" 
-              value={searchQuery} 
-              onChange={(e) => setSearchQuery(e.target.value)} 
+          <div className="mb-4">
+          <div className="flex gap-4 items-center">
+            <Input
+              type="text"
+              placeholder="Search courses..."
+              className="p-2 flex-grow bg-input-bg text-input-text placeholder-input-placeholder border-input-border focus:border-input-borderFocus focus:ring-input-focusRing"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-            {['All', 'C', 'Java'].map(language => (
-              <Button  variant="ghost"
-                key={language} 
-                onClick={() => { setSelectedLanguage(language); setCurrentPage(1); }}
-                className={cn("text-primary font-bold hover:bg-primary transition hover:text-black",
-                selectedLanguage === language && "bg-button-primary text-bg-primary hover:bg-button-hover")}
-              >
-                {language}
-              </Button>
-            ))}
+            <Button
+              variant="ghost"
+              onClick={handleFilterClick}
+              className={cn(
+                "text-primary font-bold hover:bg-primary transition hover:text-black",
+                isFilterExpanded && "bg-button-primary text-bg-primary hover:bg-button-hover"
+              )}
+            >
+              Filter
+              <span className="ml-2 text-sm">{isFilterExpanded ? '▲' : '▼'}</span>
+            </Button>
+          </div>
+          {isFilterExpanded && (
+            <div className="mt-4 flex gap-4 flex-wrap bg-bg-card border border-border-muted rounded-lg p-4 shadow-medium">
+              {languages.map((language) => (
+                <Button
+                  key={language.name}
+                  variant="ghost"
+                  onClick={() => handleLanguageClick(language)}
+                  className={cn(
+                    "text-primary font-bold hover:bg-primary transition hover:text-black",
+                    selectedLanguage === language.name && "bg-button-primary text-bg-primary hover:bg-button-hover"
+                  )}
+                >
+                  {language.name} ({language.count})
+                </Button>
+              ))}
+            </div>
+          )}
           </div>
           <div className="grid grid-cols-4 gap-6">
             {filteredCourses.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((course) => (
