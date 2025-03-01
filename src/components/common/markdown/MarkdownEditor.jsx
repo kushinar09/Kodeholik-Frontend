@@ -34,7 +34,7 @@ import { setCookie, getCookie } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 
-const MarkdownEditor = () => {
+const MarkdownEditor = ({ value, onChange, cookieDraft }) => {
   const { toast } = useToast()
   marked.use({
     // ALLOWS LINE BREAKS WITH RETURN BUTTON
@@ -50,15 +50,15 @@ const MarkdownEditor = () => {
 
   // INITIAL MARKDOWN CONTENT
   const [markdownContent, setMarkdownContent] = useState(() => {
-    const draft = getCookie("draft")
-    return draft || "## Description"
+    const draft = getCookie(cookieDraft)
+    return draft || typeof(value) === "string" ? value : ""
   })
   //const [isSaving, setIsSaving] = useState(false)
   const editorViewRef = useRef(null)
 
   // Load draft on mount
   useEffect(() => {
-    const draft = getCookie("draft")
+    const draft = getCookie(cookieDraft)
     if (draft) {
       setMarkdownContent(draft)
       // Update the editor content
@@ -72,6 +72,8 @@ const MarkdownEditor = () => {
         })
         editorViewRef.current.dispatch(transaction)
       }
+    } else {
+      setMarkdownContent(typeof(value) === "string" ? value : "")
     }
   }, [])
 
@@ -93,6 +95,7 @@ const MarkdownEditor = () => {
       if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") == "yes"))
         hljs.highlightBlock(block)
     })
+    onChange(markdownContent)
   }, [markdownContent])
 
   // Save draft to cookie every 10s
@@ -338,7 +341,7 @@ const MarkdownEditor = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col bg-background h-fit">
       {/* Toolbar */}
       <div className="border-b bg-muted/40">
         <TooltipProvider>
@@ -458,8 +461,8 @@ const MarkdownEditor = () => {
       </div>
 
       {/* Editor and Preview */}
-      <div className="flex-1 grid grid-cols-2 divide-x">
-        <div id="editor" className="min-h-0 overflow-auto focus-within:ring-1 focus-within:ring-ring" />
+      <div className="flex-1 grid grid-cols-2 divide-x h-fit max-h-[500px]">
+        <div id="editor" className="min-h-[500px] overflow-auto focus-within:ring-1 focus-within:ring-ring" />
         <div className="min-h-0 overflow-auto">
           <div
             className="markdown prose prose-sm dark:prose-invert max-w-none p-4"

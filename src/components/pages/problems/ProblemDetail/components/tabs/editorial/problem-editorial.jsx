@@ -1,5 +1,6 @@
 "use client"
 
+import { useAuth } from "@/context/AuthProvider"
 import { marked } from "marked"
 
 /**
@@ -8,7 +9,9 @@ import { marked } from "marked"
  * @param {Object} props.editorial - Editorial data
  */
 export default function ProblemEditorial({ editorial }) {
-  if (!editorial) {
+  const { isAuthenticated } = useAuth()
+
+  if (!isAuthenticated) {
     return (
       <div className="text-gray-500 flex items-center gap-2 justify-center mt-10">
         <svg
@@ -34,13 +37,19 @@ export default function ProblemEditorial({ editorial }) {
 
   return (
     <>
-      <h2 className="text-xl font-bold mb-4">{editorial.editorialTitle}</h2>
-      <div>
-        <div
-          className="markdown prose prose-sm dark:prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ __html: marked(editorial.editorialTextSolution) }}
-        />
-      </div>
+      {editorial
+        ?
+        <>
+          <h2 className="text-xl font-bold mb-4">{editorial.editorialTitle}</h2>
+          <div>
+            <div
+              className="markdown prose prose-sm dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: marked(editorial.editorialTextSolution) }}
+            />
+          </div>
+        </>
+        : <div className="text-gray-500">Editorial not found</div>
+      }
     </>
   )
 }

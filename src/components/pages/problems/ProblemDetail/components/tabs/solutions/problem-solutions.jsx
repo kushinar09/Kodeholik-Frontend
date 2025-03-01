@@ -1,6 +1,7 @@
 "use client"
 
-import SolutionCard from "../items/solution-card"
+import { useAuth } from "@/context/AuthProvider"
+import SolutionCard from "../../items/solution-card"
 
 /**
  * Component to display problem solutions
@@ -14,7 +15,9 @@ export default function ProblemSolutions({ solutions }) {
     window.location.href = `/solutions/${id}`
   }
 
-  if (!solutions) {
+  const { isAuthenticated } = useAuth()
+
+  if (!isAuthenticated) {
     return (
       <div className="text-gray-500 flex items-center gap-2 justify-center mt-10">
         <svg
@@ -39,17 +42,24 @@ export default function ProblemSolutions({ solutions }) {
   }
 
   return (
+
     <>
-      <h2 className="text-xl font-bold mb-4">Solutions: {solutions.content.length}</h2>
-      <div className="flex flex-col gap-4 overflow-y-auto whitespace-nowrap">
-        {solutions.content.map((solution, index) => (
-          <SolutionCard
-            key={index}
-            infor={solution}
-            handleClickSolution={handleClickSolution}
-          />
-        ))}
-      </div>
+      {solutions
+        ?
+        <>
+          <h2 className="text-xl font-bold mb-4">Solutions: {solutions.content.length}</h2>
+          <div className="flex flex-col gap-4 overflow-y-auto whitespace-nowrap">
+            {solutions.content.map((solution, index) => (
+              <SolutionCard
+                key={index}
+                infor={solution}
+                handleClickSolution={handleClickSolution}
+              />
+            ))}
+          </div>
+        </>
+        : <div className="text-gray-500">Solution not found</div>
+      }
     </>
   )
 }

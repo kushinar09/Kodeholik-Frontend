@@ -59,6 +59,32 @@ export async function getProblemList(page = 0, size, sortBy, ascending, body) {
   return JSON.parse(text)
 }
 
+export async function postCommentProblem(apiCall, id, comment) {
+  const response = await apiCall(ENDPOINTS.POST_COMMENT_PROBLEM.replace(":id", id), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(
+      {
+        "comment": comment,
+        "location": "PROBLEM",
+        "locationId": id,
+        "commentReply": null
+      }
+    )
+  })
+  if (response.ok) {
+    return { status: true }
+  }
+
+  if (response.status === 404) {
+    return { status: false, message: "Problem not found" }
+  }
+
+  return { status: false }
+}
+
 export async function getProblem(id) {
   const response = await fetch(ENDPOINTS.GET_PROBLEM.replace(":id", id))
   if (!response.ok) {

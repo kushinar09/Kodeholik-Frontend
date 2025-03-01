@@ -5,9 +5,10 @@ import { cn } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Check, Copy, RotateCcw } from "lucide-react"
+import { Check, Clock, Copy, Cpu, Info, RotateCcw, Sparkles, TrendingUp } from "lucide-react"
 import { formatValue, copyToClipboard } from "@/lib/utils/format-utils"
 import hljs from "highlight.js"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 /**
  * Component to display submitted code and results
@@ -40,12 +41,12 @@ export default function SubmittedCodeView({ submitted, code }) {
       {/* Status Bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {submitted && submitted.status !== "Failed" && (
+          {submitted && submitted.status && submitted.status.toLowerCase() === "success" && (
             <div>
-              <span className="text-lg text-text-success">Accepted</span>
+              <span className="text-lg text-text-success">ACCEPTED</span>
             </div>
           )}
-          {submitted && submitted.status && submitted.status !== "Success" && (
+          {submitted && submitted.status && submitted.status.toLowerCase() === "failed" && (
             <div>
               <span className="text-lg text-text-error">{submitted.status}</span>
             </div>
@@ -63,32 +64,64 @@ export default function SubmittedCodeView({ submitted, code }) {
         </div>
       </div>
 
-      {submitted.status !== "Failed" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-baseline justify-between">
-                <div>
-                  <div className="text-2xl font-bold">
-                    {submitted.executionTime ? submitted.executionTime : "N/A"} ms
+      {submitted.status && submitted.status.toLowerCase() === "success" && (
+        <TooltipProvider>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="relative bg-gray-50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="h-4 w-4 text-gray-700" />
+                    <span className="font-medium text-gray-700">Runtime</span>
                   </div>
-                  <div className="text-sm text-muted-foreground">Runtime</div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button>
+                        <Info className="h-4 w-4 text-gray-400" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-80 p-4 text-sm bg-white text-black" side="bottom">
+                      <p>
+                        The time taken to execute the submitted code in milliseconds.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-baseline justify-between">
-                <div>
-                  <div className="text-2xl font-bold">{submitted.memoryUsage ? submitted.memoryUsage : "N/A"} mb</div>
-                  <div className="text-sm text-muted-foreground">Memory</div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-3xl font-bold">{submitted.executionTime}</span>
+                  <span className="text-gray-500 text-sm">ms</span>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative bg-gray-50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <Cpu className="h-4 w-4 text-gray-700" />
+                    <span className="font-medium text-gray-700">Memory</span>
+                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button>
+                        <Info className="h-4 w-4 text-gray-400" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-100 p-4 text-sm bg-white text-black" side="bottom">
+                      <p>The amount of memory consumed by the execution process in megabytes.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold">{submitted.memoryUsage}</span>
+                  <span className="text-gray-500 text-sm">mb</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TooltipProvider>
       )}
 
       {submitted.status !== "Success" && submitted.message && (
