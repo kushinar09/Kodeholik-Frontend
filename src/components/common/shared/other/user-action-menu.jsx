@@ -21,44 +21,18 @@ import { useNavigate } from "react-router-dom"
  * and displays either a user avatar with dropdown or sign in button
  */
 export default function UserActionMenu() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [user, setUser] = useState(null)
-  const { apiCall } = useAuth()
+  const { isAuthenticated, user, logout } = useAuth()
 
   const navigate = useNavigate()
-
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        const response = await apiCall(ENDPOINTS.GET_INFOR)
-        if (response.ok) {
-          const data = await response.json()
-          setIsAuthenticated(true)
-          setUser({ avatar: data.avatar, name: data.name })
-        } else {
-          setIsAuthenticated(false)
-        }
-      } catch (error) {
-        console.error("Error checking authentication:", error)
-        setIsAuthenticated(false)
-      }
-    }
-    checkAuth()
-  }, [])
 
   function handleLogin() {
     navigate("/login", { state: { redirectPath: window.location.pathname } })
   }
 
   async function handleLogout() {
-    await apiCall(ENDPOINTS.POST_LOGOUT, {
-      method: "POST"
-    })
-    setIsAuthenticated(false)
-    setUser(null)
+    logout(false)
   }
 
-  // Get initials from user name for avatar fallback
   const getInitials = (name) => {
     if (!name) return "U"
     return name
@@ -75,14 +49,14 @@ export default function UserActionMenu() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Avatar className="cursor-pointer h-10 w-10 border-2 border-primary hover:border-primary/80 transition-colors">
-              <AvatarImage src={user.avatar} alt={user.name || "User"} />
+              <AvatarImage src={user.avatar} alt={user.fullname || "User"} />
               <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                {getInitials(user.name)}
+                {getInitials(user.username)}
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56">
-            <DropdownMenuLabel>{user.name || "My Account"}</DropdownMenuLabel>
+            <DropdownMenuLabel>{user.username || "My Account"}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem className="cursor-pointer">

@@ -15,14 +15,14 @@ export default function TabNavigation({ activeTab, onTabChange, isCompact }) {
     { id: "description", label: "Description", icon: FileText, lock: false },
     { id: "editorial", label: "Editorial", icon: Edit, lock: true },
     { id: "solutions", label: "Solutions", icon: Lightbulb, lock: true },
-    { id: "submissions", label: "Submissions", icon: CheckCircle, lock: true },
+    { id: "submissions", label: "Submissions", icon: CheckCircle, lock: true }
   ]
 
   return (
     <div
       className={cn(
         "p-1 h-[40px] w-full bg-bg-card flex relative overflow-auto no-scrollbar",
-        isCompact ? "flex-col h-full space-y-4" : "flex-row space-x-4",
+        isCompact ? "flex-col h-full space-y-4" : "flex-row space-x-4"
       )}
     >
       {tabs.map((tab) => (
@@ -31,18 +31,17 @@ export default function TabNavigation({ activeTab, onTabChange, isCompact }) {
           onClick={() => onTabChange(tab.id, tab.label)}
           className={cn(
             "rounded p-2 flex items-center gap-2 hover:bg-primary hover:text-primary-foreground transition-colors",
-            activeTab === tab.id && "bg-primary text-primary-foreground",
-            isCompact ? "flex-col w-[32px]" : "flex-row justify-start h-[32px]",
+            activeTab === tab.id ? "bg-primary text-black" : "text-primary/50 hover:text-primary hover:bg-primary/10",
+            isCompact ? "flex-col w-[32px]" : "flex-row justify-start h-[32px]"
           )}
         >
           <tab.icon
-            className={cn("w-4 h-5", activeTab === tab.id ? "text-primary-foreground" : "text-muted-foreground")}
+            className="w-5 h-5"
           />
           <span
             className={cn(
               "text-sm transition-all duration-200 subpixel-antialiased",
-              activeTab === tab.id ? "font-bold" : "text-muted-foreground",
-              isCompact ? "writing-mode-vertical" : "",
+              isCompact ? "writing-mode-vertical" : ""
             )}
           >
             {tab.label}

@@ -14,9 +14,20 @@ import CoursePage from "./components/pages/courses/ViewCoursePage"
 import CourseDetail from "./components/pages/courses/ViewCourseDetail"
 import LearnThroughVideoAndText from "./components/pages/courses/LearnThroughVideoAndText"
 import ProblemPage from "./components/pages/problems/ProblemList"
+import ProblemCreator from "./components/pages/problems/ProblemCreate"
 
 // components
 
+// Create problem: Detail: title, difficulty (EASY - MEDIUM - HARD), description, status: PUBLIC - PRIVATE, topics, skills, isActive (bool), languageSupport ("Java", "C")
+// Input parameters: funtionSignature, returnType (get from api - have other), language, parameters (list <String inputName, String inputType>)
+// Editorial: editorialTitle, editorialTextSolution, editorialSkills, solutionCode (List<String solutionlanguage String solutionCode>)
+// Test cases:
+// TODO: input test case, if input array -> input size
+// template input:
+// C, java: note for input
+
+
+// TODO: exam: no copy, no switch tab, show time clock
 function App() {
   const queryClient = new QueryClient()
   return (
@@ -39,6 +50,7 @@ function App() {
                 <Route path="/courses" element={<CoursePage />} />
                 <Route path="/courses/:id" element={<CourseDetail />} />
                 <Route path="/learn" element={<LearnThroughVideoAndText />} />
+                <Route path="/problem/create" element={<ProblemCreator />} />
               </Routes>
             </div>
           </AuthProvider>

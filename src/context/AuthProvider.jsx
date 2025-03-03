@@ -1,6 +1,6 @@
 import { CONSTANTS, ENDPOINTS } from "@/lib/constants"
-import React, { createContext, useContext, useState } from "react"
-import { redirect, useNavigate } from "react-router-dom"
+import React, { createContext, useContext, useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 
 const AuthContext = createContext()
 
@@ -17,17 +17,35 @@ const notCallRotateTokenEndpoints = [
 
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [refreshPromise, setRefreshPromise] = useState(null)
 
-  function checkCookieExists(cookieName) {
-    return document.cookie.split("; ").some(cookie => cookie.startsWith(`${cookieName}=`))
+  const checkAuthStatus = async () => {
+    try {
+      const response = await apiCall(ENDPOINTS.GET_INFOR)
+      if (response.ok) {
+        const data = await response.json()
+        setIsAuthenticated(true)
+        setUser(data)
+      } else {
+        setIsAuthenticated(false)
+      }
+    } catch {
+      setIsAuthenticated(false)
+    }
   }
+
+  useEffect(() => {
+    checkAuthStatus()
+  }, [isAuthenticated])
 
   const logout = async (redirect = false) => {
     await apiCall(ENDPOINTS.POST_LOGOUT, {
       method: "POST"
     })
+    setIsAuthenticated(false)
     if (redirect)
       navigate("/login", { state: { loginRequire: true, redirectPath: window.location.pathname } })
   }
@@ -47,7 +65,7 @@ export const AuthProvider = ({ children }) => {
         if (!response.ok) {
           throw new Error("Failed to refresh token")
         }
-        return true // Token refreshed successfully
+        return true
       })
       .catch(error => {
         console.error("Refresh token failed:", error)
@@ -64,13 +82,13 @@ export const AuthProvider = ({ children }) => {
   }
 
   const apiCall = async (url, options = {}, redirect = false) => {
+    // console.log(window.location.pathname)
     if (!options.headers) {
       options.headers = {}
     }
 
     options.headers = {
       ...(options.headers || {}),
-      "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "http://localhost:5174",
       "Access-Control-Allow-Credentials": "true"
     }
@@ -79,7 +97,8 @@ export const AuthProvider = ({ children }) => {
     try {
       let response = await fetch(url, options)
 
-      if (response.status === 401 && checkCookieExists(CONSTANTS.REFRESH_TOKEN) && !notCallRotateTokenEndpoints.includes(url)) {
+      // console.log("check", url, !notCallRotateTokenEndpoints.includes(url))
+      if (response.status === 401 && !notCallRotateTokenEndpoints.includes(url)) {
         console.warn("Access token expired. Attempting refresh...")
 
         const success = await refreshAccessToken(redirect)
@@ -93,19 +112,18 @@ export const AuthProvider = ({ children }) => {
 
       return response
     } catch (error) {
-      console.error("API call error:", error)
+      console.warn("API call error:", error)
       throw error
     }
   }
 
   return (
-    <AuthContext.Provider value={{ apiCall, logout }}>
+    <AuthContext.Provider value={{ apiCall, logout, isAuthenticated, user, setIsAuthenticated }}>
       {children}
     </AuthContext.Provider>
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) {

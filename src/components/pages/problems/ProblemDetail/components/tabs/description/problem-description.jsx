@@ -1,13 +1,15 @@
 "use client"
 
+import { Separator } from "@/components/ui/separator"
 import { marked } from "marked"
+import DiscussionSection from "./problem-comments"
 
 /**
  * Component to display problem description
  * @param {Object} props - Component props
  * @param {Object} props.description - Problem description data
  */
-export default function ProblemDescription({ description }) {
+export default function ProblemDescription({ description, id, problemId }) {
   if (!description) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -27,6 +29,8 @@ export default function ProblemDescription({ description }) {
           dangerouslySetInnerHTML={{ __html: marked(description.description) }}
         />
       </div>
+      <Separator className="my-4" />
+      <DiscussionSection id={id} problemId={problemId} />
     </>
   )
 }

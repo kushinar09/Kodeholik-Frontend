@@ -24,6 +24,8 @@ export default function ProblemDetail() {
   const { id } = useParams()
   const { apiCall } = useAuth()
 
+  const [problemId, setProblemId] = useState(0)
+
   // Panel state
   const [leftSize, setLeftSize] = useState(50)
   const [leftWidth, setLeftWidth] = useState(0)
@@ -85,20 +87,20 @@ export default function ProblemDetail() {
   // Data fetching
   const fetchData = (typeData) => {
     switch (typeData) {
-    case "Description":
-      fetchProblemDescription()
-      break
-    case "Editorial":
-      fetchProblemEditorial()
-      break
-    case "Solutions":
-      fetchProblemSolutions()
-      break
-    case "Submissions":
-      // TODO: Implement submissions fetching
-      break
-    default:
-      break
+      case "Description":
+        fetchProblemDescription()
+        break
+      case "Editorial":
+        fetchProblemEditorial()
+        break
+      case "Solutions":
+        fetchProblemSolutions()
+        break
+      case "Submissions":
+        // TODO: Implement submissions fetching
+        break
+      default:
+        break
     }
   }
 
@@ -108,6 +110,7 @@ export default function ProblemDetail() {
       const result = await getProblemDescription(id)
       if (result.status && result.data) {
         setDescription(result.data)
+        setProblemId(result.data.id)
       }
     }
   }
@@ -149,7 +152,7 @@ export default function ProblemDetail() {
     }
 
     fetchInitialData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   // Code execution handlers
@@ -190,6 +193,8 @@ export default function ProblemDetail() {
                 <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} isCompact={isCompactLeft} />
 
                 <LeftPanelContent
+                  id={id}
+                  problemId={problemId}
                   activeTab={activeTab}
                   isCompact={isCompactLeft}
                   description={description}

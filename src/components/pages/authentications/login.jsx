@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 import LoadingScreen from "@/components/common/shared/other/loading"
 import { useLocation, useNavigate } from "react-router-dom"
 import { toast } from "@/hooks/use-toast"
-import { ENDPOINTS, LOGO } from "@/lib/constants"
+import { LOGO } from "@/lib/constants"
 import { MESSAGES } from "@/lib/messages"
 
 import { login, loginWithGithub, loginWithGoogle } from "@/lib/api/auth_api"
@@ -23,25 +23,17 @@ export default function LoginPage() {
     password: ""
   })
 
-  const { apiCall } = useAuth()
+  const { isAuthenticated, setIsAuthenticated } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
 
   useEffect(() => {
-    async function checkAuth() {
-      try {
-        const response = await apiCall(ENDPOINTS.GET_INFOR, { credentials: "include" })
-        if (response.ok) {
-          window.location.href = "/"
-        }
-      } catch (error) {
-        console.error("Error checking authentication:", error)
-      } finally {
-        setLoading(false)
-      }
+    if (isAuthenticated) {
+      const redirectPath = location.state?.redirectPath || "/"
+      navigate(redirectPath, { replace: true })
     }
-    checkAuth()
-  }, [])
+    setLoading(false)
+  }, [isAuthenticated, location, navigate])
 
   useEffect(() => {
     if (location.state?.sendEmail) {
@@ -121,6 +113,7 @@ export default function LoginPage() {
             throw new Error("Login failed. Please check your credentials and try again.")
           }
         } else {
+          setIsAuthenticated(true)
           const redirectPath = location.state?.redirectPath || "/"
           navigate(redirectPath)
         }
