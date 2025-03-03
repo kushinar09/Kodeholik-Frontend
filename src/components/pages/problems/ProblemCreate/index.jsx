@@ -15,7 +15,7 @@ import { useAuth } from "@/context/AuthProvider"
 export default function ProblemCreator() {
   const { apiCall } = useAuth()
 
-  const [activeStep, setActiveStep] = useState("details")
+  const [activeStep, setActiveStep] = useState("testcases")
   const [formData, setFormData] = useState({
     // Problem Details
     details: {
@@ -36,7 +36,7 @@ export default function ProblemCreator() {
       solutionCode: []
     },
     testCases: {
-      excelFile: []
+      excelFile: null
     }
   })
 
@@ -127,44 +127,43 @@ export default function ProblemCreator() {
         }))
       }))
 
-      const formDataObj = new FormData()
+      // const formDataObj = new FormData()
 
-      console.log(JSON.stringify(problemBasicAddDto))
-      formDataObj.append(
-        "problemBasicAddDto",
-        JSON.stringify(problemBasicAddDto)
-      )
+      // formDataObj.append("problemBasicAddDto", JSON.stringify(problemBasicAddDto));
+      // formDataObj.append("problemEditorialDto", JSON.stringify(problemEditorialDto));
+      // formDataObj.append("problemInputParameterDto", JSON.stringify(problemInputParameterDto));
+      // formDataObj.append("testCaseFile", formData.testCases.excelFile)
 
-      console.log(JSON.stringify(problemEditorialDto))
-      formDataObj.append(
-        "problemEditorialDto",
-        JSON.stringify(problemEditorialDto)
-      )
+      // const response = await apiCall(ENDPOINTS.POST_CREATE_PROBLEM, {
+      //   method: "POST",
+      //   body: formDataObj
+      // })
 
-      console.log(JSON.stringify(problemInputParameterDto))
-      formDataObj.append(
-        "problemInputParameterDto",
-        JSON.stringify(problemInputParameterDto)
-      )
+      // if (!response.ok) {
+      //   const errorData = await response.json()
+      //   throw new Error(errorData.message || "Failed to create problem")
+      // }
 
-      if (Array.isArray(formData.testCases.excelFile)) {
-        formData.testCases.excelFile.forEach((file) => {
-          formDataObj.append("testCaseFile", file)
-        })
-      } else if (formData.testCases.excelFile) {
-        formDataObj.append("testCaseFile", formData.testCases.excelFile)
-      } else {
-        console.log("File empty");
-      }
-      const response = await apiCall(ENDPOINTS.POST_CREATE_PROBLEM, {
+      const problemBasicAddDtoText = "{\"title\":\"Two sum 3 - leetcode\",\"difficulty\":\"EASY\",\"description\":\"# Heading\\n# Heading\\n# Heading\\n# Heading\\n# Heading\",\"status\":\"PRIVATE\",\"topics\":[\"Array\"],\"skills\":[\"String\"],\"isActive\":true,\"languageSupport\":[\"Java\"]}"
+      const problemEditorialDtoText = "{\"editorialDtos\":{\"editorialTitle\":\"asdasdasdsadasasd\",\"editorialTextSolution\":\"**Bold**\\n**Bold**\\n**Bold**\\n**Bold**\",\"editorialSkills\":[\"String\"],\"solutionCodes\":[{\"solutionLanguage\":\"Java\",\"solutionCode\":\"public static String twoSum(String num1, String num2) {\\n    return Integer.parseInt(num1) + Integer.parseInt(num2) + \\\"\\\";\\n}\"}]}}"
+      const problemInputParameterDtoText = "[{\"templateCode\":{\"code\":\"abc\",\"language\":\"Java\"},\"functionSignature\":\"twoSum\",\"returnType\":\"STRING\",\"language\":\"Java\",\"parameters\":[{\"inputName\":\"num1\",\"inputType\":\"STRING\"},{\"inputName\":\"num2\",\"inputType\":\"STRING\"}]}]"
+
+      const formdataT = new FormData()
+      formdataT.append("problemBasicAddDto", JSON.stringify(problemBasicAddDtoText))
+      formdataT.append("problemEditorialDto", JSON.stringify(problemEditorialDtoText))
+      formdataT.append("problemInputParameterDto", JSON.stringify(problemInputParameterDtoText))
+      formdataT.append("testCaseFile", formData.testCases.excelFile)
+
+      const requestOptions = {
         method: "POST",
-        body: formDataObj
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to create problem")
+        body: formdataT,
+        credentials: "include"
       }
+
+      fetch("http://localhost:8080/api/v1/problem/add-problem", requestOptions)
+        .then((response) => response.text())
+        .then((result) => console.log(result))
+        .catch((error) => console.error(error))
 
       toast({
         title: "Success",

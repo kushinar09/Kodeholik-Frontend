@@ -21,7 +21,7 @@ import { Separator } from "@/components/ui/separator"
 export default function DiscussionSection({ id, problemId }) {
   const [isCollapsed, setIsCollapsed] = useState(true)
   const [comment, setComment] = useState("")
-  const [comments, setComments] = useState(null)
+  const [comments, setComments] = useState([])
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(1)
   const [totalComments, setTotalComments] = useState(0)
