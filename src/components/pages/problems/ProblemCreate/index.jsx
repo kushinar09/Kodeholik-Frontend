@@ -15,7 +15,7 @@ import { useAuth } from "@/context/AuthProvider"
 export default function ProblemCreator() {
   const { apiCall } = useAuth()
 
-  const [activeStep, setActiveStep] = useState("testcases")
+  const [activeStep, setActiveStep] = useState("details")
   const [formData, setFormData] = useState({
     // Problem Details
     details: {
@@ -39,14 +39,6 @@ export default function ProblemCreator() {
       excelFile: null
     }
   })
-
-  useEffect(() => {
-    // console.log("Form data updated:", formData)
-    // console.log("Problem Details:", formData.details)
-    // console.log("Input Parameters:", formData.inputParameter)
-    // console.log("Editorial:", formData.editorial)
-    // console.log("Test Cases:", formData.testCases)
-  }, [formData])
 
   const [completedSteps, setCompletedSteps] = useState({
     details: false,
@@ -127,44 +119,69 @@ export default function ProblemCreator() {
         }))
       }))
 
-      // const formDataObj = new FormData()
+      // const problemBasicAddDtoText = {
+      //   title: "Two sum 4 - leetcode",
+      //   difficulty: "EASY",
+      //   description: "# Heading\n# Heading\n# Heading\n# Heading\n# Heading",
+      //   status: "PRIVATE",
+      //   topics: ["Array"],
+      //   skills: ["String"],
+      //   isActive: true,
+      //   languageSupport: ["Java"]
+      // };
 
-      // formDataObj.append("problemBasicAddDto", JSON.stringify(problemBasicAddDto));
-      // formDataObj.append("problemEditorialDto", JSON.stringify(problemEditorialDto));
-      // formDataObj.append("problemInputParameterDto", JSON.stringify(problemInputParameterDto));
-      // formDataObj.append("testCaseFile", formData.testCases.excelFile)
+      // const problemEditorialDtoText = {
+      //   editorialDtos: {
+      //     editorialTitle: "asdasdasdsadasasd",
+      //     editorialTextSolution: "**Bold**\n**Bold**\n**Bold**\n**Bold**",
+      //     editorialSkills: ["String"],
+      //     solutionCodes: [
+      //       {
+      //         solutionLanguage: "Java",
+      //         solutionCode: `public static String twoSum(String num1, String num2) {
+      //     return Integer.parseInt(num1) + Integer.parseInt(num2) + "";
+      // }`
+      //       }
+      //     ]
+      //   }
+      // };
 
-      // const response = await apiCall(ENDPOINTS.POST_CREATE_PROBLEM, {
-      //   method: "POST",
-      //   body: formDataObj
-      // })
-
-      // if (!response.ok) {
-      //   const errorData = await response.json()
-      //   throw new Error(errorData.message || "Failed to create problem")
-      // }
-
-      const problemBasicAddDtoText = "{\"title\":\"Two sum 3 - leetcode\",\"difficulty\":\"EASY\",\"description\":\"# Heading\\n# Heading\\n# Heading\\n# Heading\\n# Heading\",\"status\":\"PRIVATE\",\"topics\":[\"Array\"],\"skills\":[\"String\"],\"isActive\":true,\"languageSupport\":[\"Java\"]}"
-      const problemEditorialDtoText = "{\"editorialDtos\":{\"editorialTitle\":\"asdasdasdsadasasd\",\"editorialTextSolution\":\"**Bold**\\n**Bold**\\n**Bold**\\n**Bold**\",\"editorialSkills\":[\"String\"],\"solutionCodes\":[{\"solutionLanguage\":\"Java\",\"solutionCode\":\"public static String twoSum(String num1, String num2) {\\n    return Integer.parseInt(num1) + Integer.parseInt(num2) + \\\"\\\";\\n}\"}]}}"
-      const problemInputParameterDtoText = "[{\"templateCode\":{\"code\":\"abc\",\"language\":\"Java\"},\"functionSignature\":\"twoSum\",\"returnType\":\"STRING\",\"language\":\"Java\",\"parameters\":[{\"inputName\":\"num1\",\"inputType\":\"STRING\"},{\"inputName\":\"num2\",\"inputType\":\"STRING\"}]}]"
+      // const problemInputParameterDtoText = [
+      //   {
+      //     templateCode: {
+      //       code: "abc",
+      //       language: "Java"
+      //     },
+      //     functionSignature: "twoSum",
+      //     returnType: "STRING",
+      //     language: "Java",
+      //     parameters: [
+      //       { inputName: "num1", inputType: "STRING" },
+      //       { inputName: "num2", inputType: "STRING" }
+      //     ]
+      //   }
+      // ]
 
       const formdataT = new FormData()
 
-      // Append JSON data as Blob
       formdataT.append(
         "problemBasicAddDto",
-        new Blob([JSON.stringify(problemBasicAddDtoText)], { type: "application/json" })
+        new Blob([JSON.stringify(problemBasicAddDto)], {
+          type: "application/json"
+        })
       )
       formdataT.append(
         "problemEditorialDto",
-        new Blob([JSON.stringify(problemEditorialDtoText)], { type: "application/json" })
+        new Blob([JSON.stringify(problemEditorialDto)], {
+          type: "application/json"
+        })
       )
       formdataT.append(
         "problemInputParameterDto",
-        new Blob([JSON.stringify(problemInputParameterDtoText)], { type: "application/json" })
+        new Blob([JSON.stringify(problemInputParameterDto)], {
+          type: "application/json"
+        })
       )
-
-      // Append file
       formdataT.append("testCaseFile", formData.testCases.excelFile)
 
       const requestOptions = {
@@ -173,25 +190,17 @@ export default function ProblemCreator() {
         credentials: "include"
       }
 
-      fetch("http://localhost:8080/api/v1/problem/add-problem", requestOptions)
-        .then((response) => response.text())
-        .then((result) => console.log(result))
-        .catch((error) => console.error(error))
+      const response = apiCall(ENDPOINTS.POST_CREATE_PROBLEM, requestOptions)
 
-
-      toast({
-        title: "Success",
-        description: "Problem created successfully!",
-        variant: "success"
-      })
-
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Problem created successfully!",
+          variant: "success"
+        })
+      } else throw new Error(response.message)
     } catch (error) {
       console.error("Error creating problem:", error)
-
-      if (error.response) {
-        const errorMessage = await error.response.text()
-        console.error("Server Error Message:", errorMessage)
-      }
 
       toast({
         title: "Error",
@@ -206,7 +215,7 @@ export default function ProblemCreator() {
       <h1 className="text-3xl font-bold mb-8 text-center">Create New Problem</h1>
 
       {/* Progress Indicator */}
-      <div className="mb-8">
+      <div className="mb-8 mx-20">
         <div className="flex justify-between items-center mb-4">
           <StepIndicator
             step="details"
