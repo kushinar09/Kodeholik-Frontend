@@ -24,17 +24,35 @@ const formSchema = z.object({
       parameters: z.array(
         z.object({
           inputName: z.string().min(1, "Parameter name is required"),
-          inputType: z.string().min(1, "Parameter type is required"),
-        }),
+          inputType: z.string().min(1, "Parameter type is required")
+        })
       ),
-      templateCode: z.string().min(1, "Template code is required"),
-    }),
-  ),
+      templateCode: z.string().min(1, "Template code is required")
+    })
+  )
 })
 
 export function InputParameters({ formData, updateFormData, onNext, onPrevious }) {
   const [activeLanguage, setActiveLanguage] = useState(formData.details.languageSupport[0] || "")
-  const [returnTypes] = useState(["int", "String", "boolean", "void", "double", "float", "long", "char", "other"])
+  const [returnTypes] = useState([
+    "INT",
+    "STRING",
+    "BOOLEAN",
+    "void",
+    "DOUBLE",
+    "float",
+    "LONG",
+    "CHAR",
+    "LIST",
+    "MAP",
+    "SET",
+    "ARR_INT",
+    "ARR_DOUBLE",
+    "ARR_OBJECT",
+    "ARR_STRING",
+    "OBJECT",
+    "UNKNOWN"
+  ])
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,16 +61,16 @@ export function InputParameters({ formData, updateFormData, onNext, onPrevious }
         functionSignature: "",
         returnType: "",
         parameters: [],
-        templateCode: "",
-      })),
-    },
+        templateCode: ""
+      }))
+    }
   })
 
   const addParameter = (languageIndex) => {
     const currentParams = form.getValues(`problemInputParameterDto.${languageIndex}.parameters`) || []
     form.setValue(`problemInputParameterDto.${languageIndex}.parameters`, [
       ...currentParams,
-      { inputName: "", inputType: "" },
+      { inputName: "", inputType: "" }
     ])
     // Force re-render
     form.trigger(`problemInputParameterDto.${languageIndex}.parameters`)
@@ -75,7 +93,7 @@ export function InputParameters({ formData, updateFormData, onNext, onPrevious }
       functionSignature: param.functionSignature,
       returnType: param.returnType,
       parameters: param.parameters || [],
-      templateCodes: param.templateCode,
+      templateCodes: param.templateCode
     }))
 
     console.log("Input Parameters submitting:", transformedData)
@@ -179,7 +197,7 @@ export function InputParameters({ formData, updateFormData, onNext, onPrevious }
                                 <Label className="text-xs">Parameter Name</Label>
                                 <Input
                                   {...form.register(
-                                    `problemInputParameterDto.${languageIndex}.parameters.${paramIndex}.inputName`,
+                                    `problemInputParameterDto.${languageIndex}.parameters.${paramIndex}.inputName`
                                   )}
                                   placeholder={`e.g., ${language === "Java" ? "nums" : "nums_array"}`}
                                 />

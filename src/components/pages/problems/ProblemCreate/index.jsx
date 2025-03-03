@@ -28,12 +28,6 @@ export default function ProblemCreator() {
       isActive: true,
       languageSupport: []
     },
-    // array of
-    // functionSignature: "",
-    // returnType: "",
-    // language: "",
-    // parameters: [],
-    // templateCodes: "",
     inputParameter: [],
     editorial: {
       editorialTitle: "",
@@ -103,7 +97,8 @@ export default function ProblemCreator() {
         status: formData.details.status,
         topics: formData.details.topics,
         skills: formData.details.skills,
-        isActive: formData.details.isActive
+        isActive: formData.details.isActive,
+        languageSupport: formData.details.languageSupport
       }
 
       const problemEditorialDto = {
@@ -119,12 +114,10 @@ export default function ProblemCreator() {
       }
 
       const problemInputParameterDto = formData.inputParameter.map((param) => ({
-        templateCodes: [
-          {
-            code: param.templateCodes,
-            language: param.language
-          }
-        ],
+        templateCode: {
+          code: param.templateCodes,
+          language: param.language
+        },
         functionSignature: param.functionSignature,
         returnType: param.returnType,
         language: param.language,
@@ -136,46 +129,37 @@ export default function ProblemCreator() {
 
       const formDataObj = new FormData()
 
+      console.log(JSON.stringify(problemBasicAddDto))
       formDataObj.append(
         "problemBasicAddDto",
-        new Blob([JSON.stringify(problemBasicAddDto)], {
-          type: "application/json"
-        })
+        JSON.stringify(problemBasicAddDto)
       )
 
+      console.log(JSON.stringify(problemEditorialDto))
       formDataObj.append(
         "problemEditorialDto",
-        new Blob([JSON.stringify(problemEditorialDto)], {
-          type: "application/json"
-        })
+        JSON.stringify(problemEditorialDto)
       )
 
-      // Append each problemInputParameterDto separately
-      problemInputParameterDto.forEach((param, index) => {
-        formDataObj.append(
-          `problemInputParameterDto[${index}]`,
-          new Blob([JSON.stringify(param)], {
-            type: "application/json"
-          })
-        )
-      })
+      console.log(JSON.stringify(problemInputParameterDto))
+      formDataObj.append(
+        "problemInputParameterDto",
+        JSON.stringify(problemInputParameterDto)
+      )
 
-      // Handle multiple Excel files
-      formDataObj.append("excelFile", formData.testCases.excelFile)
-      // if (Array.isArray(formData.testCases.excelFile)) {
-      //   formData.testCases.excelFile.forEach((file) => {
-      //     formDataObj.append("excelFile", file)
-      //   })
-      // } else if (formData.testCases.excelFile) {
-      //   formDataObj.append("excelFile", formData.testCases.excelFile)
-      // }
-
-      // Send request to backend
+      if (Array.isArray(formData.testCases.excelFile)) {
+        formData.testCases.excelFile.forEach((file) => {
+          formDataObj.append("testCaseFile", file)
+        })
+      } else if (formData.testCases.excelFile) {
+        formDataObj.append("testCaseFile", formData.testCases.excelFile)
+      } else {
+        console.log("File empty");
+      }
       const response = await apiCall(ENDPOINTS.POST_CREATE_PROBLEM, {
         method: "POST",
         body: formDataObj
       })
-
 
       if (!response.ok) {
         const errorData = await response.json()
@@ -190,6 +174,12 @@ export default function ProblemCreator() {
 
     } catch (error) {
       console.error("Error creating problem:", error)
+
+      if (error.response) {
+        const errorMessage = await error.response.text()
+        console.error("Server Error Message:", errorMessage)
+      }
+
       toast({
         title: "Error",
         description: error.message || "Error creating problem. Please try again.",
@@ -197,7 +187,6 @@ export default function ProblemCreator() {
       })
     }
   }
-
 
   return (
     <div className="container mx-auto py-10 px-4">
@@ -293,11 +282,11 @@ function StepIndicator({ step, label, active, completed, onClick, disabled = fal
       <div
         className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors
           ${active
-      ? "bg-primary text-primary-foreground"
-      : completed
-        ? "bg-green-500 text-white"
-        : "bg-muted text-muted-foreground"
-    }`}
+            ? "bg-primary text-primary-foreground"
+            : completed
+              ? "bg-green-500 text-white"
+              : "bg-muted text-muted-foreground"
+          }`}
       >
         {completed ? <Check className="h-5 w-5" /> : step.charAt(0).toUpperCase()}
       </div>

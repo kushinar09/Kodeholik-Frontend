@@ -15,9 +15,9 @@ const formSchema = z.object({
   testCases: z.array(
     z.object({
       language: z.string(),
-      file: z.instanceof(File, { message: "Test case file is required" }),
-    }),
-  ),
+      file: z.instanceof(File, { message: "Test case file is required" })
+    })
+  )
 })
 
 export function TestCases({ formData, updateFormData, onPrevious, onSubmit }) {
@@ -29,9 +29,9 @@ export function TestCases({ formData, updateFormData, onPrevious, onSubmit }) {
     defaultValues: {
       testCases: formData.details.languageSupport.map((lang) => ({
         language: lang,
-        file: null,
-      })),
-    },
+        file: null
+      }))
+    }
   })
 
   const handleFileChange = (language, index, event) => {
@@ -47,7 +47,7 @@ export function TestCases({ formData, updateFormData, onPrevious, onSubmit }) {
     const excelFile = values.testCases.find((tc) => tc.file)?.file || null
 
     const transformedData = {
-      excelFile,
+      excelFile
     }
 
     console.log("Test Cases submitting:", transformedData)
@@ -57,26 +57,26 @@ export function TestCases({ formData, updateFormData, onPrevious, onSubmit }) {
 
   const getFileFormatGuide = (language) => {
     switch (language) {
-      case "Java":
-        return [
-          "Each test case should be on a new line",
-          "Input and expected output should be separated by a comma",
-          "For array inputs, use square brackets: [1,2,3]",
-          "Example: [1,2,3],9 -> [0,1]",
-        ]
-      case "C":
-        return [
-          "Each test case should be on a new line",
-          "Input and expected output should be separated by a comma",
-          "For array inputs, use curly braces: {1,2,3}",
-          "Example: {1,2,3},9 -> {0,1}",
-        ]
-      default:
-        return [
-          "Each test case should be on a new line",
-          "Input and expected output should be separated by a comma",
-          "Follow standard format for the selected language",
-        ]
+    case "Java":
+      return [
+        "Each test case should be on a new line",
+        "Input and expected output should be separated by a comma",
+        "For array inputs, use square brackets: [1,2,3]",
+        "Example: [1,2,3],9 -> [0,1]"
+      ]
+    case "C":
+      return [
+        "Each test case should be on a new line",
+        "Input and expected output should be separated by a comma",
+        "For array inputs, use curly braces: {1,2,3}",
+        "Example: {1,2,3},9 -> {0,1}"
+      ]
+    default:
+      return [
+        "Each test case should be on a new line",
+        "Input and expected output should be separated by a comma",
+        "Follow standard format for the selected language"
+      ]
     }
   }
 
