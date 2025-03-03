@@ -149,9 +149,22 @@ export default function ProblemCreator() {
       const problemInputParameterDtoText = "[{\"templateCode\":{\"code\":\"abc\",\"language\":\"Java\"},\"functionSignature\":\"twoSum\",\"returnType\":\"STRING\",\"language\":\"Java\",\"parameters\":[{\"inputName\":\"num1\",\"inputType\":\"STRING\"},{\"inputName\":\"num2\",\"inputType\":\"STRING\"}]}]"
 
       const formdataT = new FormData()
-      formdataT.append("problemBasicAddDto", JSON.stringify(problemBasicAddDtoText))
-      formdataT.append("problemEditorialDto", JSON.stringify(problemEditorialDtoText))
-      formdataT.append("problemInputParameterDto", JSON.stringify(problemInputParameterDtoText))
+
+      // Append JSON data as Blob
+      formdataT.append(
+        "problemBasicAddDto",
+        new Blob([JSON.stringify(problemBasicAddDtoText)], { type: "application/json" })
+      )
+      formdataT.append(
+        "problemEditorialDto",
+        new Blob([JSON.stringify(problemEditorialDtoText)], { type: "application/json" })
+      )
+      formdataT.append(
+        "problemInputParameterDto",
+        new Blob([JSON.stringify(problemInputParameterDtoText)], { type: "application/json" })
+      )
+
+      // Append file
       formdataT.append("testCaseFile", formData.testCases.excelFile)
 
       const requestOptions = {
@@ -164,6 +177,7 @@ export default function ProblemCreator() {
         .then((response) => response.text())
         .then((result) => console.log(result))
         .catch((error) => console.error(error))
+
 
       toast({
         title: "Success",
@@ -281,11 +295,11 @@ function StepIndicator({ step, label, active, completed, onClick, disabled = fal
       <div
         className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors
           ${active
-            ? "bg-primary text-primary-foreground"
-            : completed
-              ? "bg-green-500 text-white"
-              : "bg-muted text-muted-foreground"
-          }`}
+      ? "bg-primary text-primary-foreground"
+      : completed
+        ? "bg-green-500 text-white"
+        : "bg-muted text-muted-foreground"
+    }`}
       >
         {completed ? <Check className="h-5 w-5" /> : step.charAt(0).toUpperCase()}
       </div>
