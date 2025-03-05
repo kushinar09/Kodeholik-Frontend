@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { Toaster } from "./components/ui/toaster"
-import { AuthProvider } from "./context/AuthProvider"
+import { AuthProvider } from "./provider/AuthProvider"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query" 
 import ProblemDetail from "./components/pages/problems/ProblemDetail"
 import CreateProblem from "./components/pages/problems/CreateProblem"

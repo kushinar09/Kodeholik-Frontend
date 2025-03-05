@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "@/context/AuthProvider"
+import { useAuth } from "@/provider/AuthProvider"
 
 /**
  * Component to display user submissions

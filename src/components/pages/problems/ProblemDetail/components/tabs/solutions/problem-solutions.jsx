@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "@/context/AuthProvider"
+import { useAuth } from "@/provider/AuthProvider"
 import SolutionCard from "../../items/solution-card"
 
 /**

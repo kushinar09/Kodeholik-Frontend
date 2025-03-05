@@ -17,6 +17,7 @@ const notCallRotateTokenEndpoints = [
 
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -82,6 +83,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   const apiCall = async (url, options = {}, redirect = false) => {
+    setLoading(true)
     // console.log(window.location.pathname)
     if (!options.headers) {
       options.headers = {}
@@ -114,6 +116,8 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.warn("API call error:", error)
       throw error
+    } finally {
+      setLoading(false)
     }
   }
 
