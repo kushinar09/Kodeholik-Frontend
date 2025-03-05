@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels"
-import { useAuth } from "@/context/AuthProvider"
+import { useAuth } from "@/provider/AuthProvider"
 import "highlight.js/styles/default.css"
 
 import "./styles.css"

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { ENDPOINTS } from "@/lib/constants"
-import { useAuth } from "@/context/AuthProvider"
+import { useAuth } from "@/provider/AuthProvider"
 import { Button } from "@/components/ui/button"
 
 export function SearchBar({ search, setSearch, onSearchChange, isFiltersOpen, setIsFiltersOpen }) {

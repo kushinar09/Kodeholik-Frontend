@@ -14,7 +14,7 @@ import { LOGO } from "@/lib/constants"
 import { MESSAGES } from "@/lib/messages"
 
 import { login, loginWithGithub, loginWithGoogle } from "@/lib/api/auth_api"
-import { useAuth } from "@/context/AuthProvider"
+import { useAuth } from "@/provider/AuthProvider"
 export default function LoginPage() {
   const [loading, setLoading] = useState(true)
   const [errors, setErrors] = useState({})
