@@ -4,23 +4,23 @@ import { useState, useRef, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels"
+import { useAuth } from "@/providers/AuthProvider"
 import "highlight.js/styles/default.css"
 
 import "./styles.css"
 
 // API imports
-import { getProblemDescription, getProblemEditorial, getProblemInitCode, getProblemSolutions } from "@/lib/api/problem_api"
-import { runCode, submitCode } from "@/lib/api/code_api"
+import { getProblemDescription, getProblemInitCode } from "@/lib/api/problem_api"
+import { runCode } from "@/lib/api/code_api"
 
 // Component imports
-import ProblemHeader from "./components/problem-header-option"
 import TabNavigation from "./components/left-panel/tab-navigation"
 import LeftPanelContent from "./components/left-panel/left-panel-content"
 import CodePanel from "./components/right-panel/code-panel"
 import TestCasePanel from "./components/right-panel/test-case-panel"
-import { useAuth } from "@/providers/AuthProvider"
+import HeaderOption from "./components/header-option"
 
-export default function ProblemDetail() {
+export default function TakeExam() {
   const { id } = useParams()
   const { apiCall } = useAuth()
 
@@ -32,14 +32,8 @@ export default function ProblemDetail() {
   const leftPanelRef = useRef(null)
   const [isCompactRight, setIsCompactRight] = useState(false)
 
-  // Tab state
-  const [activeTab, setActiveTab] = useState("description")
-
   // Problem data state
   const [description, setDescription] = useState(null)
-  const [editorial, setEditorial] = useState(null)
-  const [solutions, setSolutions] = useState(null)
-  const [submissions, setSubmissions] = useState(null)
 
   // Code state
   const [code, setCode] = useState("")
@@ -53,11 +47,6 @@ export default function ProblemDetail() {
   const [results, setResults] = useState()
   const [showResult, setShowResult] = useState(false)
   const [isResultActive, setIsResultActive] = useState(false)
-
-  // Submission state
-  const [submitted, setSubmitted] = useState()
-  const [showSubmitted, setShowSubmitted] = useState(false)
-  const [isSubmittedActive, setIsSubmittedActive] = useState(false)
 
   // Panel resize detection
   useEffect(() => {
@@ -84,26 +73,6 @@ export default function ProblemDetail() {
 
   const isCompactLeft = leftWidth <= 40
 
-  // Data fetching
-  const fetchData = (typeData) => {
-    switch (typeData) {
-      case "Description":
-        fetchProblemDescription()
-        break
-      case "Editorial":
-        fetchProblemEditorial()
-        break
-      case "Solutions":
-        fetchProblemSolutions()
-        break
-      case "Submissions":
-        // TODO: Implement submissions fetching
-        break
-      default:
-        break
-    }
-  }
-
   const fetchProblemDescription = async () => {
     if (!id) return
     if (!description) {
@@ -114,26 +83,95 @@ export default function ProblemDetail() {
       }
     }
   }
+  // const [alertCount, setAlertCount] = useState(0)
+  // const maxAlerts = 3
 
-  const fetchProblemEditorial = async () => {
-    if (!id) return
-    if (!editorial) {
-      const result = await getProblemEditorial(apiCall, id)
-      if (result.status && result.data) {
-        setEditorial(result.data)
+  // const handleVisibilityChange = () => {
+  //   if (document.hidden) {
+  //     if (alertCount < maxAlerts) {
+  //       alert(`Stay on this tab! Changed ${alertCount + 1} times. Over ${maxAlerts} times = 0 points!`)
+  //       setAlertCount(prev => prev + 1)
+  //     } else {
+  //       console.warn("Too many tab changes! Consider logging this event or taking action.")
+  //     }
+  //   }
+  // }
+
+  // const handleFullScreen = () => {
+  //   if (!document.fullscreenElement) {
+  //     document.documentElement.requestFullscreen().catch(err => {
+  //       console.error("Fullscreen request failed:", err)
+  //     })
+  //   }
+  // }
+
+  // useEffect(() => {
+  //   document.addEventListener("visibilitychange", handleVisibilityChange)
+  //   window.addEventListener("blur", () => window.focus())
+  //   document.addEventListener("fullscreenchange", () => {
+  //     if (!document.fullscreenElement) {
+  //       alert("Full-screen mode is required for this test.")
+  //       handleFullScreen()
+  //     }
+  //   })
+
+  //   return () => {
+  //     document.removeEventListener("visibilitychange", handleVisibilityChange)
+  //     window.removeEventListener("blur", () => window.focus())
+  //     document.removeEventListener("fullscreenchange", handleFullScreen)
+  //   }
+  // // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [alertCount])
+
+  const [isVisible, setIsVisible] = useState(true)
+  const [warningCount, setWarningCount] = useState(0)
+  const maxWarnings = 4
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && warningCount < maxWarnings) {
+        setWarningCount((prev) => prev + 1)
+        alert(`Warning: Do not switch tabs! Warnings left: ${maxWarnings - (warningCount + 1)}`)
+      } else if (!document.hidden) {
+        setIsVisible(true)
       }
     }
-  }
 
-  const fetchProblemSolutions = async () => {
-    if (!id) return
-    if (!solutions) {
-      const result = await getProblemSolutions(apiCall, id, 0, 10)
-      if (result.status && result.data) {
-        setSolutions(result.data)
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+    }
+  }, [warningCount, maxWarnings]) // Add `warningCount` as dependency to keep track of the latest value
+
+  useEffect(() => {
+    if (warningCount >= maxWarnings) {
+      // onPenalty()
+    }
+  }, [warningCount, maxWarnings])
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Block Ctrl+C, Ctrl+V, and F12
+      if ((event.ctrlKey && (event.key === "c" || event.key === "v")) || event.key === "F12") {
+        event.preventDefault()
+        alert("Shortcuts are disabled during the test.")
       }
     }
-  }
+
+    const handleRightClick = (event) => {
+      // Prevent right-click context menu
+      event.preventDefault()
+      alert("Right-click is disabled during the test.")
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("contextmenu", handleRightClick)
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("contextmenu", handleRightClick)
+    }
+  }, [])
 
   // Initial data loading
   useEffect(() => {
@@ -160,11 +198,6 @@ export default function ProblemDetail() {
     setCode(newCode)
   }
 
-  const handleTabChange = (tabId, tabLabel) => {
-    fetchData(tabLabel)
-    setActiveTab(tabId)
-  }
-
   async function handleRunCode() {
     const result = await runCode(apiCall, id, code, "Java")
     setResults(result)
@@ -173,16 +206,9 @@ export default function ProblemDetail() {
     setActiveResult("0")
   }
 
-  async function handleSubmitCode() {
-    const result = await submitCode(apiCall, id, code, "Java")
-    setSubmitted(result)
-    setShowSubmitted(true)
-    setIsSubmittedActive(true)
-  }
-
   return (
     <div className="h-screen flex flex-col">
-      <ProblemHeader onRun={handleRunCode} onSubmit={handleSubmitCode} />
+      <HeaderOption onRun={handleRunCode} />
 
       <div className="flex-1 p-2 bg-bg-primary/50">
         <PanelGroup direction="horizontal" onLayout={(sizes) => setLeftSize(sizes[0])}>
@@ -190,17 +216,13 @@ export default function ProblemDetail() {
           <Panel className="min-w-[40px] overflow-auto bg-background rounded-md" defaultSize={50}>
             <div ref={leftPanelRef} className="h-full overflow-hidden">
               <div className={cn("h-full flex flex-col transition-all duration-200", isCompactLeft ? "w-[40px]" : "")}>
-                <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} isCompact={isCompactLeft} />
+                <TabNavigation isCompact={isCompactLeft} />
 
                 <LeftPanelContent
                   id={id}
                   problemId={problemId}
-                  activeTab={activeTab}
                   isCompact={isCompactLeft}
                   description={description}
-                  editorial={editorial}
-                  solutions={solutions}
-                  submissions={submissions}
                 />
               </div>
             </div>
@@ -214,13 +236,9 @@ export default function ProblemDetail() {
               {/* Right Top Panel - Code Editor */}
               <Panel className="min-h-[40px] rounded-md overflow-hidden">
                 <CodePanel
-                  isSubmittedActive={isSubmittedActive}
-                  setIsSubmittedActive={setIsSubmittedActive}
                   isCompact={isCompactRight}
                   code={code}
                   onCodeChange={handleCodeChange}
-                  submitted={submitted}
-                  showSubmitted={showSubmitted}
                 />
               </Panel>
 

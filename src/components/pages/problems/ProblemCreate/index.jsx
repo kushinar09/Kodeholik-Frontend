@@ -10,7 +10,7 @@ import { InputParameters } from "./components/input-parameters"
 import { Editorial } from "./components/editorial"
 import { TestCases } from "./components/test-cases"
 import { ENDPOINTS } from "@/lib/constants"
-import { useAuth } from "@/provider/AuthProvider"
+import { useAuth } from "@/providers/AuthProvider"
 
 export default function ProblemCreator() {
   const { apiCall } = useAuth()

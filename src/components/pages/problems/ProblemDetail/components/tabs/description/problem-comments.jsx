@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/pagination"
 import { useState, useEffect, useCallback } from "react"
 import { ENDPOINTS } from "@/lib/constants"
-import { useAuth } from "@/provider/AuthProvider"
+import { useAuth } from "@/providers/AuthProvider"
 import { postCommentProblem } from "@/lib/api/problem_api"
 import { Separator } from "@/components/ui/separator"
 

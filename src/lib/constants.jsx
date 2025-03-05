@@ -64,6 +64,7 @@ const ENDPOINTS = {
 
   // Search
   GET_SUGGEST_SEARCH: `${API_URL}/problem/suggest?searchText=:text`,
+
   // courses
   GET_COURSES: `${API_URL}/course/list`,
   GET_COURSE: `${API_URL}/course/description/:id`,

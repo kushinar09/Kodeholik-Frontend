@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "@/provider/AuthProvider"
+import { useAuth } from "@/providers/AuthProvider"
 import { marked } from "marked"
 
 /**
