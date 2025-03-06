@@ -12,9 +12,12 @@ import LoginPage from "./components/pages/authentications/login"
 import ResetPassword from "./components/pages/authentications/reset"
 import CoursePage from "./components/pages/courses/ViewCoursePage"
 import CourseDetail from "./components/pages/courses/ViewCourseDetail"
+
 import LearnThroughVideoAndText from "./components/pages/courses/LearnThroughVideoAndText"
 import ProblemPage from "./components/pages/problems/ProblemList"
 import ProblemCreator from "./components/pages/problems/ProblemCreate"
+import CreateCourse from "./components/pages/courses/CreateCourse"
+import UpdateCourse from "./components/pages/courses/UpdateCourse"
 
 // components
 
@@ -47,10 +50,14 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/forgot" element={<ForgotPassword />} />
                 <Route path="/reset" element={<ResetPassword />} />
+                <Route path="/problem/create" element={<ProblemCreator />} />
+                {/* course */}
                 <Route path="/courses" element={<CoursePage />} />
                 <Route path="/courses/:id" element={<CourseDetail />} />
+                <Route path="/courses/add" element={<CreateCourse/>}/>
+                <Route path="/courses/update/:id" element={<UpdateCourse/>}/>
                 <Route path="/learn" element={<LearnThroughVideoAndText />} />
-                <Route path="/problem/create" element={<ProblemCreator />} />
+                
               </Routes>
             </div>
           </AuthProvider>
