@@ -1,7 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import ViewCoursePage from "./components/pages/courses/ViewCoursePage"
 import ViewCourseDetail from "./components/pages/courses/ViewCourseDetail"
+import ViewListCourse from "./components/pages/courses/ViewListCourse"
+import CreateCourse from "./components/pages/courses/CreateCourse"
+import UpdateCourse from "./components/pages/courses/UpdateCourse"
 import Learn from "./components/pages/courses/LearnThroughVideoAndText"
+import CourseDiscussion from "./components/pages/courses/CourseDiscussion"
 import ProblemList from "./components/pages/problems/ProblemList"
 import CreateProblem from "./components/pages/problems/CreateProblem"
 import EditProblem from "./components/pages/problems/EditProblem"
@@ -39,7 +43,11 @@ function App() {
               <Route path="/reset" element={<ResetPassword />} />
               <Route path="/courses" element={<ViewCoursePage />} />
               <Route path="/courses/:id" element={<ViewCourseDetail />} />
+              <Route path="/coursesList" element={<ViewListCourse />} />
+              <Route path="/createCourse" element={<CreateCourse />} />
+              <Route path="/updateCourse/:id" element={<UpdateCourse />} />
               <Route path="/learn" element={<Learn />} />
+              <Route path="/courses/discussion/:id" element={<CourseDiscussion/>} />
             </Routes>
           </div>
         </AuthProvider>
