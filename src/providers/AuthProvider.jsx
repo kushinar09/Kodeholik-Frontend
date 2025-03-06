@@ -1,5 +1,5 @@
 import { CONSTANTS, ENDPOINTS } from "@/lib/constants"
-import React, { createContext, useContext, useState } from "react"
+import React, { createContext, useContext, useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 
 const AuthContext = createContext()
@@ -10,19 +10,48 @@ const authenticatedEndpoints = [
   ENDPOINTS.POST_SUBMIT_CODE
 ]
 
+const notCallRotateTokenEndpoints = [
+  ENDPOINTS.ROTATE_TOKEN,
+  ENDPOINTS.POST_LOGOUT
+]
+
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [refreshPromise, setRefreshPromise] = useState(null)
 
-  const logout = (url = "") => {
-    document.cookie = `${CONSTANTS.ACCESS_TOKEN}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-    document.cookie = `${CONSTANTS.REFRESH_TOKEN}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-    if (url !== "" && url !== ENDPOINTS.GET_INFOR)
+  const checkAuthStatus = async () => {
+    try {
+      const response = await apiCall(ENDPOINTS.GET_INFOR)
+      if (response.ok) {
+        const data = await response.json()
+        setIsAuthenticated(true)
+        setUser(data)
+      } else {
+        setIsAuthenticated(false)
+      }
+    } catch {
+      setIsAuthenticated(false)
+    }
+  }
+
+  useEffect(() => {
+    checkAuthStatus()
+  }, [isAuthenticated])
+
+  const logout = async (redirect = false) => {
+    await apiCall(ENDPOINTS.POST_LOGOUT, {
+      method: "POST"
+    })
+    setIsAuthenticated(false)
+    if (redirect)
       navigate("/login", { state: { loginRequire: true, redirectPath: window.location.pathname } })
   }
 
-  const refreshAccessToken = async (url) => {
+  const refreshAccessToken = async (redirect) => {
     if (isRefreshing) {
       return refreshPromise
     }
@@ -37,11 +66,11 @@ export const AuthProvider = ({ children }) => {
         if (!response.ok) {
           throw new Error("Failed to refresh token")
         }
-        return true // Token refreshed successfully
+        return true
       })
       .catch(error => {
         console.error("Refresh token failed:", error)
-        logout(url)
+        logout(redirect)
         return false
       })
       .finally(() => {
@@ -53,36 +82,28 @@ export const AuthProvider = ({ children }) => {
     return promise
   }
 
-  const apiCall = async (url, options = {}) => {
+  const apiCall = async (url, options = {}, redirect = false) => {
+    setLoading(true)
+    // console.log(window.location.pathname)
     if (!options.headers) {
       options.headers = {}
     }
 
-    // if (authenticatedEndpoints.includes(url)) {
-    //   options.headers = {
-    //     ...(options.headers || {}),
-    //     "Content-Type": "application/json",
-    //     "Access-Control-Allow-Origin": "http://localhost:5174",
-    //     "Access-Control-Allow-Credentials": "true"
-    //   }
-    // }
-
     options.headers = {
       ...(options.headers || {}),
-      "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "http://localhost:5174",
       "Access-Control-Allow-Credentials": "true"
     }
-
     options.credentials = "include"
 
     try {
       let response = await fetch(url, options)
 
-      if (response.status === 401) {
+      // console.log("check", url, !notCallRotateTokenEndpoints.includes(url))
+      if (response.status === 401 && !notCallRotateTokenEndpoints.includes(url)) {
         console.warn("Access token expired. Attempting refresh...")
 
-        const success = await refreshAccessToken(url)
+        const success = await refreshAccessToken(redirect)
 
         if (success) {
           response = await fetch(url, options)
@@ -93,19 +114,20 @@ export const AuthProvider = ({ children }) => {
 
       return response
     } catch (error) {
-      console.error("API call error:", error)
+      console.warn("API call error:", error)
       throw error
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <AuthContext.Provider value={{ apiCall, logout }}>
+    <AuthContext.Provider value={{ apiCall, logout, isAuthenticated, user, setIsAuthenticated }}>
       {children}
     </AuthContext.Provider>
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) {
