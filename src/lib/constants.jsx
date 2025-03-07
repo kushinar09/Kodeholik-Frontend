@@ -69,17 +69,26 @@ const ENDPOINTS = {
   GET_SUGGEST_SEARCH: `${API_URL}/problem/suggest?searchText=:text`,
 
   // courses
+  GET_COURSES_LIST: `${API_URL}/course/search`,
   GET_COURSES: `${API_URL}/course/list`,
-  GET_COURSE: `${API_URL}/course/description/:id`,
-  SEARCH_COURSE: `${API_URL}/course/search`,
-  CREATE_COURSE: `${API_URL}/course/create`,
+  GET_COURSE: `${API_URL}/course/detail/:id`,
+  CREATE_COURSE: `${API_URL}/course/add`,
   UPDATE_COURSE: `${API_URL}/course/update/:id`,
   DELETE_COURSE: `${API_URL}/course/delete/:id`,
+  ENROLL_COURSE: `${API_URL}/course/enroll/:id`,
+  UNENROLL_COURSE: `${API_URL}/course/unenroll/:id`,
+
+  //Topic
+  GET_TOPIC_LIST: `${API_URL}/tag/all-topic`,
 
   // code
   POST_RUN_CODE: `${API_URL}/problem-submission/run/:id`,
-  POST_SUBMIT_CODE: `${API_URL}/problem-submission/submit/:id`
+  POST_SUBMIT_CODE: `${API_URL}/problem-submission/submit/:id`,
+
+  //image
+ GET_IMAGE: (imageKey) => `${API_URL}/s3/presigned-url?key=${encodeURIComponent(imageKey)}`
 }
+
 
 
 const CONSTANTS = {
