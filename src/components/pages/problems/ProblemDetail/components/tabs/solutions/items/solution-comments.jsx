@@ -18,7 +18,7 @@ import { useAuth } from "@/providers/AuthProvider"
 import { Separator } from "@/components/ui/separator"
 import { postComment } from "@/lib/api/problem_api"
 
-export default function DiscussionSection({ id, problemId }) {
+export default function DiscussionSection({ solutionId }) {
   const [isCollapsed, setIsCollapsed] = useState(true)
   const [comment, setComment] = useState("")
   const [comments, setComments] = useState([])
@@ -38,10 +38,10 @@ export default function DiscussionSection({ id, problemId }) {
   const { apiCall, isAuthenticated, user } = useAuth()
 
   const fetchComments = useCallback(async () => {
-    if (!id) return
+    if (!solutionId) return
     try {
       const response = await apiCall(
-        `${ENDPOINTS.GET_PROBLEM_COMMENTS.replace(":id", id)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
+        `${ENDPOINTS.GET_SOLUTION_COMMENTS.replace(":id", solutionId)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
       )
       if (!response.ok) throw new Error("Failed to fetch comments")
       const data = await response.json()
@@ -52,7 +52,7 @@ export default function DiscussionSection({ id, problemId }) {
     } catch (error) {
       console.error("Error fetching comments:", error)
     }
-  }, [id, page, sortBy, ascending])
+  }, [solutionId, page, sortBy, ascending])
 
   useEffect(() => {
     fetchComments()
@@ -64,7 +64,7 @@ export default function DiscussionSection({ id, problemId }) {
 
   async function UploadComment() {
     try {
-      const response = await postComment(apiCall, problemId, comment)
+      const response = await postComment(apiCall, solutionId, comment)
       if (response.status) {
         setComment("")
         setTotalComments(totalComments + 1)
@@ -75,7 +75,7 @@ export default function DiscussionSection({ id, problemId }) {
             noUpvote: 0,
             createdBy: {
               id: user?.id || 0,
-              avatar: user?.avatar || "/placeholder.svg?height=40&width=40",
+              avatar: user?.avatar || null,
               username: user?.username || "you"
             },
             noReply: 0,
@@ -120,7 +120,7 @@ export default function DiscussionSection({ id, problemId }) {
       if (comment) {
         // const fakeReplies = generateFakeReplies(commentId, comment.noReply)
         const response = await apiCall(
-          `${ENDPOINTS.GET_PROBLEM_COMMENTS_REPLY.replace(":id", commentId)}`
+          `${ENDPOINTS.GET_COMMENTS_REPLY.replace(":id", commentId)}`
         )
         if (!response.ok) throw new Error("Failed to fetch comments")
         const data = await response.json()
@@ -167,7 +167,7 @@ export default function DiscussionSection({ id, problemId }) {
       noUpvote: 0,
       createdBy: {
         id: user?.id || 0,
-        avatar: user?.avatar || "/placeholder.svg?height=40&width=40",
+        avatar: user?.avatar || null,
         username: user?.username || "you"
       },
       noReply: 0,
@@ -185,7 +185,7 @@ export default function DiscussionSection({ id, problemId }) {
     }
 
     try {
-      const response = await postComment(apiCall, problemId, replyText, commentId)
+      const response = await postComment(apiCall, solutionId, replyText, commentId)
       if (response.status) {
         setTotalComments(totalComments + 1)
       }

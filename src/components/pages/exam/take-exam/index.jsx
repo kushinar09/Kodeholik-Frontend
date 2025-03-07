@@ -4,33 +4,27 @@ import { useState, useRef, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels"
+import { useAuth } from "@/providers/AuthProvider"
 import "highlight.js/styles/default.css"
 
 import "./styles.css"
 
 // API imports
-import { getProblemDescription, getProblemEditorial, getProblemInitCode, getProblemSolutions } from "@/lib/api/problem_api"
-import { runCode, submitCode } from "@/lib/api/code_api"
+import { getProblemDescription, getProblemInitCode } from "@/lib/api/problem_api"
+import { runCode } from "@/lib/api/code_api"
 
 // Component imports
-import ProblemHeader from "./components/problem-header-option"
 import TabNavigation from "./components/left-panel/tab-navigation"
 import LeftPanelContent from "./components/left-panel/left-panel-content"
 import CodePanel from "./components/right-panel/code-panel"
 import TestCasePanel from "./components/right-panel/test-case-panel"
-import { useAuth } from "@/providers/AuthProvider"
-import { mockEditorial, mockSolutions, mockSubmissions } from "./fake-data"
-import { leftTabEnum } from "./data/data"
+import HeaderOption from "./components/header-option"
 
-export default function ProblemDetail() {
+export default function TakeExam() {
   const { id } = useParams()
   const { apiCall } = useAuth()
 
   const [problemId, setProblemId] = useState(0)
-
-  const [openedTabEditorial, setOpenedTabEditorial] = useState(false)
-  const [openedTabSolution, setOpenedTabSolution] = useState(false)
-  const [openedTabSubmission, setOpenedTabSubmission] = useState(false)
 
   // Panel state
   const [leftSize, setLeftSize] = useState(50)
@@ -38,14 +32,8 @@ export default function ProblemDetail() {
   const leftPanelRef = useRef(null)
   const [isCompactRight, setIsCompactRight] = useState(false)
 
-  // Tab state
-  const [activeTab, setActiveTab] = useState(leftTabEnum.description)
-
   // Problem data state
   const [description, setDescription] = useState(null)
-  const [editorial, setEditorial] = useState(null)
-  const [solutions, setSolutions] = useState(null)
-  const [submissions, setSubmissions] = useState(null)
 
   // Code state
   const [code, setCode] = useState("")
@@ -60,10 +48,53 @@ export default function ProblemDetail() {
   const [showResult, setShowResult] = useState(false)
   const [isResultActive, setIsResultActive] = useState(false)
 
-  // Submission state
-  const [submitted, setSubmitted] = useState()
-  const [showSubmitted, setShowSubmitted] = useState(false)
-  const [isSubmittedActive, setIsSubmittedActive] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
+  const [warningCount, setWarningCount] = useState(0)
+  const maxWarnings = 0
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && warningCount < maxWarnings) {
+        setWarningCount((prev) => prev + 1)
+        alert(`Warning: Do not switch tabs! Warnings left: ${maxWarnings - (warningCount + 1)}`)
+      } else if (!document.hidden) {
+        setIsVisible(true)
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+    }
+  }, [warningCount, maxWarnings])
+
+  useEffect(() => {
+    if (warningCount >= maxWarnings) {
+      // onPenalty()
+    }
+  }, [warningCount, maxWarnings])
+
+  // useEffect(() => {
+  //   const handleKeyDown = (event) => {
+  //     if ((event.ctrlKey && (event.key === "c" || event.key === "v")) || event.key === "F12") {
+  //       event.preventDefault()
+  //       alert("Shortcuts are disabled during the test.")
+  //     }
+  //   }
+
+  //   const handleRightClick = (event) => {
+  //     event.preventDefault()
+  //     alert("Right-click is disabled during the test.")
+  //   }
+
+  //   window.addEventListener("keydown", handleKeyDown)
+  //   window.addEventListener("contextmenu", handleRightClick)
+
+  //   return () => {
+  //     window.removeEventListener("keydown", handleKeyDown)
+  //     window.removeEventListener("contextmenu", handleRightClick)
+  //   }
+  // }, [])
 
   // Panel resize detection
   useEffect(() => {
@@ -90,28 +121,6 @@ export default function ProblemDetail() {
 
   const isCompactLeft = leftWidth <= 40
 
-  // Data fetching
-  const fetchData = (typeData) => {
-    if (typeData === leftTabEnum.description) {
-      fetchProblemDescription()
-    } else if (typeData === leftTabEnum.editorial) {
-      if (!openedTabEditorial) {
-        fetchProblemEditorial()
-        setOpenedTabEditorial(true)
-      }
-    } else if (typeData === leftTabEnum.solutions) {
-      if (!openedTabSolution) {
-        fetchProblemSolutions()
-        setOpenedTabSolution(true)
-      }
-    } else if (typeData === leftTabEnum.submissions) {
-      if (!openedTabSubmission) {
-        fetchProblemSubmission()
-        setOpenedTabSubmission(true)
-      }
-    }
-  }
-
   const fetchProblemDescription = async () => {
     if (!id) return
     if (!description) {
@@ -121,36 +130,6 @@ export default function ProblemDetail() {
         setProblemId(result.data.id)
       }
     }
-  }
-
-  const fetchProblemEditorial = async () => {
-    // if (!id) return
-    // if (!editorial) {
-    //   const result = await getProblemEditorial(apiCall, id)
-    //   if (result.status && result.data) {
-    //     setEditorial(result.data)
-    //   }
-    // }
-    const eds = mockEditorial.editorialDtos[0]
-    setEditorial(eds)
-  }
-
-  const fetchProblemSolutions = async () => {
-    // if (!id) return
-    // if (!solutions) {
-    //   const result = await getProblemSolutions(apiCall, id, 0, 10)
-    //   if (result.status && result.data) {
-    //     setSolutions(result.data)
-    //   }
-    // }
-    const sos = mockSolutions
-    setSolutions(sos)
-  }
-
-  const fetchProblemSubmission = async () => {
-    // TODO: fetch submissions
-    const sus = mockSubmissions
-    setSubmissions(sus)
   }
 
   // Initial data loading
@@ -178,11 +157,6 @@ export default function ProblemDetail() {
     setCode(newCode)
   }
 
-  const handleTabChange = (tabId, tabLabel) => {
-    fetchData(tabLabel)
-    setActiveTab(tabId)
-  }
-
   async function handleRunCode() {
     const result = await runCode(apiCall, id, code, "Java")
     setResults(result)
@@ -191,16 +165,9 @@ export default function ProblemDetail() {
     setActiveResult("0")
   }
 
-  async function handleSubmitCode() {
-    const result = await submitCode(apiCall, id, code, "Java")
-    setSubmitted(result)
-    setShowSubmitted(true)
-    setIsSubmittedActive(true)
-  }
-
   return (
     <div className="h-screen flex flex-col">
-      <ProblemHeader onRun={handleRunCode} onSubmit={handleSubmitCode} />
+      <HeaderOption onRun={handleRunCode} />
 
       <div className="flex-1 p-2 bg-bg-primary/50">
         <PanelGroup direction="horizontal" onLayout={(sizes) => setLeftSize(sizes[0])}>
@@ -208,17 +175,13 @@ export default function ProblemDetail() {
           <Panel className="min-w-[40px] overflow-auto bg-background rounded-md" defaultSize={50}>
             <div ref={leftPanelRef} className="h-full overflow-hidden">
               <div className={cn("h-full flex flex-col transition-all duration-200", isCompactLeft ? "w-[40px]" : "")}>
-                <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} isCompact={isCompactLeft} />
+                <TabNavigation isCompact={isCompactLeft} />
 
                 <LeftPanelContent
                   id={id}
                   problemId={problemId}
-                  activeTab={activeTab}
                   isCompact={isCompactLeft}
                   description={description}
-                  editorial={editorial}
-                  solutions={solutions}
-                  submissions={submissions}
                 />
               </div>
             </div>
@@ -232,13 +195,9 @@ export default function ProblemDetail() {
               {/* Right Top Panel - Code Editor */}
               <Panel className="min-h-[40px] rounded-md overflow-hidden">
                 <CodePanel
-                  isSubmittedActive={isSubmittedActive}
-                  setIsSubmittedActive={setIsSubmittedActive}
                   isCompact={isCompactRight}
                   code={code}
                   onCodeChange={handleCodeChange}
-                  submitted={submitted}
-                  showSubmitted={showSubmitted}
                 />
               </Panel>
 

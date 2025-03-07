@@ -5,6 +5,8 @@ import ProblemDescription from "../tabs/description/problem-description"
 import ProblemEditorial from "../tabs/editorial/problem-editorial"
 import ProblemSolutions from "../tabs/solutions/problem-solutions"
 import ProblemSubmissions from "../tabs/submissions/problem-submissions"
+import { leftTabEnum } from "../../data/data"
+import { useState } from "react"
 
 
 /**
@@ -18,13 +20,25 @@ import ProblemSubmissions from "../tabs/submissions/problem-submissions"
  * @param {Array} props.submissions - Submissions data
  */
 export default function LeftPanelContent({ id, problemId, activeTab, isCompact, description, editorial, solutions, submissions }) {
+
+  const [showSolution, setShowSolution] = useState(false)
+  const [currentSolutionId, setCurrentSolutionId] = useState(0)
+
   return (
     <div className={cn("p-4 overflow-auto no-scrollbar flex-1 max-h-[calc(100vh-104px)] ", isCompact ? "hidden" : "")}>
       <div className="prose dark:prose-invert min-w-[420px]">
-        {activeTab === "description" && <ProblemDescription description={description} id={id} problemId={problemId} />}
-        {activeTab === "editorial" && <ProblemEditorial editorial={editorial} />}
-        {activeTab === "solutions" && <ProblemSolutions solutions={solutions} />}
-        {activeTab === "submissions" && <ProblemSubmissions submissions={submissions} />}
+        {activeTab === leftTabEnum.description && <ProblemDescription description={description} id={id} problemId={problemId} />}
+        {activeTab === leftTabEnum.editorial && <ProblemEditorial editorial={editorial} />}
+        {activeTab === leftTabEnum.solutions &&
+          <ProblemSolutions
+            solutions={solutions}
+            showSolution={showSolution}
+            setShowSolution={setShowSolution}
+            currentSolutionId={currentSolutionId}
+            setCurrentSolutionId={setCurrentSolutionId}
+          />
+        }
+        {activeTab === leftTabEnum.submissions && <ProblemSubmissions submissionsData={submissions} />}
       </div>
     </div>
   )

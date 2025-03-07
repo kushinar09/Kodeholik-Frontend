@@ -1,6 +1,6 @@
 export const editorConfig = {
   language: "java",
-  theme: "vs-dark",
+  theme: "vs-light",
   automaticLayout: true,
   minimap: {
     enabled: false

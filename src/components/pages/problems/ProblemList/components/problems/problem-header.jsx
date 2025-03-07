@@ -1,4 +1,4 @@
-import { RadialChart } from "@/components/common/radial-chart"
+import { RadialChart } from "@/components/common/shared/other/radial-chart"
 import { Card } from "@/components/ui/card"
 
 export function ProblemHeader({ stats }) {

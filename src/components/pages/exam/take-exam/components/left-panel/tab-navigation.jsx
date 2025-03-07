@@ -2,7 +2,6 @@
 
 import { cn } from "@/lib/utils"
 import { FileText, Edit, Lightbulb, CheckCircle } from "lucide-react"
-import { leftTabEnum } from "../../data/data"
 
 /**
  * Navigation tabs for the left panel
@@ -11,12 +10,9 @@ import { leftTabEnum } from "../../data/data"
  * @param {Function} props.onTabChange - Tab change handler
  * @param {boolean} props.isCompact - Whether the panel is in compact mode
  */
-export default function TabNavigation({ activeTab, onTabChange, isCompact }) {
+export default function TabNavigation({ isCompact }) {
   const tabs = [
-    { id: leftTabEnum.description, label: leftTabEnum.description, icon: FileText, lock: false },
-    { id: leftTabEnum.editorial, label: leftTabEnum.editorial, icon: Edit, lock: true },
-    { id: leftTabEnum.solutions, label: leftTabEnum.solutions, icon: Lightbulb, lock: true },
-    { id: leftTabEnum.submissions, label: leftTabEnum.submissions, icon: CheckCircle, lock: true }
+    { id: "description", label: "Description", icon: FileText, lock: false }
   ]
 
   return (
@@ -29,10 +25,8 @@ export default function TabNavigation({ activeTab, onTabChange, isCompact }) {
       {tabs.map((tab) => (
         <button
           key={tab.id}
-          onClick={() => onTabChange(tab.id, tab.label)}
           className={cn(
-            "rounded p-2 flex items-center gap-2 hover:bg-primary hover:text-primary-foreground transition-colors",
-            activeTab === tab.id ? "bg-primary text-black" : "text-primary/50 hover:text-primary hover:bg-primary/10",
+            "rounded p-2 flex items-center gap-2 hover:bg-primary hover:text-primary-foreground transition-colors bg-primary text-black",
             isCompact ? "flex-col w-[32px]" : "flex-row justify-start h-[32px]"
           )}
         >

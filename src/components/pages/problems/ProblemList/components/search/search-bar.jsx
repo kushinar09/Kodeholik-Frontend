@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { ENDPOINTS } from "@/lib/constants"
-import { useAuth } from "@/provider/AuthProvider"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/providers/AuthProvider"
 
 export function SearchBar({ search, setSearch, onSearchChange, isFiltersOpen, setIsFiltersOpen }) {
   const [suggestions, setSuggestions] = useState([])
