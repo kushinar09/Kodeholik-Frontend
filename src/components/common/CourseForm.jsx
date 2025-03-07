@@ -1,53 +1,53 @@
 "use client"
 
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { createCourse, updateCourse, getTopicList, getImage } from "@/lib/api/course_api";
-import { useAuth } from "@/context/AuthProvider";
-import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
-import { Button } from "../ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
-import { Checkbox } from "../ui/checkbox";
-import { Label } from "../ui/label";
-import { Switch } from "../ui/switch";
-import { ChevronDown, ChevronUp, Upload, X } from "lucide-react";
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { createCourse, updateCourse, getTopicList, getImage } from "@/lib/api/course_api"
+import { Input } from "../ui/input"
+import { Textarea } from "../ui/textarea"
+import { Button } from "../ui/button"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible"
+import { Checkbox } from "../ui/checkbox"
+import { Label } from "../ui/label"
+import { Switch } from "../ui/switch"
+import { ChevronDown, ChevronUp, Upload, X } from "lucide-react"
+import { useAuth } from "@/providers/AuthProvider"
 
 function CourseForm({ course }) {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     title: course?.title || "",
     description: course?.description || "",
     topicIds: course?.topicIds || [],
-    status: course?.status || "ACTIVATED",
-  });
-  const [topics, setTopics] = useState([]);
-  const [imageFile, setImageFile] = useState(null); // Store the file
-  const [imagePreview, setImagePreview] = useState(null); // Preview URL for new uploads
-  const [imageUrl, setImageUrl] = useState(null); // Fetched URL for existing image
-  const [isTopicsOpen, setIsTopicsOpen] = useState(false);
-  const [topicSearch, setTopicSearch] = useState("");
-  const [error, setError] = useState(null);
-  const { apiCall } = useAuth();
+    status: course?.status || "ACTIVATED"
+  })
+  const [topics, setTopics] = useState([])
+  const [imageFile, setImageFile] = useState(null) // Store the file
+  const [imagePreview, setImagePreview] = useState(null) // Preview URL for new uploads
+  const [imageUrl, setImageUrl] = useState(null) // Fetched URL for existing image
+  const [isTopicsOpen, setIsTopicsOpen] = useState(false)
+  const [topicSearch, setTopicSearch] = useState("")
+  const [error, setError] = useState(null)
+  const { apiCall } = useAuth()
 
   // Fetch topics
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const data = await getTopicList();
+        const data = await getTopicList()
         const formattedTopics = Array.isArray(data)
           ? data.map((topic) => ({ id: topic.id || topic, name: topic.name || topic }))
-          : [];
-        setTopics(formattedTopics);
-        setError(null);
+          : []
+        setTopics(formattedTopics)
+        setError(null)
       } catch (error) {
-        console.error("Error fetching topics:", error);
-        setTopics([]);
-        setError(error.message || "Failed to fetch topics");
+        console.error("Error fetching topics:", error)
+        setTopics([])
+        setError(error.message || "Failed to fetch topics")
       }
-    };
-    fetchTopics();
-  }, []);
+    }
+    fetchTopics()
+  }, [])
 
   // Fetch existing image URL if editing a course
   useEffect(() => {
@@ -55,121 +55,121 @@ function CourseForm({ course }) {
       if (course?.image) {
         try {
           // Assuming getImage is a function to fetch the image URL from your API
-          const url = await getImage(course.image); // Replace with actual API call
-          setImageUrl(url);
+          const url = await getImage(course.image) // Replace with actual API call
+          setImageUrl(url)
         } catch (error) {
-          console.error("Error fetching image:", error);
-          setError(error.message || "Failed to fetch course image");
+          console.error("Error fetching image:", error)
+          setError(error.message || "Failed to fetch course image")
         }
       }
-    };
-    fetchImage();
-  }, [course]);
+    }
+    fetchImage()
+  }, [course])
 
   // Clean up imagePreview URL to prevent memory leaks
   useEffect(() => {
     return () => {
       if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
+        URL.revokeObjectURL(imagePreview)
       }
-    };
-  }, [imagePreview]);
+    }
+  }, [imagePreview])
 
   const filteredTopics = topics.filter((topic) =>
     topic.name.toLowerCase().includes(topicSearch.toLowerCase())
-  );
+  )
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
-    }));
-  };
+      [name]: value
+    }))
+  }
 
   const handleTopicChange = (topicId) => {
     setFormData((prev) => ({
       ...prev,
       topicIds: prev.topicIds.includes(topicId)
         ? prev.topicIds.filter((id) => id !== topicId)
-        : [...prev.topicIds, topicId],
-    }));
-  };
+        : [...prev.topicIds, topicId]
+    }))
+  }
 
   const clearAllTopics = () => {
     setFormData((prev) => ({
       ...prev,
-      topicIds: [],
-    }));
-    setTopicSearch("");
-  };
+      topicIds: []
+    }))
+    setTopicSearch("")
+  }
 
   const handleImageUpload = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files[0]
     if (file) {
-      setImageFile(file);
+      setImageFile(file)
       // Revoke previous preview URL if it exists
       if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
+        URL.revokeObjectURL(imagePreview)
       }
       // Create a new preview URL
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
+      const previewUrl = URL.createObjectURL(file)
+      setImagePreview(previewUrl)
     }
-  };
+  }
 
   const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
+    e.preventDefault()
+    e.stopPropagation()
+  }
 
   const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      setImageFile(file);
+      const file = e.dataTransfer.files[0]
+      setImageFile(file)
       // Revoke previous preview URL if it exists
       if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
+        URL.revokeObjectURL(imagePreview)
       }
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
+      const previewUrl = URL.createObjectURL(file)
+      setImagePreview(previewUrl)
     }
-  };
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
+    e.preventDefault()
+    setError(null)
 
-    const formPayload = new FormData();
+    const formPayload = new FormData()
     const courseData = JSON.stringify({
       title: formData.title,
       description: formData.description,
       status: formData.status,
-      topicIds: formData.topicIds,
-    });
-    formPayload.append("data", new Blob([courseData], { type: "application/json" }));
+      topicIds: formData.topicIds
+    })
+    formPayload.append("data", new Blob([courseData], { type: "application/json" }))
 
     // Only append the image if a new file was uploaded
     if (imageFile) {
-      formPayload.append("image", imageFile);
+      formPayload.append("image", imageFile)
     }
 
     try {
       if (course?.id) {
         // Update existing course
-        await updateCourse(course.id, formPayload);
+        await updateCourse(course.id, formPayload)
       } else {
         // Create new course
-        await createCourse(formPayload, null, apiCall);
+        await createCourse(formPayload, null, apiCall)
       }
-      navigate("/coursesList");
+      navigate("/coursesList")
     } catch (error) {
-      console.error("Error submitting course:", error);
-      setError(error.message || "Failed to submit course");
+      console.error("Error submitting course:", error)
+      setError(error.message || "Failed to submit course")
     }
-  };
+  }
 
   return (
     <form
@@ -271,7 +271,7 @@ function CourseForm({ course }) {
               onCheckedChange={(checked) =>
                 setFormData((prev) => ({
                   ...prev,
-                  status: checked ? "ACTIVATED" : "DEACTIVATED",
+                  status: checked ? "ACTIVATED" : "DEACTIVATED"
                 }))
               }
               className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-gray-600"
@@ -326,8 +326,8 @@ function CourseForm({ course }) {
                     variant="destructive"
                     className="h-8 w-8 rounded-full bg-red-600/80 hover:bg-red-700 text-white"
                     onClick={() => {
-                      setImageFile(null);
-                      setImagePreview(null);
+                      setImageFile(null)
+                      setImagePreview(null)
                     }}
                   >
                     <X className="h-4 w-4" />
@@ -387,7 +387,7 @@ function CourseForm({ course }) {
         </Button>
       </div>
     </form>
-  );
+  )
 }
 
-export default CourseForm;
+export default CourseForm

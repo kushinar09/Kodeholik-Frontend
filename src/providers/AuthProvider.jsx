@@ -13,7 +13,8 @@ const authenticatedEndpoints = [
 
 const notCallRotateTokenEndpoints = [
   ENDPOINTS.ROTATE_TOKEN,
-  ENDPOINTS.POST_LOGOUT
+  ENDPOINTS.POST_LOGOUT,
+  ENDPOINTS.POST_LOGIN
 ]
 
 export const AuthProvider = ({ children }) => {
@@ -25,6 +26,7 @@ export const AuthProvider = ({ children }) => {
   const [refreshPromise, setRefreshPromise] = useState(null)
 
   const checkAuthStatus = async () => {
+    console.log("checkAuthStatus", isAuthenticated)
     try {
       const response = await apiCall(ENDPOINTS.GET_INFOR)
       if (response.ok) {

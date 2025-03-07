@@ -21,7 +21,7 @@ export default function ProblemEditorial({ editorial }) {
 
   const { isAuthenticated } = useAuth()
 
-  if (isAuthenticated) {
+  if (!isAuthenticated) {
     return (
       <div className="text-gray-500 flex items-center gap-2 justify-center mt-10">
         <svg

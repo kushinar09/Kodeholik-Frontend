@@ -23,7 +23,7 @@ export default function LoginPage() {
     password: ""
   })
 
-  const { isAuthenticated, setIsAuthenticated } = useAuth()
+  const { isAuthenticated, setIsAuthenticated, apiCall } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -105,7 +105,7 @@ export default function LoginPage() {
       if (Object.keys(newErrors).length > 0) {
         setErrors(newErrors)
       } else {
-        const result = await login(formData)
+        const result = await login(apiCall, formData)
         if (!result.status) {
           if (result.error) {
             newErrors.general = result.error

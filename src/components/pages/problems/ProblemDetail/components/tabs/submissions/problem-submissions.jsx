@@ -62,7 +62,7 @@ export default function ProblemSubmissions({ submissionsData }) {
     return status.replace(/_/g, " ")
   }
 
-  if (isAuthenticated) {
+  if (!isAuthenticated) {
     return (
       <div className="text-gray-500 flex items-center gap-2 justify-center mt-10">
         <svg
@@ -96,7 +96,7 @@ export default function ProblemSubmissions({ submissionsData }) {
           {submissions && submissions.length > 0 ? (
             <Card className="w-full">
               <CardContent className="p-0">
-                <div className="rounded-md border px-2">
+                <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -109,7 +109,9 @@ export default function ProblemSubmissions({ submissionsData }) {
                         </TableHead>
                         <TableHead>Runtime</TableHead>
                         <TableHead>Memory</TableHead>
-                        <TableHead>Submitted</TableHead>
+                        <TableHead className="cursor-pointer" onClick={() => handleSort("createdAt")}>
+                          Submitted {renderSortIndicator("createdAt")}
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

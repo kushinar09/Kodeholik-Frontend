@@ -103,7 +103,7 @@ export default function ProblemSolutions({
     setShowSolution(false)
   }
 
-  if (isAuthenticated) {
+  if (!isAuthenticated) {
     return (
       <div className="text-gray-500 flex flex-col items-center gap-2 justify-center mt-10 p-8 border border-gray-200 rounded-lg shadow-sm">
         <svg
