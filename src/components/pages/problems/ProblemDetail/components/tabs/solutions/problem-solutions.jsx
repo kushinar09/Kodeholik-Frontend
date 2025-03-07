@@ -18,6 +18,27 @@ import {
 } from "@/components/ui/pagination"
 import SolutionCard from "./items/solution-card"
 import SolutionDetail from "./items/solution-detail"
+import { ENDPOINTS } from "@/lib/constants"
+
+const sortValue =
+{
+  VOTE: {
+    label: "Most Votes",
+    value: "VOTE",
+    ascending: false
+  },
+  DATA: {
+    label: "Most Recent",
+    value: "DATE",
+    ascending: false
+  },
+  COMMENT: {
+    label: "Hot",
+    value: "COMMENT",
+    ascending: false
+  }
+}
+
 
 export default function ProblemSolutions({
   solutions,
@@ -25,50 +46,18 @@ export default function ProblemSolutions({
   setShowSolution,
   currentSolutionId = 0,
   setCurrentSolutionId,
-  onchangeFilter = null,
-  currentPage = 1,
-  totalPages = 5,
-  topic = []
+  onchangeFilter = null
 }) {
   const { isAuthenticated } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTopics, setSelectedTopics] = useState([])
-  const [sortBy, setSortBy] = useState("MOST VOTE")
-  const [page, setPage] = useState(currentPage)
+  const [sortBy, setSortBy] = useState("")
+  const [asc, setAsc] = useState(false)
+  const [page, setPage] = useState(0)
+  const [skills, setSkills] = useState([])
+  const sizePage = 10
   const [showAllTopics, setShowAllTopics] = useState(false)
   const containerRef = useRef(null)
-
-  const topics = [
-    "My Solution",
-    "Java",
-    "C++",
-    "Python3",
-    "Array",
-    "Hash Table",
-    "Two Pointers",
-    "Math",
-    "Sorting",
-    "Ordered Map",
-    "Binary Search",
-    "Hash Function",
-    "Iterator",
-    "Recursion"
-  ]
-
-  const sortList = [
-    {
-      label: "Most Votes",
-      value: "VOTE"
-    },
-    {
-      label: "Most Recent",
-      value: "DATA"
-    },
-    {
-      label: "Hot",
-      value: "COMMENT"
-    }
-  ]
 
   // Toggle topic selection
   function toggleTopic(topic) {
@@ -86,12 +75,38 @@ export default function ProblemSolutions({
     setSelectedTopics([])
   }
 
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const response = await fetch(ENDPOINTS.GET_SKILLS_PROBLEM)
+        const data = await response.json()
+        setSkills(data)
+      } catch (error) {
+        console.error("Error fetching skills:", error)
+      }
+    }
+
+    fetchSkills()
+  }, [])
+
+  useEffect(() => {
+    setPage(0)
+  }, [searchQuery, selectedTopics])
+
   // Apply filters and sorting to solutions
-  // useEffect(() => {
-  //   onchangeFilter(solutions, searchQuery, selectedTopics, sortBy)
-  //   setPage(0)
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [solutions, searchQuery, selectedTopics, sortBy])
+  useEffect(() => {
+    const param = {
+      page: page,
+      size: sizePage,
+      title: searchQuery,
+      languageName: "",
+      sortBy: sortBy,
+      ascending: asc,
+      topics: selectedTopics
+    }
+    onchangeFilter(param)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, searchQuery, selectedTopics, sortBy, asc])
 
   function handleClickSolution(id) {
     setCurrentSolutionId(id)
@@ -153,14 +168,16 @@ export default function ProblemSolutions({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {sortList.map((option) => (
-                  <DropdownMenuItem key={option.value} onClick={() => setSortBy(option.value)}>
+                {Object.values(sortValue).map((option) => (
+                  <DropdownMenuItem key={option.value} onClick={() => {
+                    setAsc(option.ascending)
+                    setSortBy(option.value)
+                  }}
+                  >
                     <div className="flex items-center w-full">
-                      {/* Ensure text has a fixed width so check icon stays aligned */}
                       <span className={`flex-1 ${sortBy === option.value ? "font-medium" : ""}`}>
                         {option.label}
                       </span>
-                      {/* Always keep the check icon aligned to the right */}
                       <div className="w-8 flex justify-end">
                         {sortBy === option.value && <Check className="h-4 w-4" />}
                       </div>
@@ -185,7 +202,7 @@ export default function ProblemSolutions({
                 >
                   All
                 </Button>
-                {topics.map((topic) => (
+                {skills.map((topic) => (
                   <Button
                     key={topic}
                     onClick={() => toggleTopic(topic)}
@@ -237,7 +254,7 @@ export default function ProblemSolutions({
               )}
 
               {/* Pagination using shadcn/ui components */}
-              {totalPages > 2 && (
+              {solutions.totalPages > 1 && (
                 <Pagination>
                   <PaginationContent>
                     <PaginationItem>
@@ -247,7 +264,7 @@ export default function ProblemSolutions({
                         disabled={page === 0}
                       />
                     </PaginationItem>
-                    {Array.from({ length: totalPages }).map((_, index) => (
+                    {Array.from({ length: solutions.totalPages }).map((_, index) => (
                       <PaginationItem key={index}>
                         <PaginationLink href="#" isActive={page === index} onClick={() => setPage(index)}>
                           {index + 1}
@@ -257,8 +274,8 @@ export default function ProblemSolutions({
                     <PaginationItem>
                       <PaginationNext
                         href="#"
-                        onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
-                        disabled={page === totalPages - 1}
+                        onClick={() => setPage((prev) => Math.min(prev + 1, solutions.totalPages - 1))}
+                        disabled={page === solutions.totalPages - 1}
                       />
                     </PaginationItem>
                   </PaginationContent>

@@ -11,13 +11,6 @@ export default function SolutionCard({ infor, handleClickSolution }) {
     .join("")
     .toUpperCase()
 
-  // Format the date
-  const formattedDate = new Date(infor.createdAt).toLocaleString("en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric"
-  })
-
   return (
     <Card className="w-full">
       <CardContent className="pt-6">
@@ -31,7 +24,7 @@ export default function SolutionCard({ infor, handleClickSolution }) {
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               <a href={`/profile/${infor.createdBy.username}`} target="_blank" className="font-medium">{infor.createdBy.username}</a>
-              <span className="text-muted-foreground text-sm">· {formattedDate}</span>
+              <span className="text-muted-foreground text-sm">· {infor.createdAt}</span>
             </div>
             <div className="cursor-pointer" onClick={() => handleClickSolution(infor.id)}>
               <p className="text-lg font-semibold mb-3">{infor.title}</p>

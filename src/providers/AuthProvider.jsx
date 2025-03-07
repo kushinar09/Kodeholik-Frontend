@@ -26,7 +26,6 @@ export const AuthProvider = ({ children }) => {
   const [refreshPromise, setRefreshPromise] = useState(null)
 
   const checkAuthStatus = async () => {
-    console.log("checkAuthStatus", isAuthenticated)
     try {
       const response = await apiCall(ENDPOINTS.GET_INFOR)
       if (response.ok) {
@@ -127,6 +126,20 @@ export const AuthProvider = ({ children }) => {
             default:
               throw new Error("Authentication failed")
           }
+        }
+      }
+
+      else {
+        switch (response.status) {
+          case 500:
+            navigate("/500")
+            break
+          case 403:
+            navigate("/403")
+            break
+          case 404:
+            navigate("/404")
+            break
         }
       }
 

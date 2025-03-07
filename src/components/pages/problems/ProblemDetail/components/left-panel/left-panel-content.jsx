@@ -19,7 +19,17 @@ import { useState } from "react"
  * @param {Object} props.solutions - Solutions data
  * @param {Array} props.submissions - Submissions data
  */
-export default function LeftPanelContent({ id, problemId, activeTab, isCompact, description, editorial, solutions, submissions }) {
+export default function LeftPanelContent({
+  id,
+  problemId,
+  activeTab,
+  isCompact,
+  description,
+  editorial,
+  solutions,
+  onchangeFilterSolutions,
+  submissions
+}) {
 
   const [showSolution, setShowSolution] = useState(false)
   const [currentSolutionId, setCurrentSolutionId] = useState(0)
@@ -36,6 +46,7 @@ export default function LeftPanelContent({ id, problemId, activeTab, isCompact, 
             setShowSolution={setShowSolution}
             currentSolutionId={currentSolutionId}
             setCurrentSolutionId={setCurrentSolutionId}
+            onchangeFilter={onchangeFilterSolutions}
           />
         }
         {activeTab === leftTabEnum.submissions && <ProblemSubmissions submissionsData={submissions} />}
