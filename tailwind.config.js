@@ -5,7 +5,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        // mono: ["Anonymous Pro", "monospace"]
+        code: ["Monolisa", "monospace"],
         mono: ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "Helvetica", "Arial", "sans-serif", "Apple Color Emoji", "Segoe UI Emoji"]
       },
       colors: {

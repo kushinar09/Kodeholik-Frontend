@@ -19,12 +19,18 @@ import LeftPanelContent from "./components/left-panel/left-panel-content"
 import CodePanel from "./components/right-panel/code-panel"
 import TestCasePanel from "./components/right-panel/test-case-panel"
 import { useAuth } from "@/providers/AuthProvider"
+import { mockEditorial, mockSolutions, mockSubmissions } from "./fake-data"
+import { leftTabEnum } from "./data/data"
 
 export default function ProblemDetail() {
   const { id } = useParams()
   const { apiCall } = useAuth()
 
   const [problemId, setProblemId] = useState(0)
+
+  const [openedTabEditorial, setOpenedTabEditorial] = useState(false)
+  const [openedTabSolution, setOpenedTabSolution] = useState(false)
+  const [openedTabSubmission, setOpenedTabSubmission] = useState(false)
 
   // Panel state
   const [leftSize, setLeftSize] = useState(50)
@@ -33,7 +39,7 @@ export default function ProblemDetail() {
   const [isCompactRight, setIsCompactRight] = useState(false)
 
   // Tab state
-  const [activeTab, setActiveTab] = useState("description")
+  const [activeTab, setActiveTab] = useState(leftTabEnum.description)
 
   // Problem data state
   const [description, setDescription] = useState(null)
@@ -86,21 +92,23 @@ export default function ProblemDetail() {
 
   // Data fetching
   const fetchData = (typeData) => {
-    switch (typeData) {
-      case "Description":
-        fetchProblemDescription()
-        break
-      case "Editorial":
+    if (typeData === leftTabEnum.description) {
+      fetchProblemDescription()
+    } else if (typeData === leftTabEnum.editorial) {
+      if (!openedTabEditorial) {
         fetchProblemEditorial()
-        break
-      case "Solutions":
+        setOpenedTabEditorial(true)
+      }
+    } else if (typeData === leftTabEnum.solutions) {
+      if (!openedTabSolution) {
         fetchProblemSolutions()
-        break
-      case "Submissions":
-        // TODO: Implement submissions fetching
-        break
-      default:
-        break
+        setOpenedTabSolution(true)
+      }
+    } else if (typeData === leftTabEnum.submissions) {
+      if (!openedTabSubmission) {
+        fetchProblemSubmission()
+        setOpenedTabSubmission(true)
+      }
     }
   }
 
@@ -116,23 +124,33 @@ export default function ProblemDetail() {
   }
 
   const fetchProblemEditorial = async () => {
-    if (!id) return
-    if (!editorial) {
-      const result = await getProblemEditorial(apiCall, id)
-      if (result.status && result.data) {
-        setEditorial(result.data)
-      }
-    }
+    // if (!id) return
+    // if (!editorial) {
+    //   const result = await getProblemEditorial(apiCall, id)
+    //   if (result.status && result.data) {
+    //     setEditorial(result.data)
+    //   }
+    // }
+    const eds = mockEditorial.editorialDtos[0]
+    setEditorial(eds)
   }
 
   const fetchProblemSolutions = async () => {
-    if (!id) return
-    if (!solutions) {
-      const result = await getProblemSolutions(apiCall, id, 0, 10)
-      if (result.status && result.data) {
-        setSolutions(result.data)
-      }
-    }
+    // if (!id) return
+    // if (!solutions) {
+    //   const result = await getProblemSolutions(apiCall, id, 0, 10)
+    //   if (result.status && result.data) {
+    //     setSolutions(result.data)
+    //   }
+    // }
+    const sos = mockSolutions
+    setSolutions(sos)
+  }
+
+  const fetchProblemSubmission = async () => {
+    // TODO: fetch submissions
+    const sus = mockSubmissions
+    setSubmissions(sus)
   }
 
   // Initial data loading

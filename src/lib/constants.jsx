@@ -48,8 +48,8 @@ const ENDPOINTS = {
   GET_PROBLEM_INIT_CODE: `${API_URL}/problem/compile-information/:id`,
 
   GET_PROBLEM_COMMENTS: `${API_URL}/comment/problem/:id`,
-  POST_COMMENT_PROBLEM: `${API_URL}/comment/post`,
-  GET_PROBLEM_COMMENTS_REPLY: `${API_URL}/comment/list-reply/:id`,
+  POST_COMMENT: `${API_URL}/comment/post`,
+  GET_COMMENTS_REPLY: `${API_URL}/comment/list-reply/:id`,
 
   GET_PROBLEM_SOLUTIONS: `${API_URL}/problem-solution/list/:id`,
   GET_PROBLEM_SUBMISSIONS: `${API_URL}/problem/submissions/:id`,
@@ -61,6 +61,9 @@ const ENDPOINTS = {
   GET_TOPICS_PROBLEM: `${API_URL}/tag/all-topic`,
   GET_SKILLS_PROBLEM: `${API_URL}/tag/all-skill`,
   GET_STATS_PROBLEM: `${API_URL}/problem/no-achieved-info`,
+
+  // Solutions
+  GET_SOLUTION_COMMENTS: `${API_URL}/comment/problem-solution/:id`,
 
   // Search
   GET_SUGGEST_SEARCH: `${API_URL}/problem/suggest?searchText=:text`,

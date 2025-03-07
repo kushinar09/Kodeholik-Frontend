@@ -63,8 +63,8 @@ export async function getProblemList(page = 0, size, sortBy, ascending, body) {
   return JSON.parse(text)
 }
 
-export async function postCommentProblem(apiCall, id, comment, commentReply = null) {
-  const response = await apiCall(ENDPOINTS.POST_COMMENT_PROBLEM.replace(":id", id), {
+export async function postComment(apiCall, id, comment, commentReply = null) {
+  const response = await apiCall(ENDPOINTS.POST_COMMENT.replace(":id", id), {
     method: "POST",
     headers: {
       "Content-Type": "application/json"

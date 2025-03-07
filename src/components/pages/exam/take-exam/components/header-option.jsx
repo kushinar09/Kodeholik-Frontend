@@ -1,9 +1,10 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ListChecksIcon, Play} from "lucide-react"
+import { ListChecksIcon, Play, Clock } from "lucide-react"
 import { LOGO } from "@/lib/constants"
 import UserActionMenu from "@/components/common/shared/other/user-action-menu"
+import CountdownTimer from "@/components/common/shared/other/countdown-timer"
 
 /**
  * Header component for the problem detail page
@@ -21,10 +22,16 @@ export default function HeaderOption({ onRun }) {
               <LOGO className="size-8" />
             </div>
           </div>
-          <Button variant="ghost" className="w-fit p-2 px-3 bg-bg-primary/80 text-input-text">
-            <ListChecksIcon className="w-6 h-6" />
-            <span className="text-sm font-bold pl-2">Back to Question list</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" className="w-fit p-2 px-3 bg-bg-primary/80 text-input-text">
+              <ListChecksIcon className="w-6 h-6" />
+              <span className="text-sm font-bold pl-2">Back to Question list</span>
+            </Button>
+            <div className="flex items-center gap-2 bg-bg-primary/80 p-2 px-4 rounded-md text-input-text">
+              <Clock className="w-4 h-4 text-primary" />
+              <CountdownTimer initialMinutes={30} />
+            </div>
+          </div>
         </div>
         <UserActionMenu />
       </nav>

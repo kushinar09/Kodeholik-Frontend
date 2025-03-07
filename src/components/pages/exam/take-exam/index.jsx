@@ -48,6 +48,54 @@ export default function TakeExam() {
   const [showResult, setShowResult] = useState(false)
   const [isResultActive, setIsResultActive] = useState(false)
 
+  const [isVisible, setIsVisible] = useState(true)
+  const [warningCount, setWarningCount] = useState(0)
+  const maxWarnings = 0
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && warningCount < maxWarnings) {
+        setWarningCount((prev) => prev + 1)
+        alert(`Warning: Do not switch tabs! Warnings left: ${maxWarnings - (warningCount + 1)}`)
+      } else if (!document.hidden) {
+        setIsVisible(true)
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+    }
+  }, [warningCount, maxWarnings])
+
+  useEffect(() => {
+    if (warningCount >= maxWarnings) {
+      // onPenalty()
+    }
+  }, [warningCount, maxWarnings])
+
+  // useEffect(() => {
+  //   const handleKeyDown = (event) => {
+  //     if ((event.ctrlKey && (event.key === "c" || event.key === "v")) || event.key === "F12") {
+  //       event.preventDefault()
+  //       alert("Shortcuts are disabled during the test.")
+  //     }
+  //   }
+
+  //   const handleRightClick = (event) => {
+  //     event.preventDefault()
+  //     alert("Right-click is disabled during the test.")
+  //   }
+
+  //   window.addEventListener("keydown", handleKeyDown)
+  //   window.addEventListener("contextmenu", handleRightClick)
+
+  //   return () => {
+  //     window.removeEventListener("keydown", handleKeyDown)
+  //     window.removeEventListener("contextmenu", handleRightClick)
+  //   }
+  // }, [])
+
   // Panel resize detection
   useEffect(() => {
     if (leftPanelRef.current?.parentElement) {
@@ -83,95 +131,6 @@ export default function TakeExam() {
       }
     }
   }
-  // const [alertCount, setAlertCount] = useState(0)
-  // const maxAlerts = 3
-
-  // const handleVisibilityChange = () => {
-  //   if (document.hidden) {
-  //     if (alertCount < maxAlerts) {
-  //       alert(`Stay on this tab! Changed ${alertCount + 1} times. Over ${maxAlerts} times = 0 points!`)
-  //       setAlertCount(prev => prev + 1)
-  //     } else {
-  //       console.warn("Too many tab changes! Consider logging this event or taking action.")
-  //     }
-  //   }
-  // }
-
-  // const handleFullScreen = () => {
-  //   if (!document.fullscreenElement) {
-  //     document.documentElement.requestFullscreen().catch(err => {
-  //       console.error("Fullscreen request failed:", err)
-  //     })
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   document.addEventListener("visibilitychange", handleVisibilityChange)
-  //   window.addEventListener("blur", () => window.focus())
-  //   document.addEventListener("fullscreenchange", () => {
-  //     if (!document.fullscreenElement) {
-  //       alert("Full-screen mode is required for this test.")
-  //       handleFullScreen()
-  //     }
-  //   })
-
-  //   return () => {
-  //     document.removeEventListener("visibilitychange", handleVisibilityChange)
-  //     window.removeEventListener("blur", () => window.focus())
-  //     document.removeEventListener("fullscreenchange", handleFullScreen)
-  //   }
-  // // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [alertCount])
-
-  const [isVisible, setIsVisible] = useState(true)
-  const [warningCount, setWarningCount] = useState(0)
-  const maxWarnings = 4
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden && warningCount < maxWarnings) {
-        setWarningCount((prev) => prev + 1)
-        alert(`Warning: Do not switch tabs! Warnings left: ${maxWarnings - (warningCount + 1)}`)
-      } else if (!document.hidden) {
-        setIsVisible(true)
-      }
-    }
-
-    document.addEventListener("visibilitychange", handleVisibilityChange)
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange)
-    }
-  }, [warningCount, maxWarnings]) // Add `warningCount` as dependency to keep track of the latest value
-
-  useEffect(() => {
-    if (warningCount >= maxWarnings) {
-      // onPenalty()
-    }
-  }, [warningCount, maxWarnings])
-
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      // Block Ctrl+C, Ctrl+V, and F12
-      if ((event.ctrlKey && (event.key === "c" || event.key === "v")) || event.key === "F12") {
-        event.preventDefault()
-        alert("Shortcuts are disabled during the test.")
-      }
-    }
-
-    const handleRightClick = (event) => {
-      // Prevent right-click context menu
-      event.preventDefault()
-      alert("Right-click is disabled during the test.")
-    }
-
-    window.addEventListener("keydown", handleKeyDown)
-    window.addEventListener("contextmenu", handleRightClick)
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown)
-      window.removeEventListener("contextmenu", handleRightClick)
-    }
-  }, [])
 
   // Initial data loading
   useEffect(() => {

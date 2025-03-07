@@ -18,19 +18,9 @@ import ForbiddenError from "./components/pages/errors/forbidden"
 import NotFoundError from "./components/pages/errors/not-found-error"
 import GeneralError from "./components/pages/errors/general-error"
 import MaintenanceError from "./components/pages/errors/maintenance-error"
+import WaitingRoom from "./components/pages/exam/waiting-room"
+import CodeEditor from "./components/common/editor-code/CodeEditor"
 
-// components
-
-// Create problem: Detail: title, difficulty (EASY - MEDIUM - HARD), description, status: PUBLIC - PRIVATE, topics, skills, isActive (bool), languageSupport ("Java", "C")
-// Input parameters: funtionSignature, returnType (get from api - have other), language, parameters (list <String inputName, String inputType>)
-// Editorial: editorialTitle, editorialTextSolution, editorialSkills, solutionCode (List<String solutionlanguage String solutionCode>)
-// Test cases:
-// TODO: input test case, if input array -> input size
-// template input:
-// C, java: note for input
-
-
-// TODO: exam: no copy, no switch tab, show time clock
 function App() {
   const queryClient = new QueryClient()
   return (
@@ -41,7 +31,7 @@ function App() {
             <div className="mx-auto">
               <Routes>
                 {/* exam */}
-                <Route path="/exam/:id/wait" element={<TakeExam />} />
+                <Route path="/exam/:id/wait" element={<WaitingRoom />} />
                 <Route path="/exam" element={<TakeExam />} />
                 <Route path="/exam/:id/" element={<TakeExam />} />
 
@@ -52,6 +42,14 @@ function App() {
 
                 {/* test */}
                 <Route path="/markdown" element={<MarkdownEditor />} />
+                <Route path="/code" element={
+                  <div className="overflow-auto flex-1">
+                    <div className="min-w-[420px] h-full">
+                      <CodeEditor onChange={null} />
+                    </div>
+                  </div>
+                }
+                />
 
                 {/* auth */}
                 <Route path="/login" element={<LoginPage />} />

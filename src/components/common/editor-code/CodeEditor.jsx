@@ -10,7 +10,22 @@ import { JavaFormatter } from "./format-config"
 
 let isCompletionProviderRegistered = false
 
-export default function CodeEditor({ initialCode, onChange }) {
+self.MonacoEnvironment = {
+  getWorkerUrl: function (moduleId, label) {
+    const workerMap = {
+      json: "json.worker.js",
+      css: "css.worker.js",
+      html: "html.worker.js",
+      typescript: "ts.worker.js",
+      javascript: "ts.worker.js",
+      java: "editor.worker.js"
+    }
+    return `/monaco-editor-worker/${workerMap[label] || "editor.worker.js"}`
+  }
+}
+
+
+export default function CodeEditor({ initialCode, onChange, className = "" }) {
   const editorRef = useRef(null)
   const [editor, setEditor] = useState(null)
   const [breakpoints, setBreakpoints] = useState(new Map()) // Track breakpoints
@@ -21,8 +36,8 @@ export default function CodeEditor({ initialCode, onChange }) {
 
       const editorInstance = monaco.editor.create(editorRef.current, {
         ...editorConfig,
-        value: initialCode ? initialCode : INITIAL_CODE_DEFAULT,
-        glyphMargin: true // Enable breakpoints
+        value: initialCode || INITIAL_CODE_DEFAULT,
+        glyphMargin: true
       })
 
       if (!isCompletionProviderRegistered) {
@@ -39,7 +54,6 @@ export default function CodeEditor({ initialCode, onChange }) {
         }
       })
 
-      // Listen for gutter clicks to toggle breakpoints
       editorInstance.onMouseDown((e) => {
         if (e.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
           const lineNumber = e.target.position.lineNumber
@@ -50,11 +64,11 @@ export default function CodeEditor({ initialCode, onChange }) {
       setEditor(editorInstance)
 
       return () => {
-        editorInstance.getModel()?.dispose() // Dispose the model
+        editorInstance.getModel()?.dispose()
         editorInstance.dispose()
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const toggleBreakpoint = (editor, lineNumber) => {
@@ -81,11 +95,9 @@ export default function CodeEditor({ initialCode, onChange }) {
     })
   }
 
-
-
   return (
-    <div className="w-full h-full">
-      <div ref={editorRef} className="w-full h-full" />
+    <div className={`w-full h-full ${className}`}>
+      <div ref={editorRef} className="w-full h-full min-h-[200px]" />
       <style>
         {`
           .breakpoint-icon::after {
@@ -96,7 +108,7 @@ export default function CodeEditor({ initialCode, onChange }) {
             margin-left: 4px;
             height: 10px;
             width: 10px;
-            background-color:rgb(226, 74, 66);
+            background-color: rgb(226, 74, 66);
           }
         `}
       </style>

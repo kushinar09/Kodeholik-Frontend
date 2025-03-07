@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { FileText, Edit, Lightbulb, CheckCircle } from "lucide-react"
+import { leftTabEnum } from "../../data/data"
 
 /**
  * Navigation tabs for the left panel
@@ -12,10 +13,10 @@ import { FileText, Edit, Lightbulb, CheckCircle } from "lucide-react"
  */
 export default function TabNavigation({ activeTab, onTabChange, isCompact }) {
   const tabs = [
-    { id: "description", label: "Description", icon: FileText, lock: false },
-    { id: "editorial", label: "Editorial", icon: Edit, lock: true },
-    { id: "solutions", label: "Solutions", icon: Lightbulb, lock: true },
-    { id: "submissions", label: "Submissions", icon: CheckCircle, lock: true }
+    { id: leftTabEnum.description, label: leftTabEnum.description, icon: FileText, lock: false },
+    { id: leftTabEnum.editorial, label: leftTabEnum.editorial, icon: Edit, lock: true },
+    { id: leftTabEnum.solutions, label: leftTabEnum.solutions, icon: Lightbulb, lock: true },
+    { id: leftTabEnum.submissions, label: leftTabEnum.submissions, icon: CheckCircle, lock: true }
   ]
 
   return (
