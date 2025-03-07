@@ -23,7 +23,7 @@ export default function ProblemSubmissions({ submissionsData }) {
 
   const [sortField, setSortField] = useState(null)
   const [sortDirection, setSortDirection] = useState("asc")
-  const [submissions, setSubmissions] = useState([...submissionsData])
+  const [submissions, setSubmissions] = useState(submissionsData)
 
   const handleSort = (field) => {
     const newDirection = sortField === field && sortDirection === "asc" ? "desc" : "asc"
@@ -126,7 +126,11 @@ export default function ProblemSubmissions({ submissionsData }) {
                             {submission.executionTime > 0 ? `${submission.executionTime.toFixed(1)} ms` : "-"}
                           </TableCell>
                           <TableCell>{submission.memoryUsage > 0 ? `${submission.memoryUsage.toFixed(1)} MB` : "-"}</TableCell>
-                          <TableCell>{format(new Date(submission.createdAt), "MMM d, yyyy HH:mm")}</TableCell>
+                          <TableCell>
+                            {submission.createdAt && !isNaN(new Date(submission.createdAt).getTime())
+                              ? format(new Date(submission.createdAt), "MMM d, yyyy HH:mm")
+                              : "N/A"}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

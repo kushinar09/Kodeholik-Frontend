@@ -9,9 +9,13 @@ import { useEffect, useState } from "react"
 import { ArrowBigLeftDash, ArrowLeft } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import DiscussionSection from "./solution-comments"
+import { ENDPOINTS } from "@/lib/constants"
 
 export default function SolutionDetail({ solutionId, handleBack }) {
   const [solution, setSolution] = useState(null)
+  const { apiCall } = useAuth()
+
+
 
   useEffect(() => {
     const fakedata = {
@@ -56,8 +60,14 @@ export default function SolutionDetail({ solutionId, handleBack }) {
       ],
       "problemImplementation": false
     }
-    setSolution(fakedata)
+    fetchSolutionDetail(solutionId)
   }, [])
+
+  async function fetchSolutionDetail(id) {
+    const response = await apiCall(ENDPOINTS.GET_SOLUTION_DETAIL.replace(":id", id))
+    const data = await response.json()
+    setSolution(data)
+  }
 
   useEffect(() => {
     document.querySelectorAll("pre code").forEach((block) => {
@@ -68,7 +78,7 @@ export default function SolutionDetail({ solutionId, handleBack }) {
 
   const { isAuthenticated } = useAuth()
 
-  if (isAuthenticated) {
+  if (!isAuthenticated) {
     return (
       <div className="text-gray-500 flex items-center gap-2 justify-center mt-10">
         <svg

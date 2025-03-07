@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { useParams } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels"
@@ -9,7 +9,7 @@ import "highlight.js/styles/default.css"
 import "./styles.css"
 
 // API imports
-import { getProblemDescription, getProblemEditorial, getProblemInitCode, getProblemSolutions } from "@/lib/api/problem_api"
+import { getProblemDescription, getProblemEditorial, getProblemInitCode, getProblemSolutions, getProblemSubmission } from "@/lib/api/problem_api"
 import { runCode, submitCode } from "@/lib/api/code_api"
 
 // Component imports
@@ -21,6 +21,7 @@ import TestCasePanel from "./components/right-panel/test-case-panel"
 import { useAuth } from "@/providers/AuthProvider"
 import { mockEditorial, mockSolutions, mockSubmissions } from "./fake-data"
 import { leftTabEnum } from "./data/data"
+import { debounce } from "lodash"
 
 export default function ProblemDetail() {
   const { id } = useParams()
@@ -30,7 +31,6 @@ export default function ProblemDetail() {
 
   const [openedTabEditorial, setOpenedTabEditorial] = useState(false)
   const [openedTabSolution, setOpenedTabSolution] = useState(false)
-  const [openedTabSubmission, setOpenedTabSubmission] = useState(false)
 
   // Panel state
   const [leftSize, setLeftSize] = useState(50)
@@ -105,17 +105,14 @@ export default function ProblemDetail() {
         setOpenedTabSolution(true)
       }
     } else if (typeData === leftTabEnum.submissions) {
-      if (!openedTabSubmission) {
-        fetchProblemSubmission()
-        setOpenedTabSubmission(true)
-      }
+      fetchProblemSubmission()
     }
   }
 
   const fetchProblemDescription = async () => {
     if (!id) return
     if (!description) {
-      const result = await getProblemDescription(id)
+      const result = await getProblemDescription(apiCall, id)
       if (result.status && result.data) {
         setDescription(result.data)
         setProblemId(result.data.id)
@@ -124,33 +121,80 @@ export default function ProblemDetail() {
   }
 
   const fetchProblemEditorial = async () => {
-    // if (!id) return
-    // if (!editorial) {
-    //   const result = await getProblemEditorial(apiCall, id)
-    //   if (result.status && result.data) {
-    //     setEditorial(result.data)
-    //   }
-    // }
-    const eds = mockEditorial.editorialDtos[0]
-    setEditorial(eds)
+    if (!id) return
+    if (!editorial) {
+      const result = await getProblemEditorial(apiCall, id)
+      if (result.status && result.data) {
+        setEditorial(result.data)
+      }
+    }
+    // const eds = mockEditorial.editorialDtos[0]
+    // setEditorial(eds)
   }
 
-  const fetchProblemSolutions = async () => {
-    // if (!id) return
-    // if (!solutions) {
-    //   const result = await getProblemSolutions(apiCall, id, 0, 10)
-    //   if (result.status && result.data) {
-    //     setSolutions(result.data)
-    //   }
-    // }
-    const sos = mockSolutions
-    setSolutions(sos)
-  }
+  const fetchProblemSolutions = useCallback(
+    debounce(async (
+      page = 0,
+      size = 10,
+      title = null,
+      languageName = null,
+      sortBy = null,
+      ascending = null,
+      topics = []
+    ) => {
+      if (!id) return
+      if (!solutions || page != null) {
+        const result = await getProblemSolutions(apiCall, id, page, size, title, languageName, sortBy, ascending, topics)
+        if (result.status) {
+          setSolutions(result.data)
+        }
+      }
+    }, 500), // Debounce 500ms
+    []
+  )
+
+  // const fetchProblemSolutions = async (
+  //   page = 0,
+  //   size = 10,
+  //   title = null,
+  //   languageName = null,
+  //   sortBy = null,
+  //   ascending = null,
+  //   topics = []
+  // ) => {
+  //   if (!id) return
+  //   if (!solutions || page != null) {
+  //     const result = await getProblemSolutions(apiCall, id, page, size, title, languageName, sortBy, ascending, topics)
+  //     if (result.status && result.data) {
+  //       setSolutions(result.data)
+  //     }
+  //   }
+  //   // const sos = mockSolutions
+  //   // setSolutions(sos)
+  // }
 
   const fetchProblemSubmission = async () => {
-    // TODO: fetch submissions
-    const sus = mockSubmissions
-    setSubmissions(sus)
+    if (!id) return
+    if (!submissions) {
+      const result = await getProblemSubmission(apiCall, id)
+      if (result.status && result.data) {
+        setSubmissions(result.data)
+      }
+    }
+    //   const sus = mockSubmissions
+    //   setSubmissions(sus)
+  }
+
+  function onchangeFilterSolutions(param) {
+    fetchProblemSolutions(
+      param.page,
+      param.size,
+      param.title,
+      param.languageName,
+      param.sortBy,
+      param.ascending,
+      param.topics
+    )
   }
 
   // Initial data loading
@@ -219,6 +263,7 @@ export default function ProblemDetail() {
                   editorial={editorial}
                   solutions={solutions}
                   submissions={submissions}
+                  onchangeFilterSolutions={onchangeFilterSolutions}
                 />
               </div>
             </div>

@@ -64,7 +64,7 @@ export default function DiscussionSection({ solutionId }) {
 
   async function UploadComment() {
     try {
-      const response = await postComment(apiCall, solutionId, comment)
+      const response = await postComment(apiCall, solutionId, comment, null, "SOLUTION")
       if (response.status) {
         setComment("")
         setTotalComments(totalComments + 1)

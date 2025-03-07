@@ -1,7 +1,7 @@
 import { ENDPOINTS } from "../constants"
 
-export async function getProblemDescription(id) {
-  const response = await fetch(ENDPOINTS.GET_PROBLEM_DESCRIPTION.replace(":id", id))
+export async function getProblemDescription(apiCall, id) {
+  const response = await apiCall(ENDPOINTS.GET_PROBLEM_DESCRIPTION.replace(":id", id))
   if (response.ok) {
     return { status: true, data: await response.json() }
   }
@@ -26,16 +26,55 @@ export async function getProblemEditorial(apiCall, id) {
   return { status: false }
 }
 
-export async function getProblemSolutions(apiCall, id, page = 0, size = 15, title, languageName, sortBy, ascending) {
-  const url = `${ENDPOINTS.GET_PROBLEM_SOLUTIONS.replace(":id", id)}${"?page=" + page}${size ? "&size=" + size : ""}${title ? "&title=" + title : ""}${languageName ? "&languageName=" + languageName : ""}${sortBy ? "&sortBy=" + sortBy : ""}${ascending ? "&ascending=" + ascending : ""}`
+export async function getProblemSolutions(apiCall, id, page = 0, size = 15, title, languageName, sortBy, ascending, topics) {
+  const url = `${ENDPOINTS.GET_PROBLEM_SOLUTIONS.replace(":id", id)}${"?page=" + page}${size ? "&size=" + size : ""}${title ? "&title=" + title : ""}${languageName ? "&languageName=" + languageName : ""}${sortBy ? "&sortBy=" + sortBy : ""}${sortBy ? "&ascending=" + ascending : ""}`
   const response = await apiCall(url, {
     method: "POST",
-    // body: JSON.stringify(body)
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(topics)
   })
   if (response.ok) {
-    const data = await response.json()
-    console.log(data)
-    return { status: true, data: data }
+    const text = await response.text()
+
+    if (!text) {
+      return { status: true, data: null }
+    }
+
+    try {
+      const data = JSON.parse(text)
+      return { status: true, data }
+    } catch (error) {
+      console.error("Error parsing JSON:", error)
+      return { status: false, error: "Invalid JSON format" }
+    }
+  }
+
+
+  if (response.status === 404) {
+    return { status: false, message: "Problem not found" }
+  }
+
+  return { status: false }
+}
+
+export async function getProblemSubmission(apiCall, problemId) {
+  const url = ENDPOINTS.GET_PROBLEM_SUBMISSIONS.replace(":id", problemId)
+  const response = await apiCall(url)
+  if (response.ok) {
+    const text = await response.text()
+    if (!text) {
+      return { status: true, data: null }
+    }
+
+    try {
+      const data = JSON.parse(text)
+      return { status: true, data }
+    } catch (error) {
+      console.error("Error parsing JSON:", error)
+      return { status: false, error: "Invalid JSON format" }
+    }
   }
 
   if (response.status === 404) {
@@ -63,7 +102,7 @@ export async function getProblemList(page = 0, size, sortBy, ascending, body) {
   return JSON.parse(text)
 }
 
-export async function postComment(apiCall, id, comment, commentReply = null) {
+export async function postComment(apiCall, id, comment, commentReply = null, type = "PROBLEM") {
   const response = await apiCall(ENDPOINTS.POST_COMMENT.replace(":id", id), {
     method: "POST",
     headers: {
@@ -72,7 +111,7 @@ export async function postComment(apiCall, id, comment, commentReply = null) {
     body: JSON.stringify(
       {
         "comment": comment,
-        "location": "PROBLEM",
+        "location": type,
         "locationId": id,
         "commentReply": commentReply
       }

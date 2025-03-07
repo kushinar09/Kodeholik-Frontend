@@ -52,7 +52,7 @@ const ENDPOINTS = {
   GET_COMMENTS_REPLY: `${API_URL}/comment/list-reply/:id`,
 
   GET_PROBLEM_SOLUTIONS: `${API_URL}/problem-solution/list/:id`,
-  GET_PROBLEM_SUBMISSIONS: `${API_URL}/problem/submissions/:id`,
+  GET_PROBLEM_SUBMISSIONS: `${API_URL}/problem-submission/list/:id`,
   GET_SEARCH_PROBLEM: `${API_URL}/problem/search`,
   POST_CREATE_PROBLEM: `${API_URL}/problem/add-problem`,
   POST_UPDATE_PROBLEM: `${API_URL}/problem/update/:id`,
@@ -63,6 +63,7 @@ const ENDPOINTS = {
   GET_STATS_PROBLEM: `${API_URL}/problem/no-achieved-info`,
 
   // Solutions
+  GET_SOLUTION_DETAIL: `${API_URL}/problem-solution/detail/:id`,
   GET_SOLUTION_COMMENTS: `${API_URL}/comment/problem-solution/:id`,
 
   // Search
