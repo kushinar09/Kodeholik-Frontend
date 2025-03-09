@@ -1,5 +1,3 @@
-"use client"
-
 import { Card } from "@/components/ui/card"
 import Header from "@/components/common/shared/header"
 import FooterSection from "@/components/common/shared/footer"
@@ -7,10 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { getCourseSearch, getTopicList, getImage } from "@/lib/api/course_api"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { GLOBALS } from "@/lib/constants"
-import debounce from "lodash/debounce" // Add lodash for debouncing
 
 // Sync with desired page size
 const ITEMS_PER_PAGE = 8
@@ -24,7 +21,6 @@ export default function CoursePage() {
   const [topics, setTopics] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("")
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("") // Debounced search query
   const [selectedTopic, setSelectedTopic] = useState("All")
   const [isFilterExpanded, setIsFilterExpanded] = useState(false)
   const [totalPages, setTotalPages] = useState(1)
@@ -32,109 +28,93 @@ export default function CoursePage() {
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
 
-  // Debounce the search query updates
-  const updateDebouncedSearch = useCallback(
-    debounce((value) => {
-      setDebouncedSearchQuery(value)
-      setCurrentPage(1) // Reset to first page when search query changes
-    }, 300),
-    []
-  )
-
-  // Update debounced search whenever searchQuery changes
-  useEffect(() => {
-    updateDebouncedSearch(searchQuery)
-    return () => updateDebouncedSearch.cancel() // Cleanup on unmount
-  }, [searchQuery, updateDebouncedSearch])
-
-  // Fetch courses based on currentPage, debouncedSearchQuery, and selectedTopic
+  // Fetch courses based on currentPage, searchQuery, and selectedTopic
   useEffect(() => {
     const fetchCourses = async () => {
-        setIsLoading(true);
-        try {
-            const data = await getCourseSearch({
-                page: currentPage - 1,
-                size: ITEMS_PER_PAGE,
-                sortBy: "numberOfParticipant",
-                ascending: true,
-                query: debouncedSearchQuery || undefined,
-                topic: selectedTopic === "All" ? undefined : selectedTopic,
-            });
-            // Filter by title manually if backend doesn't support it
-            const filteredCourses = debouncedSearchQuery
-                ? (data.content || []).filter(course =>
-                      course.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-                  )
-                : data.content || [];
-            setCourses(filteredCourses);
-            setTotalPages(data.totalPages || 1);
-        } catch (error) {
-            console.error("Error fetching courses:", error);
-            setCourses([]);
-            setTotalPages(1);
-        } finally {
-            setIsLoading(false);
-        }
+      setIsLoading(true);
+      try {
+        const data = await getCourseSearch({
+          page: currentPage - 1,
+          size: ITEMS_PER_PAGE,
+          sortBy: "numberOfParticipant",
+          ascending: true,
+          query: searchQuery || undefined,
+          topic: selectedTopic === "All" ? undefined : selectedTopic,
+        });
+        // Filter by title manually if backend doesn't support it
+        const filteredCourses = searchQuery
+          ? (data.content || []).filter(course =>
+              course.title.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+          : data.content || [];
+        setCourses(filteredCourses);
+        setTotalPages(data.totalPages || 1);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+        setCourses([]);
+        setTotalPages(1);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchCourses();
-}, [currentPage, debouncedSearchQuery, selectedTopic]);
+  }, [currentPage, searchQuery, selectedTopic]);
 
   // Fetch course images whenever courses change
   useEffect(() => {
     const fetchImages = async () => {
-      const imagesMap = {}
+      const imagesMap = {};
       for (const course of courses) {
         try {
-          const imageUrl = await getImage(course.image)
-          imagesMap[course.id] = imageUrl
+          const imageUrl = await getImage(course.image);
+          imagesMap[course.id] = imageUrl;
         } catch (error) {
-          console.error(`Error fetching image for course ${course.id}:`, error)
-          imagesMap[course.id] = "/default-image.jpg" // Fallback image
+          console.error(`Error fetching image for course ${course.id}:`, error);
+          imagesMap[course.id] = "/default-image.jpg"; // Fallback image
         }
       }
-      setCourseImages(imagesMap)
-    }
+      setCourseImages(imagesMap);
+    };
 
-    if (courses.length > 0) fetchImages()
-  }, [courses])
+    if (courses.length > 0) fetchImages();
+  }, [courses]);
 
   // Fetch topics on mount
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const data = await getTopicList()
-        setTopics(data || [])
+        const data = await getTopicList();
+        setTopics(data || []);
       } catch (error) {
-        console.error("Error fetching topics:", error)
-        setTopics([])
+        console.error("Error fetching topics:", error);
+        setTopics([]);
       }
-    }
-    fetchTopics()
-  }, [])
+    };
+    fetchTopics();
+  }, []);
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page)
+      setCurrentPage(page);
     }
-  }
+  };
 
   const handleFilterClick = () => {
-    setIsFilterExpanded(!isFilterExpanded)
-  }
+    setIsFilterExpanded(!isFilterExpanded);
+  };
 
   const handleTopicClick = (topic) => {
-    setSelectedTopic(topic === "All" ? "All" : topic)
-    setCurrentPage(1) // Reset to first page when filter changes
-    setIsFilterExpanded(false)
-  }
+    setSelectedTopic(topic === "All" ? "All" : topic);
+    setCurrentPage(1); // Reset to first page when filter changes
+    setIsFilterExpanded(false);
+  };
 
   // Handle clearing all filters
   const handleClearFilters = () => {
-    setSearchQuery("")
-    setDebouncedSearchQuery("")
-    setSelectedTopic("All")
-    setCurrentPage(1)
-  }
+    setSearchQuery("");
+    setSelectedTopic("All");
+    setCurrentPage(1);
+  };
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -314,16 +294,16 @@ export default function CoursePage() {
             </Button>
             <div className="flex gap-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
-                let pageToShow
+                let pageToShow;
                 if (totalPages <= 5) {
-                  pageToShow = index + 1
+                  pageToShow = index + 1;
                 } else {
                   if (currentPage <= 3) {
-                    pageToShow = index + 1
+                    pageToShow = index + 1;
                   } else if (currentPage >= totalPages - 2) {
-                    pageToShow = totalPages - 4 + index
+                    pageToShow = totalPages - 4 + index;
                   } else {
-                    pageToShow = currentPage - 2 + index
+                    pageToShow = currentPage - 2 + index;
                   }
                 }
 
@@ -341,7 +321,7 @@ export default function CoursePage() {
                   >
                     {pageToShow}
                   </Button>
-                )
+                );
               })}
 
               {totalPages > 5 && currentPage < totalPages - 2 && (
@@ -379,5 +359,5 @@ export default function CoursePage() {
       </div>
       <FooterSection />
     </div>
-  )
+  );
 }
