@@ -1,11 +1,11 @@
 "use client"
 
 import { useAuth } from "@/providers/AuthProvider"
-import { marked } from "marked"
 
 import hljs from "highlight.js"
 import "highlight.js/styles/default.css"
 import { useEffect } from "react"
+import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 /**
  * Component to display problem editorial
  * @param {Object} props - Component props
@@ -66,10 +66,7 @@ export default function ProblemEditorial({ editorial }) {
             ))}
           </div>
           <div>
-            <div
-              className="markdown prose prose-sm dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: marked(editorial.editorialTextSolution) }}
-            />
+            <RenderMarkdown content={editorial.editorialTextSolution} />
           </div>
           {editorial.solutionCodes && editorial.solutionCodes.length > 0 && (
             <div className="mt-6">
