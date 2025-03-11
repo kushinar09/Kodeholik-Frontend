@@ -256,21 +256,23 @@ export default function DiscussionSection({ id, problemId }) {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Sort by:</span>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[100px]">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="createdAt">Date</SelectItem>
-                  <SelectItem value="noUpvote">Upvotes</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="ghost" onClick={() => setAscending(!ascending)}>
-                {ascending ? "Ascending" : "Descending"}
-              </Button>
-            </div>
+            {comments.length > 4 &&
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Sort by:</span>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="createdAt">Date</SelectItem>
+                    <SelectItem value="noUpvote">Upvotes</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="ghost" onClick={() => setAscending(!ascending)}>
+                  {ascending ? "Ascending" : "Descending"}
+                </Button>
+              </div>
+            }
 
             <div className="space-y-4">
               {comments &&
@@ -475,31 +477,33 @@ export default function DiscussionSection({ id, problemId }) {
                 ))}
             </div>
 
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    href="#"
-                    onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-                    disabled={page === 0}
-                  />
-                </PaginationItem>
-                {Array.from({ length: totalPages }).map((_, index) => (
-                  <PaginationItem key={index}>
-                    <PaginationLink href="#" isActive={page === index} onClick={() => setPage(index)}>
-                      {index + 1}
-                    </PaginationLink>
+            {totalPages > 2 &&
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+                      disabled={page === 0}
+                    />
                   </PaginationItem>
-                ))}
-                <PaginationItem>
-                  <PaginationNext
-                    href="#"
-                    onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
-                    disabled={page === totalPages - 1}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+                  {Array.from({ length: totalPages }).map((_, index) => (
+                    <PaginationItem key={index}>
+                      <PaginationLink href="#" isActive={page === index} onClick={() => setPage(index)}>
+                        {index + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
+                      disabled={page === totalPages - 1}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            }
           </div>
         )}
       </div>

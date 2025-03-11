@@ -1,21 +1,19 @@
 "use client"
 
 import { useAuth } from "@/providers/AuthProvider"
-import { marked } from "marked"
 
 import hljs from "highlight.js"
 import "highlight.js/styles/default.css"
 import { useEffect, useState } from "react"
-import { ArrowBigLeftDash, ArrowLeft } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import DiscussionSection from "./solution-comments"
 import { ENDPOINTS } from "@/lib/constants"
+import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 
 export default function SolutionDetail({ solutionId, handleBack }) {
   const [solution, setSolution] = useState(null)
   const { apiCall } = useAuth()
-
-
 
   useEffect(() => {
     const fakedata = {
@@ -125,10 +123,7 @@ export default function SolutionDetail({ solutionId, handleBack }) {
             ))}
           </div>
           <div>
-            <div
-              className="markdown prose prose-sm dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: marked(solution.textSolution) }}
-            />
+            <RenderMarkdown content={solution.textSolution} />
           </div>
           {solution.solutionCodes && solution.solutionCodes.length > 0 && (
             <div className="mt-6">

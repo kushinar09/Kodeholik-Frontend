@@ -71,7 +71,7 @@ export async function resetPassword(token, password) {
 // login
 export async function login(apiCall, formData) {
   try {
-    const response = await apiCall(ENDPOINTS.POST_LOGIN, {
+    const response = await fetch(ENDPOINTS.POST_LOGIN, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

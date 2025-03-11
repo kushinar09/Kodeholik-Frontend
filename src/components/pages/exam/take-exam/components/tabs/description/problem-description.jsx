@@ -1,13 +1,7 @@
 "use client"
 
-import { Separator } from "@/components/ui/separator"
-import { marked } from "marked"
+import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 
-/**
- * Component to display problem description
- * @param {Object} props - Component props
- * @param {Object} props.description - Problem description data
- */
 export default function ProblemDescription({ description }) {
   if (!description) {
     return (
@@ -23,10 +17,7 @@ export default function ProblemDescription({ description }) {
         {description.id}. {description.title}
       </h2>
       <div>
-        <div
-          className="markdown prose prose-sm dark:prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ __html: marked(description.description) }}
-        />
+        <RenderMarkdown content={description.description} />
       </div>
     </>
   )
