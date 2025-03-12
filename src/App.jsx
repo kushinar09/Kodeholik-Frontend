@@ -73,6 +73,7 @@ function App() {
                 <Route path="/404" element={<NotFoundError />} />
                 <Route path="/500" element={<GeneralError />} />
                 <Route path="/503" element={<MaintenanceError />} />
+                <Route path="*" element={<NotFoundError />} />
 
               </Routes>
             </div>

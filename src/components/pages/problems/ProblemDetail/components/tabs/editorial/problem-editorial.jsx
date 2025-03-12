@@ -4,8 +4,9 @@ import { useAuth } from "@/providers/AuthProvider"
 
 import hljs from "highlight.js"
 import "highlight.js/styles/default.css"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
+import { Button } from "@/components/ui/button"
 /**
  * Component to display problem editorial
  * @param {Object} props - Component props
@@ -23,24 +24,29 @@ export default function ProblemEditorial({ editorial }) {
 
   if (!isAuthenticated) {
     return (
-      <div className="text-gray-500 flex items-center gap-2 justify-center mt-10">
-        <svg
-          className="h-8 w-8"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          strokeWidth="2"
-          stroke="currentColor"
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path stroke="none" d="M0 0h24v24H0z" />
-          <rect x="5" y="11" width="14" height="10" rx="2" />
-          <circle cx="12" cy="16" r="1" />
-          <path d="M8 11v-4a4 4 0 0 1 8 0v4" />
-        </svg>
-        Please login to view this content
+      <div className="flex flex-col items-center">
+        <div className="text-gray-500 flex items-center gap-2 justify-center mt-10">
+          <svg
+            className="h-8 w-8"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+            stroke="currentColor"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" />
+            <rect x="5" y="11" width="14" height="10" rx="2" />
+            <circle cx="12" cy="16" r="1" />
+            <path d="M8 11v-4a4 4 0 0 1 8 0v4" />
+          </svg>
+          Please login to view this content
+        </div>
+        <Button className="mt-2 w-fit" variant="outline" onClick={() => window.location.href = "/login"}>
+          Sign In
+        </Button>
       </div>
     )
   }
