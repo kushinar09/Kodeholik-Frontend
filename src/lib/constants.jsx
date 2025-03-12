@@ -79,6 +79,20 @@ const ENDPOINTS = {
   ENROLL_COURSE: `${API_URL}/course/enroll/:id`,
   UNENROLL_COURSE: `${API_URL}/course/unenroll/:id`,
 
+   //Chapter
+   GET_CHAPTERS: `${API_URL}/chapter/list`,
+   GET_CHAPTER_BY_COURSE_ID: `${API_URL}/chapter/by-course/:id`,
+   GET_CHAPTER_DETAIL: `${API_URL}/chapter/detail/:id`,
+   CREATE_CHAPTER: `${API_URL}/chapter/add`,
+   UPDATE_CHAPTER: `${API_URL}/chapter/update/:id`, 
+ 
+   //Lesson
+   GET_LESSONS: `${API_URL}/lesson/list`,
+   GET_LESSON_BY_CHAPTERID: `${API_URL}/lesson/by-chapter/:id`,
+   GET_LESSON_DETAIL: `${API_URL}/lesson/detail/:id`,
+   CREATE_LESSON: `${API_URL}/lesson/add`,
+   UPDATE_LESSON: `${API_URL}/lesson/update/:id`,
+
   //Topic
   GET_TOPIC_LIST: `${API_URL}/tag/all-topic`,
 
