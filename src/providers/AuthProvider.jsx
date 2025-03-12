@@ -1,4 +1,3 @@
-/* eslint-disable indent */
 "use client"
 
 import { ENDPOINTS } from "@/lib/constants"
@@ -28,26 +27,17 @@ const notThrowErrorEndpoint = [
 ]
 
 // List of endpoints that don't need token rotation
-const notCallRotateTokenEndpoints = [
-  ENDPOINTS.ROTATE_TOKEN,
-  ENDPOINTS.POST_LOGOUT,
-  ENDPOINTS.POST_LOGIN
-]
+const notCallRotateTokenEndpoints = [ENDPOINTS.ROTATE_TOKEN, ENDPOINTS.POST_LOGOUT, ENDPOINTS.POST_LOGIN]
 
 function convertToRegex(endpoint) {
-  return new RegExp(
-    `^${endpoint
-      .replace(/:[^/]+/g, "([^/]+)")
-      .replace(/\//g, "\\/")
-    }$`
-  )
+  return new RegExp(`^${endpoint.replace(/:[^/]+/g, "([^/]+)").replace(/\//g, "\\/")}$`)
 }
 
 function inEndpointList(endpointList, requestedUrl) {
   // Remove query parameters from requested URL
   const baseUrl = requestedUrl.split("?")[0]
 
-  return endpointList.some(endpoint => convertToRegex(endpoint).test(baseUrl))
+  return endpointList.some((endpoint) => convertToRegex(endpoint).test(baseUrl))
 }
 
 export const AuthProvider = ({ children }) => {
@@ -56,12 +46,16 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [refreshPromise, setRefreshPromise] = useState(null)
-  const [authError, setAuthError] = useState(null) // To store auth errors
+
+  // Track API errors without immediately showing them
+  const [apiErrors, setApiErrors] = useState({})
+  // Track active API requests to manage loading state
+  const [activeRequests, setActiveRequests] = useState(0)
 
   // Check if the user is authenticated on mount
   const checkAuthStatus = useCallback(async () => {
     try {
-      setLoading(true)
+      incrementActiveRequests()
       const response = await fetch(ENDPOINTS.GET_INFOR, {
         credentials: "include",
         headers: {
@@ -74,7 +68,7 @@ export const AuthProvider = ({ children }) => {
         const data = await response.json()
         setIsAuthenticated(true)
         setUser(data)
-        setAuthError(null)
+        clearApiError("auth")
       } else {
         setIsAuthenticated(false)
         setUser(null)
@@ -84,18 +78,52 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false)
       setUser(null)
     } finally {
-      setLoading(false)
+      decrementActiveRequests()
     }
   }, [])
 
   // Run auth check only once on mount
   useEffect(() => {
     checkAuthStatus()
+    // Remove isAuthenticated from dependencies to prevent loops
   }, [isAuthenticated])
+
+  const incrementActiveRequests = () => {
+    setActiveRequests((prev) => prev + 1)
+    setLoading(true)
+  }
+
+  const decrementActiveRequests = () => {
+    setActiveRequests((prev) => {
+      const newCount = prev - 1
+      if (newCount <= 0) {
+        setLoading(false)
+        return 0
+      }
+      return newCount
+    })
+  }
+
+  // Add an error to the errors state
+  const addApiError = useCallback((errorType, errorDetails) => {
+    setApiErrors((prev) => ({
+      ...prev,
+      [errorType]: errorDetails
+    }))
+  }, [])
+
+  // Clear a specific error
+  const clearApiError = useCallback((errorType) => {
+    setApiErrors((prev) => {
+      const newErrors = { ...prev }
+      delete newErrors[errorType]
+      return newErrors
+    })
+  }, [])
 
   const logout = async () => {
     try {
-      setLoading(true)
+      incrementActiveRequests()
       await fetch(ENDPOINTS.POST_LOGOUT, {
         method: "POST",
         credentials: "include",
@@ -109,8 +137,8 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setIsAuthenticated(false)
       setUser(null)
-      setLoading(false)
-      setAuthError(null)
+      decrementActiveRequests()
+      clearApiError("auth")
     }
   }
 
@@ -120,6 +148,8 @@ export const AuthProvider = ({ children }) => {
     }
 
     setIsRefreshing(true)
+    incrementActiveRequests()
+
     const promise = fetch(ENDPOINTS.ROTATE_TOKEN, {
       method: "POST",
       credentials: "include",
@@ -144,6 +174,7 @@ export const AuthProvider = ({ children }) => {
       .finally(() => {
         setIsRefreshing(false)
         setRefreshPromise(null)
+        decrementActiveRequests()
       })
 
     setRefreshPromise(promise)
@@ -154,14 +185,13 @@ export const AuthProvider = ({ children }) => {
     // Check if this endpoint requires authentication
     const requiresAuth = !inEndpointList(guestEndpoints, url) && !inEndpointList(notThrowErrorEndpoint, url)
 
-    // If endpoint requires auth but user is not authenticated, set error
+    // If endpoint requires auth but user is not authenticated, add auth error
     if (requiresAuth && !isAuthenticated && url !== ENDPOINTS.GET_INFOR) {
-      // console.log(url)
-      setAuthError("401")
+      addApiError("auth", { status: 401 })
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 })
     }
 
-    setLoading(true)
+    incrementActiveRequests()
 
     if (!options.headers) {
       options.headers = {}
@@ -179,8 +209,6 @@ export const AuthProvider = ({ children }) => {
 
       // Handle token refresh if needed
       if (response.status === 401 && !inEndpointList(notCallRotateTokenEndpoints, url)) {
-        // console.warn("Access token expired. Attempting refresh...")
-
         const refreshStatus = await refreshAccessToken()
 
         if (refreshStatus === 200) {
@@ -188,41 +216,88 @@ export const AuthProvider = ({ children }) => {
           response = await fetch(url, options)
         } else {
           // Handle different error statuses
-          setAuthError(refreshStatus.toString())
+          addApiError("auth", { status: refreshStatus })
           return new Response(JSON.stringify({ error: "Authentication failed" }), { status: refreshStatus })
         }
       }
 
       // Handle other error statuses
-      if (!response.ok && response.status !== 401) {
-        setAuthError(response.status.toString())
+      if (!response.ok) {
+        const errorKey = `${url.split("?")[0]}-${response.status}`
+
+        if (response.status === 401) {
+          addApiError("auth", { status: 401 })
+        } else if (!inEndpointList(notThrowErrorEndpoint, url)) {
+          addApiError(errorKey, { status: response.status })
+        }
+      } else {
+        // Clear errors for this URL on success
+        const baseUrl = url.split("?")[0]
+        Object.keys(apiErrors).forEach((key) => {
+          if (key.startsWith(baseUrl)) {
+            clearApiError(key)
+          }
+        })
       }
 
       return response
     } catch (error) {
       console.error("API call error:", error)
-      setAuthError("500")
+      if (!inEndpointList(notThrowErrorEndpoint, url)) {
+        addApiError("network", { status: 500 })
+      }
       throw error
     } finally {
-      if (inEndpointList(notThrowErrorEndpoint, url)) setAuthError(null)
-      setLoading(false)
+      if (inEndpointList(notThrowErrorEndpoint, url)) {
+        // Clear any errors for this endpoint
+        const baseUrl = url.split("?")[0]
+        Object.keys(apiErrors).forEach((key) => {
+          if (key.startsWith(baseUrl)) {
+            clearApiError(key)
+          }
+        })
+      }
+      decrementActiveRequests()
     }
   }
 
-  // Render appropriate error page based on authError
+  // Get the most severe error to display
+  const getMostSevereError = useCallback(() => {
+    // Priority: 500 > 403 > 401 > 404
+    if (Object.values(apiErrors).some((err) => err.status === 500)) return "500"
+    if (Object.values(apiErrors).some((err) => err.status === 403)) return "403"
+    if (Object.values(apiErrors).some((err) => err.status === 401)) return "401"
+    if (Object.values(apiErrors).some((err) => err.status === 404)) return "404"
+    return null
+  }, [apiErrors])
+
+  // Render appropriate error page based on most severe error
   const renderErrorPage = () => {
-    switch (authError) {
-      case "401":
-        return <UnauthorisedError />
-      case "403":
-        return <ForbiddenError />
-      case "404":
-        return <NotFoundError />
-      case "500":
-        return <GeneralError />
-      default:
-        return null
+    const errorCode = getMostSevereError()
+
+    switch (errorCode) {
+    case "401":
+      return <UnauthorisedError />
+    case "403":
+      return <ForbiddenError />
+    case "404":
+      return <NotFoundError />
+    case "500":
+      return <GeneralError />
+    default:
+      return null
     }
+  }
+
+  // Only show error page if there's an error and it's not from a notThrowErrorEndpoint
+  const shouldShowErrorPage = () => {
+    const hasError = Object.keys(apiErrors).length > 0
+    const isFromNoThrowEndpoint = Object.keys(apiErrors).some((key) => {
+      const baseUrl = key.split("-")[0]
+      return inEndpointList(notThrowErrorEndpoint, baseUrl)
+    })
+
+    return hasError && !isFromNoThrowEndpoint
   }
 
   return (
@@ -232,12 +307,14 @@ export const AuthProvider = ({ children }) => {
         logout,
         isAuthenticated,
         user,
-        loading,
+        loading: activeRequests > 0,
         setIsAuthenticated,
-        refreshAuth: checkAuthStatus
+        refreshAuth: checkAuthStatus,
+        errors: apiErrors,
+        clearError: clearApiError
       }}
     >
-      {authError ? renderErrorPage() : children}
+      {shouldShowErrorPage() ? renderErrorPage() : children}
     </AuthContext.Provider>
   )
 }

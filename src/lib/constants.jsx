@@ -87,7 +87,17 @@ const ENDPOINTS = {
   POST_SUBMIT_CODE: `${API_URL}/problem-submission/submit/:id`,
 
   //image
-  GET_IMAGE: (imageKey) => `${API_URL}/s3/presigned-url?key=${encodeURIComponent(imageKey)}`
+  GET_IMAGE: (imageKey) => `${API_URL}/s3/presigned-url?key=${encodeURIComponent(imageKey)}`,
+
+  // Exam
+  GET_LIST_EXAM: `${API_URL}/exam/pending-list`,
+  // NOT_STARTED
+  // 2026-03-02T00:00
+  GET_MY_LIST_EXAM: `${API_URL}/exam/list?status=:status&page=:page&title=:title&start=:start&end=:end`,
+  GET_TOKEN_EXAM: `${API_URL}/exam/get-token/:token`,
+  POST_ENROLL_EXAM: `${API_URL}/exam/enroll/:id`,
+  POST_UNENROLL_EXAM: `${API_URL}/exam/unenroll/:id`,
+  POST_RUN_EXAM: `${API_URL}/exam/run/:id?link=:idProblem`
 }
 
 const CONSTANTS = {

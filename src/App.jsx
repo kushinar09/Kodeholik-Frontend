@@ -23,6 +23,7 @@ import WaitingRoom from "./components/pages/exam/waiting-room"
 import CodeEditor from "./components/common/editor-code/CodeEditor"
 import CreateCourse from "./components/pages/courses/CreateCourse"
 import UpdateCourse from "./components/pages/courses/UpdateCourse"
+import ExamList from "./components/pages/exam/list"
 
 function App() {
   const queryClient = new QueryClient()
@@ -35,7 +36,7 @@ function App() {
               <Routes>
                 {/* exam */}
                 <Route path="/exam/:id/wait" element={<WaitingRoom />} />
-                <Route path="/exam" element={<TakeExam />} />
+                <Route path="/exam" element={<ExamList />} />
                 <Route path="/exam/:id/" element={<TakeExam />} />
 
                 {/* problem */}

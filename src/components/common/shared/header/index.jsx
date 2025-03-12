@@ -9,9 +9,9 @@ export default function HeaderSection() {
       <div className="absolute inset-x-0 -bottom-4 h-4 bg-gradient-to-b from-primary-bg to-transparent pointer-events-none" />
       <nav className="relative flex items-center justify-between p-4 bg-bg-card rounded-2xl">
         <div className="flex items-center space-x-6">
-          <Link to="#" className="text-primary px-4 py-2 hover:text-white">
+          {/* <Link to="#" className="text-primary px-4 py-2 hover:text-white">
             Explore
-          </Link>
+          </Link> */}
           <Link to="#" className="rounded-md px-4 py-2 bg-primary text-black font-bold">
             Problems
           </Link>

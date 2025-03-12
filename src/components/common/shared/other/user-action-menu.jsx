@@ -48,9 +48,9 @@ export default function UserActionMenu() {
       {isAuthenticated && user ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Avatar className="cursor-pointer h-10 w-10 border-2 border-primary hover:border-primary/80 transition-colors">
+            <Avatar className="cursor-pointer bg-white h-10 w-10 border-2 border-primary hover:border-primary/80 transition-colors">
               <AvatarImage src={user.avatar} alt={user.fullname || "User"} />
-              <AvatarFallback className="bg-primary/10 text-primary font-medium">
+              <AvatarFallback className="bg-primary/10 text-bg-card font-semibold">
                 {getInitials(user.username)}
               </AvatarFallback>
             </Avatar>

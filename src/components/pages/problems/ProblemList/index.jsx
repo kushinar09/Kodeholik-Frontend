@@ -3,13 +3,18 @@
 import { useCallback, useEffect, useState } from "react"
 import { debounce } from "lodash"
 import { getProblemList } from "@/lib/api/problem_api"
-import { ProblemHeader } from "./components/problems/problem-header"
 import { ProblemSection } from "./components/problems/problem-section"
 import FooterSection from "@/components/common/shared/footer"
 import HeaderSection from "@/components/common/shared/header"
 import { ENDPOINTS } from "@/lib/constants"
+import { Card } from "@/components/ui/card"
+import { RadialChart } from "@/components/common/shared/other/radial-chart"
+import { CourseHeader } from "./components/problems/course-header"
+import { FilterPanel } from "./components/filter/filter"
+import { useAuth } from "@/providers/AuthProvider"
 
 export default function ProblemPage() {
+  const { isAuthenticated } = useAuth()
   const [problems, setProblems] = useState([])
 
   const [searchQuery, setSearchQuery] = useState({
@@ -51,6 +56,7 @@ export default function ProblemPage() {
     }
   )
 
+  const [isLoadingDataProblem, setIsLoadingDataProblem] = useState(false)
   const [selectedTopics, setSelectedTopics] = useState([])
   const [selectedSkills, setSelectedSkills] = useState([])
   const [difficulty, setDifficulty] = useState([])
@@ -58,7 +64,7 @@ export default function ProblemPage() {
 
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
-  const [pageSize] = useState(10)
+  const [pageSize] = useState(12)
 
   const [sortConfig, setSortConfig] = useState({
     key: null,
@@ -68,14 +74,21 @@ export default function ProblemPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const fetchProblems = useCallback(
     debounce(async (currentPage, pageSize, sortKey, sortAscending, searchQuery) => {
-      // setIsLoadingDataProblem(true)
-      const data = await getProblemList(currentPage, pageSize, sortKey, sortAscending, searchQuery)
+      setIsLoadingDataProblem(true)
+
+      // Fetch data and wait at least 200ms before stopping loading
+      const [data] = await Promise.all([
+        getProblemList(currentPage, pageSize, sortKey, sortAscending, searchQuery),
+        new Promise((resolve) => setTimeout(resolve, 500))
+      ])
+
       setProblems(data?.content || [])
       setTotalPages(data?.totalPages || 0)
-      // setIsLoadingDataProblem(false)
+      setIsLoadingDataProblem(false)
     }, 500), // Debounce 500ms
     []
   )
+
 
   useEffect(() => {
     const getColorForLabel = (label) => {
@@ -212,6 +225,23 @@ export default function ProblemPage() {
     })
   }
 
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
+
+
+  const handleDifficultyChange = (newDifficulty) => {
+    setSearchQuery((prev) => ({
+      ...prev,
+      difficulty: newDifficulty
+    }))
+  }
+
+  const handleSkillsChange = (newSkills) => {
+    setSearchQuery((prev) => ({
+      ...prev,
+      skills: newSkills
+    }))
+  }
+
   return (
     <>
       <div className="min-h-screen bg-bg-primary">
@@ -219,7 +249,7 @@ export default function ProblemPage() {
         {/* Main Content */}
         <main className="p-4 px-24">
           {/* Study Plan Section */}
-          <ProblemHeader stats={stats} />
+          <CourseHeader stats={stats} />
 
           <div className="grid grid-cols-3 gap-6">
             {/* Left Content */}
@@ -229,9 +259,25 @@ export default function ProblemPage() {
                 problems={problems}
                 currentPage={currentPage}
                 totalPages={totalPages}
+                pageSize={pageSize}
                 sortConfig={sortConfig}
                 search={search}
                 setSearch={setSearch}
+                handleSort={handleSort}
+                handleProblemDetail={handleProblemDetail}
+                setCurrentPage={setCurrentPage}
+                setSearchQuery={setSearchQuery}
+                isFiltersOpen={isFiltersOpen}
+                setIsFiltersOpen={setIsFiltersOpen}
+                isLoading={isLoadingDataProblem}
+              />
+            </div>
+
+            {/* Right Sidebar */}
+            <div className="space-y-6">
+              <FilterPanel
+                isFiltersOpen={isFiltersOpen}
+                setIsFiltersOpen={setIsFiltersOpen}
                 difficulty={difficulty}
                 setDifficulty={setDifficulty}
                 topics={topics}
@@ -241,22 +287,15 @@ export default function ProblemPage() {
                 skills={skills}
                 selectedSkills={selectedSkills}
                 setSelectedSkills={setSelectedSkills}
-                handleSort={handleSort}
-                handleProblemDetail={handleProblemDetail}
-                setCurrentPage={setCurrentPage}
                 clearAllFilter={clearAllFilter}
-                setSearchQuery={setSearchQuery}
+                onDifficultyChange={handleDifficultyChange}
+                onSkillsChange={handleSkillsChange}
               />
-            </div>
-
-            {/* Right Sidebar */}
-            <div className="space-y-6">
-              {/* Calendar */}
-              {/* <Card className="p-4 bg-primary-card border-0">
-                <Calendar mode="single" className="text-white" />
-              </Card> */}
-
-              {/* Progress Chart */}
+              {isAuthenticated &&
+                <Card className="p-4 bg-bg-card border-0 aspect-video rounded-xl">
+                  <RadialChart {...stats} />
+                </Card>
+              }
             </div>
           </div>
         </main>
