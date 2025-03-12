@@ -87,10 +87,8 @@ const ENDPOINTS = {
   POST_SUBMIT_CODE: `${API_URL}/problem-submission/submit/:id`,
 
   //image
- GET_IMAGE: (imageKey) => `${API_URL}/s3/presigned-url?key=${encodeURIComponent(imageKey)}`
+  GET_IMAGE: (imageKey) => `${API_URL}/s3/presigned-url?key=${encodeURIComponent(imageKey)}`
 }
-
-
 
 const CONSTANTS = {
   ACCESS_TOKEN: "access_token",

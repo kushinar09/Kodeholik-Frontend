@@ -30,14 +30,14 @@ export default function TestCasePanel({
   results,
   showResult,
   activeResult,
-  setActiveResult,
+  setActiveResult
 }) {
   return (
     <div className="h-full bg-background flex flex-col">
       <div
         className={cn(
           "bg-bg-card flex items-center p-1 relative h-[40px] overflow-auto no-scrollbar",
-          isCompact ? "flex-col h-full space-y-4" : "flex-row space-x-4",
+          isCompact ? "flex-col h-full space-y-4" : "flex-row space-x-4"
         )}
       >
         <div
@@ -45,7 +45,7 @@ export default function TestCasePanel({
           className={cn(
             "rounded p-2 flex items-center gap-2 cursor-pointer transition-colors duration-200",
             isCompact ? "flex-col w-full" : "flex-row justify-start h-[32px]",
-            !isResultActive ? "bg-primary text-black" : "text-primary/50 hover:text-primary hover:bg-primary/10",
+            !isResultActive ? "bg-primary text-black" : "text-primary/50 hover:text-primary hover:bg-primary/10"
           )}
         >
           <svg
@@ -70,7 +70,7 @@ export default function TestCasePanel({
           <span
             className={cn(
               "text-sm transition-all duration-200 subpixel-antialiased",
-              isCompact ? "writing-mode-vertical" : "whitespace-nowrap overflow-hidden",
+              isCompact ? "writing-mode-vertical" : "whitespace-nowrap overflow-hidden"
             )}
           >
             Test case
@@ -82,7 +82,7 @@ export default function TestCasePanel({
             className={cn(
               "rounded p-2 flex items-center gap-2 cursor-pointer transition-colors duration-200",
               isCompact ? "flex-col w-full" : "flex-row justify-start h-[32px]",
-              isResultActive ? "bg-primary text-black" : "text-primary/50 hover:text-primary hover:bg-primary/10",
+              isResultActive ? "bg-primary text-black" : "text-primary/50 hover:text-primary hover:bg-primary/10"
             )}
           >
             <svg
@@ -104,7 +104,7 @@ export default function TestCasePanel({
             <span
               className={cn(
                 "text-sm transition-all duration-200 subpixel-antialiased",
-                isCompact ? "writing-mode-vertical" : "whitespace-nowrap overflow-hidden",
+                isCompact ? "writing-mode-vertical" : "whitespace-nowrap overflow-hidden"
               )}
             >
               Result
