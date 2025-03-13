@@ -79,19 +79,19 @@ const ENDPOINTS = {
   ENROLL_COURSE: `${API_URL}/course/enroll/:id`,
   UNENROLL_COURSE: `${API_URL}/course/unenroll/:id`,
 
-   //Chapter
-   GET_CHAPTERS: `${API_URL}/chapter/list`,
-   GET_CHAPTER_BY_COURSE_ID: `${API_URL}/chapter/by-course/:id`,
-   GET_CHAPTER_DETAIL: `${API_URL}/chapter/detail/:id`,
-   CREATE_CHAPTER: `${API_URL}/chapter/add`,
-   UPDATE_CHAPTER: `${API_URL}/chapter/update/:id`, 
- 
-   //Lesson
-   GET_LESSONS: `${API_URL}/lesson/list`,
-   GET_LESSON_BY_CHAPTERID: `${API_URL}/lesson/by-chapter/:id`,
-   GET_LESSON_DETAIL: `${API_URL}/lesson/detail/:id`,
-   CREATE_LESSON: `${API_URL}/lesson/add`,
-   UPDATE_LESSON: `${API_URL}/lesson/update/:id`,
+  //Chapter
+  GET_CHAPTERS: `${API_URL}/chapter/list`,
+  GET_CHAPTER_BY_COURSE_ID: `${API_URL}/chapter/by-course/:id`,
+  GET_CHAPTER_DETAIL: `${API_URL}/chapter/detail/:id`,
+  CREATE_CHAPTER: `${API_URL}/chapter/add`,
+  UPDATE_CHAPTER: `${API_URL}/chapter/update/:id`,
+
+  //Lesson
+  GET_LESSONS: `${API_URL}/lesson/list`,
+  GET_LESSON_BY_CHAPTERID: `${API_URL}/lesson/by-chapter/:id`,
+  GET_LESSON_DETAIL: `${API_URL}/lesson/detail/:id`,
+  CREATE_LESSON: `${API_URL}/lesson/add`,
+  UPDATE_LESSON: `${API_URL}/lesson/update/:id`,
 
   //Topic
   GET_TOPIC_LIST: `${API_URL}/tag/all-topic`,
@@ -105,13 +105,12 @@ const ENDPOINTS = {
 
   // Exam
   GET_LIST_EXAM: `${API_URL}/exam/pending-list`,
-  // NOT_STARTED
-  // 2026-03-02T00:00
-  GET_MY_LIST_EXAM: `${API_URL}/exam/list?status=:status&page=:page&title=:title&start=:start&end=:end`,
+  GET_MY_LIST_EXAM: `${API_URL}/exam/list`,
   GET_TOKEN_EXAM: `${API_URL}/exam/get-token/:token`,
   POST_ENROLL_EXAM: `${API_URL}/exam/enroll/:id`,
   POST_UNENROLL_EXAM: `${API_URL}/exam/unenroll/:id`,
-  POST_RUN_EXAM: `${API_URL}/exam/run/:id?link=:idProblem`
+  POST_RUN_EXAM: `${API_URL}/exam/run/:id?link=:idProblem`,
+  GET_EXAM_RESULT: `${API_URL}/exam/result/:id`
 }
 
 const CONSTANTS = {

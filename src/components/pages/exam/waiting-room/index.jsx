@@ -5,54 +5,82 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Clock, Bell, Loader2 } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { ENDPOINTS } from "@/lib/constants"
+import { useParams } from "react-router-dom"
+import { toast } from "@/hooks/use-toast"
 
 export default function EnhancedWaitingRoom() {
-  const timeCountDownMinute = 1
-  const [targetTime] = useState(() => {
-    const time = new Date()
-    time.setMinutes(time.getMinutes() + timeCountDownMinute)
-    return time
-  })
+  const { id } = useParams()
 
-  const [timeLeft, setTimeLeft] = useState({
-    minutes: timeCountDownMinute,
-    seconds: 0
-  })
-
+  const [timeLeft, setTimeLeft] = useState({ minutes: 0, seconds: 0 })
   const [notifyMe, setNotifyMe] = useState(false)
   const [isReady, setIsReady] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [examStartTime, setExamStartTime] = useState("")
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date()
-      const difference = targetTime.getTime() - now.getTime()
+    async function fetchExamStatus() {
+      try {
+        const response = await fetch(ENDPOINTS.GET_TOKEN_EXAM.replace(":id", id))
+        const data = await response.json()
 
-      if (difference <= 0) {
-        clearInterval(interval)
-        setTimeLeft({ minutes: 0, seconds: 0 })
-        setIsReady(true)
-
-        // Notification when time is up
-        if (notifyMe && "Notification" in window) {
-          if (Notification.permission === "granted") {
-            new Notification("Take your exam!", {
-              body: "It's time to take your examination. Click to enter.",
-              icon: "/placeholder.svg?height=64&width=64"
-            })
+        if (!response.ok) {
+          console.error("API Error:", data)
+          const dateRegex = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/
+          if (dateRegex.test(data.detail)) {
+            setExamStartTime(data.detail)
+          } else {
+            toast.error("Exam access denied. Redirecting...")
+            // navigate("/exam")
           }
         }
 
-        return
+        if (!data || !data.Code) {
+          setErrorMessage("Exam data is empty or invalid")
+          return
+        }
+
+        const now = new Date()
+        const timeDifference = new Date(examStartTime.replace(" ", "T")).getTime() - now.getTime()
+
+        if (timeDifference <= 0) {
+          setIsReady(true)
+          return
+        }
+
+        setTimeLeft({
+          minutes: Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((timeDifference % (1000 * 60)) / 1000)
+        })
+
+        const interval = setInterval(() => {
+          const now = new Date()
+          const difference = examStartTime.getTime() - now.getTime()
+
+          if (difference <= 0) {
+            clearInterval(interval)
+            setTimeLeft({ minutes: 0, seconds: 0 })
+            setIsReady(true)
+            if (notifyMe && "Notification" in window && Notification.permission === "granted") {
+              new Notification("Take your exam!", { body: "It's time to take your examination.", icon: "/placeholder.svg?height=64&width=64" })
+            }
+            return
+          }
+
+          setTimeLeft({
+            minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+            seconds: Math.floor((difference % (1000 * 60)) / 1000)
+          })
+        }, 1000)
+
+        return () => clearInterval(interval)
+      } catch (error) {
+        setErrorMessage(error.message)
       }
+    }
 
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000)
-
-      setTimeLeft({ minutes, seconds })
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [targetTime, notifyMe])
+    fetchExamStatus()
+  }, [notifyMe])
 
   const requestNotificationPermission = () => {
     if ("Notification" in window) {
@@ -64,14 +92,17 @@ export default function EnhancedWaitingRoom() {
     }
   }
 
+  if (errorMessage) {
+    return <div className="text-red-500 text-center">{errorMessage}</div>
+  }
+
   return (
-    !isReady
-      ?
+    !isReady ? (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-bg-primary to-muted p-4">
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Waiting Room</CardTitle>
-            <CardDescription>You have registered for the examination, please wait for the time.</CardDescription>
+            <CardDescription>You have registered for the examination, please wait.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center justify-center space-y-2">
@@ -89,24 +120,11 @@ export default function EnhancedWaitingRoom() {
               </div>
             </div>
 
-            {/* <div className="rounded-lg bg-muted p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">People ahead of you</span>
-              </div>
-              <Badge variant="outline" className="flex items-center gap-1">
-                <span>{usersWaiting}</span>
-                <RefreshCw className="h-3 w-3 animate-spin" />
-              </Badge>
-            </div>
-          </div> */}
-
             <div className="rounded-lg border bg-bg-card p-4">
               <div className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-primary" />
                 <div className="text-sm">
-                  <p className="font-medium text-text-primary">Your exammination will begin soon</p>
+                  <p className="font-medium text-text-primary">Your examination will begin soon</p>
                   <p className="text-muted-foreground">Please don&apos;t refresh or leave this page</p>
                 </div>
               </div>
@@ -134,24 +152,19 @@ export default function EnhancedWaitingRoom() {
             {(timeLeft.minutes > 0 || timeLeft.seconds > 0)
               ? (
                 <div className="w-full p-2 rounded-md flex items-center text-gray-500 justify-center gap-2 border-2">
-                  <span className="text-pretty">
-                    Waiting...
-                  </span>
+                  <span>Waiting...</span>
                 </div>
               )
               : (
                 <div className="w-full p-2 rounded-md flex items-center text-gray-500 justify-center gap-2 bg-primary">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>
-                    Redirecting...
-                  </span>
+                  <span>Redirecting...</span>
                 </div>
               )
             }
           </CardFooter>
         </Card>
       </div>
-      : <h2 className="text-2xl">Ready</h2>
+    ) : <h2 className="text-2xl">Ready</h2>
   )
 }
-

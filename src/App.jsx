@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { Toaster } from "./components/ui/toaster"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import ProblemDetail from "./components/pages/problems/ProblemDetail"
-import MarkdownEditor from "./components/common/markdown/MarkdownEditor"
 import ForgotPassword from "./components/pages/authentications/forgot"
 import LoginPage from "./components/pages/authentications/login"
 import ResetPassword from "./components/pages/authentications/reset"
@@ -11,7 +10,6 @@ import CourseDetail from "./components/pages/courses/ViewCourseDetail"
 
 import LearnThroughVideoAndText from "./components/pages/courses/LearnThroughVideoAndText"
 import ProblemPage from "./components/pages/problems/ProblemList"
-import ProblemCreator from "./components/pages/problems/ProblemCreate"
 import { AuthProvider } from "./providers/AuthProvider"
 import TakeExam from "./components/pages/exam/take-exam"
 import UnauthorisedError from "./components/pages/errors/unauthorized-error"
@@ -24,6 +22,7 @@ import CodeEditor from "./components/common/editor-code/CodeEditor"
 import CreateCourse from "./components/pages/courses/CreateCourse"
 import UpdateCourse from "./components/pages/courses/UpdateCourse"
 import ExamList from "./components/pages/exam/list"
+import SocketComponent from "./components/pages/exam/take-exam/test"
 
 function App() {
   const queryClient = new QueryClient()
@@ -45,22 +44,12 @@ function App() {
                 <Route path="/problem/:id" element={<ProblemDetail />} />
 
                 {/* test */}
-                <Route path="/markdown" element={<MarkdownEditor />} />
-                <Route path="/code" element={
-                  <div className="overflow-auto flex-1">
-                    <div className="min-w-[420px] h-full">
-                      <CodeEditor onChange={null} />
-                    </div>
-                  </div>
-                }
-                />
-
+                <Route path="/socket" element={<SocketComponent />} />
                 {/* auth */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/forgot" element={<ForgotPassword />} />
                 <Route path="/reset" element={<ResetPassword />} />
 
-                <Route path="/problem/create" element={<ProblemCreator />} />
                 {/* course */}
                 <Route path="/courses" element={<CoursePage />} />
                 <Route path="/courses/:id" element={<CourseDetail />} />

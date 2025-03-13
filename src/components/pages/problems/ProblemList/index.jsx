@@ -245,7 +245,7 @@ export default function ProblemPage() {
   return (
     <>
       <div className="min-h-screen bg-bg-primary">
-        <HeaderSection />
+        <HeaderSection currentActive="problem"/>
         {/* Main Content */}
         <main className="p-4 px-24">
           {/* Study Plan Section */}

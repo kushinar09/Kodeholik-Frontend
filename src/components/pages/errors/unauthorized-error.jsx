@@ -12,8 +12,8 @@ export default function UnauthorisedError() {
           resource.
         </p>
         <div className='mt-6 flex gap-4'>
-          <Button variant='outline' onClick={() => window.history.back()}>
-            Go Back
+          <Button variant='outline' onClick={() => window.location.href = "/login"}>
+            Login
           </Button>
           <Button onClick={() => window.location.href = "/"}>Back to Home</Button>
         </div>

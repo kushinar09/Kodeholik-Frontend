@@ -1,7 +1,7 @@
 "use client"
 
 import { ENDPOINTS } from "@/lib/constants"
-import { createContext, useContext, useState, useEffect, useCallback } from "react"
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react"
 import UnauthorisedError from "@/components/pages/errors/unauthorized-error"
 import ForbiddenError from "@/components/pages/errors/forbidden"
 import NotFoundError from "@/components/pages/errors/not-found-error"
@@ -23,7 +23,9 @@ const notThrowErrorEndpoint = [
   ENDPOINTS.GET_PROBLEM_COMMENTS,
   ENDPOINTS.GET_PROBLEM_EDITORIAL,
   ENDPOINTS.GET_PROBLEM_SUBMISSIONS,
-  ENDPOINTS.GET_PROBLEM_SOLUTIONS
+  ENDPOINTS.GET_PROBLEM_SOLUTIONS,
+  ENDPOINTS.GET_MY_LIST_EXAM,
+  ENDPOINTS.GET_LIST_EXAM
 ]
 
 // List of endpoints that don't need token rotation
@@ -46,6 +48,8 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [refreshPromise, setRefreshPromise] = useState(null)
+  const authCheckInProgress = useRef(false)
+  const lastAuthCheck = useRef(0)
 
   // Track API errors without immediately showing them
   const [apiErrors, setApiErrors] = useState({})
@@ -53,7 +57,21 @@ export const AuthProvider = ({ children }) => {
   const [activeRequests, setActiveRequests] = useState(0)
 
   // Check if the user is authenticated on mount
-  const checkAuthStatus = useCallback(async () => {
+  const checkAuthStatus = useCallback(async (force = false) => {
+    // Prevent multiple simultaneous auth checks
+    if (authCheckInProgress.current) {
+      return
+    }
+
+    // Add throttling to prevent excessive checks
+    const now = Date.now()
+    if (!force && now - lastAuthCheck.current < 2000) {
+      return
+    }
+
+    authCheckInProgress.current = true
+    lastAuthCheck.current = now
+
     try {
       incrementActiveRequests()
       const response = await fetch(ENDPOINTS.GET_INFOR, {
@@ -66,27 +84,46 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         const data = await response.json()
-        setIsAuthenticated(true)
-        setUser(data)
-        clearApiError("auth")
+        // Only set isAuthenticated to true if we actually have user data
+        if (data) {
+          setUser(data)
+          setIsAuthenticated(true)
+          clearApiError("auth")
+        } else {
+          // If no user data despite OK response, treat as not authenticated
+          setUser(null)
+          setIsAuthenticated(false)
+        }
       } else {
-        setIsAuthenticated(false)
         setUser(null)
+        setIsAuthenticated(false)
       }
     } catch (error) {
       console.error("Auth check failed:", error)
-      setIsAuthenticated(false)
       setUser(null)
+      setIsAuthenticated(false)
     } finally {
       decrementActiveRequests()
+      authCheckInProgress.current = false
     }
   }, [])
 
-  // Run auth check only once on mount
+  // Run auth check on mount and when location changes
   useEffect(() => {
-    checkAuthStatus()
-    // Remove isAuthenticated from dependencies to prevent loops
-  }, [isAuthenticated])
+    checkAuthStatus(true)
+
+    // Add listener for location changes to check auth after redirects
+    const handleLocationChange = () => {
+      // Force auth check after navigation
+      checkAuthStatus(true)
+    }
+
+    window.addEventListener("popstate", handleLocationChange)
+
+    return () => {
+      window.removeEventListener("popstate", handleLocationChange)
+    }
+  }, [checkAuthStatus])
 
   const incrementActiveRequests = () => {
     setActiveRequests((prev) => prev + 1)
@@ -121,7 +158,7 @@ export const AuthProvider = ({ children }) => {
     })
   }, [])
 
-  const logout = async () => {
+  const logout = async (redirect = true) => {
     try {
       incrementActiveRequests()
       await fetch(ENDPOINTS.POST_LOGOUT, {
@@ -135,10 +172,16 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error("Logout failed:", error)
     } finally {
+      // Set authentication state to false first to ensure UI updates immediately
       setIsAuthenticated(false)
       setUser(null)
       decrementActiveRequests()
       clearApiError("auth")
+
+      // If redirect is true, navigate to login page
+      if (redirect) {
+        window.location.href = "/login"
+      }
     }
   }
 
@@ -159,10 +202,16 @@ export const AuthProvider = ({ children }) => {
         "Access-Control-Allow-Credentials": "true"
       }
     })
-      .then((response) => {
+      .then(async (response) => {
         if (!response.ok) {
+          // If token rotation fails, user is no longer authenticated
+          setIsAuthenticated(false)
+          setUser(null)
           return response.status
         }
+
+        // After successful token rotation, update auth status
+        await checkAuthStatus(true)
         return 200
       })
       .catch((error) => {
@@ -185,10 +234,23 @@ export const AuthProvider = ({ children }) => {
     // Check if this endpoint requires authentication
     const requiresAuth = !inEndpointList(guestEndpoints, url) && !inEndpointList(notThrowErrorEndpoint, url)
 
-    // If endpoint requires auth but user is not authenticated, add auth error
+    // If we're authenticated but have no user data, that's inconsistent - fix it
+    if (isAuthenticated && !user && url !== ENDPOINTS.GET_INFOR) {
+      await checkAuthStatus(true)
+    }
+
+    // If auth is required but we're not sure about auth status, check it first
     if (requiresAuth && !isAuthenticated && url !== ENDPOINTS.GET_INFOR) {
-      addApiError("auth", { status: 401 })
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 })
+      // Only check auth status if we're not already checking
+      if (!authCheckInProgress.current) {
+        await checkAuthStatus(true)
+      }
+
+      // After checking, if still not authenticated, handle the error
+      if (!isAuthenticated) {
+        addApiError("auth", { status: 401 })
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 })
+      }
     }
 
     incrementActiveRequests()
@@ -226,6 +288,8 @@ export const AuthProvider = ({ children }) => {
         const errorKey = `${url.split("?")[0]}-${response.status}`
 
         if (response.status === 401) {
+          setIsAuthenticated(false)
+          setUser(null)
           addApiError("auth", { status: 401 })
         } else if (!inEndpointList(notThrowErrorEndpoint, url)) {
           addApiError(errorKey, { status: response.status })
@@ -300,16 +364,47 @@ export const AuthProvider = ({ children }) => {
     return hasError && !isFromNoThrowEndpoint
   }
 
+  // Add a login function to ensure both states are set properly:
+  const login = async (credentials) => {
+    try {
+      incrementActiveRequests()
+      const response = await fetch(ENDPOINTS.POST_LOGIN, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "http://localhost:5174",
+          "Access-Control-Allow-Credentials": "true"
+        },
+        body: JSON.stringify(credentials)
+      })
+
+      if (response.ok) {
+        // After successful login, immediately check auth status to get user data
+        await checkAuthStatus(true)
+        return { success: true }
+      } else {
+        return { success: false, error: await response.json() }
+      }
+    } catch (error) {
+      console.error("Login failed:", error)
+      return { success: false, error }
+    } finally {
+      decrementActiveRequests()
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
         apiCall,
+        login,
         logout,
         isAuthenticated,
         user,
         loading: activeRequests > 0,
         setIsAuthenticated,
-        refreshAuth: checkAuthStatus,
+        refreshAuth: () => checkAuthStatus(true),
         errors: apiErrors,
         clearError: clearApiError
       }}
@@ -326,4 +421,3 @@ export const useAuth = () => {
   }
   return context
 }
-

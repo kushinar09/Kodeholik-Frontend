@@ -3,7 +3,7 @@
 import { Link } from "react-router-dom"
 import UserActionMenu from "../other/user-action-menu"
 
-export default function HeaderSection() {
+export default function HeaderSection({ currentActive = "Problems" }) {
   return (
     <div className="z-10 w-full sticky top-0 px-24 pt-4 pb-2 bg-primary-bg">
       <div className="absolute inset-x-0 -bottom-4 h-4 bg-gradient-to-b from-primary-bg to-transparent pointer-events-none" />
@@ -12,16 +12,16 @@ export default function HeaderSection() {
           {/* <Link to="#" className="text-primary px-4 py-2 hover:text-white">
             Explore
           </Link> */}
-          <Link to="#" className="rounded-md px-4 py-2 bg-primary text-black font-bold">
+          <Link to="#" className={`rounded-md px-4 py-2 ${currentActive === "problem" ? "bg-primary text-black font-bold" : "hover:text-white text-primary"}`}>
             Problems
           </Link>
-          <Link to="#" className="text-primary px-4 py-2 hover:text-white">
-            Contest
+          <Link to="#" className={`rounded-md px-4 py-2 ${currentActive === "exam" ? "bg-primary text-black font-bold" : "hover:text-white text-primary"}`}>
+            Examination
           </Link>
-          <Link to="#" className="text-primary px-4 py-2 hover:text-white">
+          <Link to="#" className={`rounded-md px-4 py-2 ${currentActive === "discuss" ? "bg-primary text-black font-bold" : "hover:text-white text-primary"}`}>
             Discuss
           </Link>
-          <Link to="#" className="text-primary px-4 py-2 hover:text-white">
+          <Link to="#" className={`rounded-md px-4 py-2 ${currentActive === "course" ? "bg-primary text-black font-bold" : "hover:text-white text-primary"}`}>
             Courses
           </Link>
         </div>

@@ -13,7 +13,7 @@ import { toast } from "@/hooks/use-toast"
 import { LOGO } from "@/lib/constants"
 import { MESSAGES } from "@/lib/messages"
 
-import { login, loginWithGithub, loginWithGoogle } from "@/lib/api/auth_api"
+import { loginWithGithub, loginWithGoogle } from "@/lib/api/auth_api"
 import { useAuth } from "@/providers/AuthProvider"
 export default function LoginPage() {
   const [loading, setLoading] = useState(true)
@@ -23,7 +23,7 @@ export default function LoginPage() {
     password: ""
   })
 
-  const { isAuthenticated, setIsAuthenticated, apiCall } = useAuth()
+  const { isAuthenticated, setIsAuthenticated, login } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
 

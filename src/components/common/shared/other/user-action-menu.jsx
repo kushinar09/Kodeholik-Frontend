@@ -22,7 +22,6 @@ import { useNavigate } from "react-router-dom"
  */
 export default function UserActionMenu() {
   const { isAuthenticated, user, logout } = useAuth()
-
   const navigate = useNavigate()
 
   function handleLogin() {
