@@ -23,6 +23,7 @@ import WaitingRoom from "./components/pages/exam/waiting-room"
 import CodeEditor from "./components/common/editor-code/CodeEditor"
 import CreateCourse from "./components/pages/courses/CreateCourse"
 import UpdateCourse from "./components/pages/courses/UpdateCourse"
+import Profile from "./components/pages/profile"
 
 function App() {
   const queryClient = new QueryClient()
@@ -66,7 +67,8 @@ function App() {
                 <Route path="/courses/add" element={<CreateCourse />} />
                 <Route path="/courses/update/:id" element={<UpdateCourse />} />
                 <Route path="/learn" element={<LearnThroughVideoAndText />} />
-
+                {/* profile */}
+                <Route path="/profile" element={<Profile />} />
                 {/* error */}
                 <Route path="/401" element={<UnauthorisedError />} />
                 <Route path="/403" element={<ForbiddenError />} />

@@ -36,6 +36,7 @@ const ENDPOINTS = {
   GET_INFOR: `${API_URL}/user/current`,
   ROTATE_TOKEN: `${API_URL}/auth/rotate-token`,
   POST_LOGOUT: `${API_URL}/auth/logout`,
+  PUT_CHANGE_PASSWORD: `${API_URL}/auth/change-password`,
 
   POST_FORGOT_PASSWORD: `${API_URL}/auth/reset-password-init?username=:gmail`,
   GET_CHECK_RESET_TOKEN: `${API_URL}/auth/reset-password-check?token=:token`,
@@ -85,6 +86,10 @@ const ENDPOINTS = {
   // code
   POST_RUN_CODE: `${API_URL}/problem-submission/run/:id`,
   POST_SUBMIT_CODE: `${API_URL}/problem-submission/submit/:id`,
+
+  //User
+  GET_PROFILE: `${API_URL}/user/current`,
+  POST_EDIT_PROFILE: `${API_URL}/user/edit-profile`,
 
   //image
  GET_IMAGE: (imageKey) => `${API_URL}/s3/presigned-url?key=${encodeURIComponent(imageKey)}`

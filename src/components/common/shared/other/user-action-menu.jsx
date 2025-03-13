@@ -61,7 +61,8 @@ export default function UserActionMenu() {
             <DropdownMenuLabel>{user.username || "My Account"}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem className="cursor-pointer">
+              <DropdownMenuItem onClick={() => navigate("/profile")}
+               className="cursor-pointer">
                 <svg
                   className="h-4 w-4 mr-2"
                   viewBox="0 0 24 24"

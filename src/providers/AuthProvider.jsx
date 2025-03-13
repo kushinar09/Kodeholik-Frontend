@@ -115,7 +115,7 @@ export const AuthProvider = ({ children }) => {
               navigate("/500")
               break
             case 401:
-              navigate("/401")
+              navigate("/401") 
               break
             case 403:
               navigate("/403")
