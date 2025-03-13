@@ -243,7 +243,7 @@ export default function CourseDetail({
                   </div>
                 )}
                 {isEnrolled && (
-                  <Badge className="absolute bottom-2 right-2 z-20 bg-primary text-white px-3 py-1 text-sm">
+                  <Badge className="absolute bottom-2 right-2 z-20 bg-primary text-black px-3 py-1 text-sm">
                     <CheckCircle className="h-4 w-4 mr-1" /> Enrolled
                   </Badge>
                 )}
