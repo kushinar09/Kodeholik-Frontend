@@ -7,9 +7,9 @@ import ForgotPassword from "./components/pages/authentications/forgot"
 import LoginPage from "./components/pages/authentications/login"
 import ResetPassword from "./components/pages/authentications/reset"
 import CoursePage from "./components/pages/courses/ViewCoursePage"
-import CourseDetail from "./components/pages/courses/ViewCourseDetail"
+import CourseDetail from "./components/pages/courses/CourseDetail/index"
 
-import LearnThroughVideoAndText from "./components/pages/courses/LearnThroughVideoAndText"
+import LearnThroughVideoAndText from "./components/pages/courses/learnLesson/LearnThroughVideoAndText"
 import ProblemPage from "./components/pages/problems/ProblemList"
 import ProblemCreator from "./components/pages/problems/ProblemCreate"
 import { AuthProvider } from "./providers/AuthProvider"
@@ -23,6 +23,7 @@ import WaitingRoom from "./components/pages/exam/waiting-room"
 import CodeEditor from "./components/common/editor-code/CodeEditor"
 import CreateCourse from "./components/pages/courses/CreateCourse"
 import UpdateCourse from "./components/pages/courses/UpdateCourse"
+import CourseDiscussion from "./components/pages/courses/CourseDiscussion"
 
 function App() {
   const queryClient = new QueryClient()
@@ -65,7 +66,9 @@ function App() {
                 <Route path="/courses/:id" element={<CourseDetail />} />
                 <Route path="/courses/add" element={<CreateCourse />} />
                 <Route path="/courses/update/:id" element={<UpdateCourse />} />
-                <Route path="/learn" element={<LearnThroughVideoAndText />} />
+                <Route path="/learn/:id" element={<LearnThroughVideoAndText />} />
+                <Route path="/course/discusdion" element={<CourseDiscussion />} />
+
 
                 {/* error */}
                 <Route path="/401" element={<UnauthorisedError />} />

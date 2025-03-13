@@ -78,6 +78,8 @@ const ENDPOINTS = {
   DELETE_COURSE: `${API_URL}/course/delete/:id`,
   ENROLL_COURSE: `${API_URL}/course/enroll/:id`,
   UNENROLL_COURSE: `${API_URL}/course/unenroll/:id`,
+  RATE_COMMENT_COURSE: `${API_URL}/course/rate`,
+  GET_COMMENT_COURSE: `${API_URL}/course/rating/:id`,
 
    //Chapter
    GET_CHAPTERS: `${API_URL}/chapter/list`,
@@ -100,8 +102,16 @@ const ENDPOINTS = {
   POST_RUN_CODE: `${API_URL}/problem-submission/run/:id`,
   POST_SUBMIT_CODE: `${API_URL}/problem-submission/submit/:id`,
 
+  //video 
+  GET_VIDEO_URL: `${API_URL}/:videoUrl/signed-url`,
+
+  //DownloadFile lesson
+  DOWNLOAD_FILE_LESSON: (fileKey) => `${API_URL}/lesson/download-file?key=${encodeURIComponent(fileKey)}`,
+
   //image
   GET_IMAGE: (imageKey) => `${API_URL}/s3/presigned-url?key=${encodeURIComponent(imageKey)}`
+
+
 }
 
 const CONSTANTS = {
