@@ -20,6 +20,7 @@ export default function CourseDetail({
   totalLessons,
   completedLessons,
   completionPercentage,
+  isEnrolled, // New prop
 }) {
   if (loading) {
     return (
@@ -83,8 +84,6 @@ export default function CourseDetail({
     )
   }
 
-  const isEnrolled = course.isEnrolled
-
   const handleLearn = () => {
     navigate(`/learn/${course.id}`)
   }
@@ -142,17 +141,20 @@ export default function CourseDetail({
               <div className="flex flex-wrap gap-3 mt-6">
                 {isEnrolled ? (
                   <>
-                    <Button className="gap-2" size="lg">
-                      <BookOpen className="h-5 w-5" /> Continue Learning
-                    </Button>
-
+                  <Button
+                    size="lg"
+                    className="gap-2 bg-primary text-black hover:bg-bg-primary hover:text-primary"
+                    onClick={handleLearn}
+                  >
+                    <BookOpen className="h-5 w-5" /> Continue Learning
+                  </Button>
                     <Dialog open={open} onOpenChange={setOpen}>
                       <DialogTrigger asChild>
                         <Button
                           variant="outline"
                           size="lg"
                           disabled={processing}
-                          className="gap-2 border-gray-600 text-white hover:bg-gray-700 hover:text-white"
+                          className="gap-2 bg-primary text-black hover:bg-gray-700 hover:text-primary"
                         >
                           {processing ? (
                             "Processing..."
@@ -271,16 +273,6 @@ export default function CourseDetail({
                   </div>
                   <span className="text-white font-medium">2 weeks ago</span>
                 </div>
-
-                {!isEnrolled && (
-                  <Button
-                    size="lg"
-                    className="w-full mt-4 gap-2 bg-primary text-black hover:bg-bg-primary hover:text-primary"
-                    onClick={handleLearn}
-                  >
-                    <Eye className="h-5 w-5" /> Study Course
-                  </Button>
-                )}
               </div>
             </div>
           </div>

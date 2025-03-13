@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BookOpen, FileText } from "lucide-react"
 import Header from "@/components/common/shared/header"
 import FooterSection from "@/components/common/shared/footer"
-import { getCourse, enrollCourse, unEnrollCourse, getImage } from "@/lib/api/course_api"
+import { getCourse, enrollCourse, unEnrollCourse, getImage, checkEnrollCourse } from "@/lib/api/course_api"
 import { getChapterByCourseId } from "@/lib/api/chapter_api"
 import { getLessonByChapterId } from "@/lib/api/lesson_api"
 import CourseDetail from "./components/courseDetail"
@@ -25,6 +25,7 @@ export default function CourseDetailPage() {
   const [processing, setProcessing] = useState(false)
   const [imageUrl, setImageUrl] = useState(null)
   const [activeTab, setActiveTab] = useState("overview")
+  const [isEnrolled, setIsEnrolled] = useState(false)
 
   useEffect(() => {
     async function fetchCourseData() {
@@ -37,14 +38,21 @@ export default function CourseDetailPage() {
           chaptersData.map(async (chapter) => {
             const lessons = await getLessonByChapterId(chapter.id)
             return { ...chapter, lessons }
-          }),
+          })
         )
         setChapters(chaptersWithLessons)
 
         const url = await getImage(courseData.image)
         setImageUrl(url)
+
+        // Check enrollment status
+        console.log("Checking enrollment for course:", id);
+        const enrolled = await checkEnrollCourse(id);
+        console.log("Enroll status:", enrolled);
+        setIsEnrolled(enrolled); // Directly set boolean
       } catch (error) {
-        setError(error.message)
+        console.error("Fetch error:", error);
+        setError(error.message);
       } finally {
         setLoading(false)
       }
@@ -58,6 +66,7 @@ export default function CourseDetailPage() {
       await enrollCourse(id)
       const updatedCourse = await getCourse(id)
       setCourse(updatedCourse)
+      setIsEnrolled(true)
       setOpen(false)
       alert("You have successfully enrolled!")
     } catch (error) {
@@ -73,6 +82,7 @@ export default function CourseDetailPage() {
       await unEnrollCourse(id)
       const updatedCourse = await getCourse(id)
       setCourse(updatedCourse)
+      setIsEnrolled(false)
       setOpen(false)
       alert("You have successfully unenrolled!")
     } catch (error) {
@@ -90,7 +100,7 @@ export default function CourseDetailPage() {
   }
 
   const totalLessons = chapters.reduce((acc, chapter) => acc + (chapter.lessons?.length || 0), 0)
-  const completedLessons = course?.isEnrolled ? Math.floor(totalLessons * 0.3) : 0
+  const completedLessons = isEnrolled ? Math.floor(totalLessons * 0.3) : 0
   const completionPercentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0
 
   return (
@@ -111,6 +121,7 @@ export default function CourseDetailPage() {
           totalLessons={totalLessons}
           completedLessons={completedLessons}
           completionPercentage={completionPercentage}
+          isEnrolled={isEnrolled}
         />
         <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-2 mb-8 bg-gray-900/50">

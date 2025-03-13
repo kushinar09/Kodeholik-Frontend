@@ -255,6 +255,25 @@ export async function updateCourse(id, courseData, imageFile, apiCall) {
     return response;
   }
 
+  export async function checkEnrollCourse(id) {
+    try {
+      const response = await fetch(ENDPOINTS.CHECK_ENROLL.replace(":id", id), {
+        method: "GET",
+        credentials: "include",
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to check enroll: ${errorText || response.statusText}`);
+      }
+  
+      const text = await response.text();
+      return text === "true"; // Convert "true"/"false" string to boolean
+    } catch (error) {
+      throw new Error(`Network error: ${error.message}`);
+    }
+  }
+
   export async function getRateCommentCourse(id) {
     // Ensure id is defined and a valid number
     if (!id || isNaN(id)) {
