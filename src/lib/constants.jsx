@@ -80,6 +80,7 @@ const ENDPOINTS = {
   UNENROLL_COURSE: `${API_URL}/course/unenroll/:id`,
   RATE_COMMENT_COURSE: `${API_URL}/course/rate`,
   GET_COMMENT_COURSE: `${API_URL}/course/rating/:id`,
+  CHECK_ENROLL: `${API_URL}/course/enroll/check/:id`,
 
    //Chapter
    GET_CHAPTERS: `${API_URL}/chapter/list`,
