@@ -1,7 +1,6 @@
 "use client"
 
 import { Separator } from "@/components/ui/separator"
-import { marked } from "marked"
 import DiscussionSection from "./problem-comments"
 import SkillSection from "./problem-skill";
 import TopicSection from "./problem-topic";
@@ -10,6 +9,7 @@ import { Check, CheckIcon, Star } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/providers/AuthProvider";
 import { tagFavourite, untagFavourite } from "@/lib/api/user_api";
+import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 
 /**
  * Component to display problem description
@@ -91,10 +91,7 @@ export default function ProblemDescription({ description, setDescription, id, pr
 
       </div>
       <div>
-        <div
-          className="markdown prose prose-sm dark:prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ __html: marked(description.description) }}
-        />
+        <RenderMarkdown content={description.description} />
       </div>
       <div className="my-4 flex">
         <div className="mr-4">

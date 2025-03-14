@@ -25,7 +25,7 @@ self.MonacoEnvironment = {
 }
 
 
-export default function CodeEditor({ initialCode, onChange, className = "" }) {
+export default function CodeEditor({ initialCode, onChange, className = "", language = "java" }) {
   const editorRef = useRef(null)
   const [editor, setEditor] = useState(null)
   const [breakpoints, setBreakpoints] = useState(new Map()) // Track breakpoints
@@ -71,6 +71,43 @@ export default function CodeEditor({ initialCode, onChange, className = "" }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  useEffect(() => {
+    if (editor) {
+      try {
+        // Safely update the editor value
+        const currentValue = editor.getValue()
+        if (initialCode !== currentValue) {
+          // Use the editor's edit operation to set the value
+          editor.executeEdits("reset-content", [
+            {
+              range: editor.getModel().getFullModelRange(),
+              text: initialCode || INITIAL_CODE_DEFAULT,
+              forceMoveMarkers: true
+            }
+          ])
+
+          // Alternative approach if the above doesn't work
+          // editor.setValue(initialCode || INITIAL_CODE_DEFAULT);
+        }
+      } catch (error) {
+        console.error("Error updating editor content:", error)
+      }
+    }
+  }, [initialCode, editor])
+
+  useEffect(() => {
+    if (editor) {
+      try {
+        const model = editor.getModel()
+        if (model) {
+          monaco.editor.setModelLanguage(model, language.toLowerCase())
+        }
+      } catch (error) {
+        console.error("Error updating editor language:", error)
+      }
+    }
+  }, [language, editor])
+
   const toggleBreakpoint = (editor, lineNumber) => {
     setBreakpoints((prev) => {
       const updatedBreakpoints = new Map(prev)
@@ -115,3 +152,5 @@ export default function CodeEditor({ initialCode, onChange, className = "" }) {
     </div>
   )
 }
+
+

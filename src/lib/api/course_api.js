@@ -254,3 +254,71 @@ export async function updateCourse(id, courseData, imageFile, apiCall) {
     }
     return response;
   }
+
+  export async function checkEnrollCourse(id) {
+    try {
+      const response = await fetch(ENDPOINTS.CHECK_ENROLL.replace(":id", id), {
+        method: "GET",
+        credentials: "include",
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to check enroll: ${errorText || response.statusText}`);
+      }
+  
+      const text = await response.text();
+      return text === "true"; // Convert "true"/"false" string to boolean
+    } catch (error) {
+      throw new Error(`Network error: ${error.message}`);
+    }
+  }
+
+  export async function getRateCommentCourse(id) {
+    // Ensure id is defined and a valid number
+    if (!id || isNaN(id)) {
+      throw new Error("Invalid courseId provided")
+    }
+  
+    const url = ENDPOINTS.GET_COMMENT_COURSE.replace(":id", id) // Remove comma from placeholder
+    console.log("Fetching comments from URL:", url)
+  
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+      })
+      console.log("Response Status:", response.status)
+  
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("Server Response:", errorText)
+        throw new Error(`Failed to fetch comments: ${response.status} - ${errorText}`)
+      }
+  
+      const data = await response.json()
+      console.log("Fetched Comments:", data)
+      return data
+    } catch (error) {
+      console.error("Error fetching comments:", error.message)
+      throw error
+    }
+  }
+
+  export async function rateCommentCourse(data, apiCall) {
+    try {
+      const responseData = await apiCall(ENDPOINTS.RATE_COMMENT_COURSE, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+      console.log("rateCommentCourse Response Data:", responseData)
+      return responseData // Return the parsed data directly
+    } catch (error) {
+      console.error("rateCommentCourse Error:", error.message)
+      throw error // Propagate the error from apiCall
+    }
+  }

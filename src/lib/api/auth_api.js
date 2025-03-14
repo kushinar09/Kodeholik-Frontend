@@ -69,20 +69,27 @@ export async function resetPassword(token, password) {
 }
 
 // login
-export async function login(apiCall, formData) {
+export async function login(formData) {
   try {
-    const response = await apiCall(ENDPOINTS.POST_LOGIN, {
+    const response = await fetch(ENDPOINTS.POST_LOGIN, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(formData)
     })
 
-    if (response.ok) {
+    if (response.status === 204) {
       return { status: true }
-    } else {
+    } else if (response.status === 401) {
+      return { status: false, error: MESSAGES["MSG03"].content }
+    } else if (response.status === 400) {
       return { status: false, error: MESSAGES["MSG01"].content }
+    } else if (response.status === 403) {
+      return { status: false, error: "Your account was banned. Cut ngay" }
+    } else {
+      return { status: false, error: "Network error. Please try again later." }
     }
   } catch (error) {
     throw new Error("Login failed. Please check your credentials and try again.")

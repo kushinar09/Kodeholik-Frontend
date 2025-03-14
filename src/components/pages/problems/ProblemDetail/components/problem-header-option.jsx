@@ -1,17 +1,15 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ListChecksIcon, Bug, Play, Upload } from "lucide-react"
+import { ListChecksIcon, Bug, Play, Upload, Lock, LockIcon, LockKeyhole, Loader } from "lucide-react"
 import { LOGO } from "@/lib/constants"
 import UserActionMenu from "@/components/common/shared/other/user-action-menu"
+import { useAuth } from "@/providers/AuthProvider"
 
-/**
- * Header component for the problem detail page
- * @param {Object} props - Component props
- * @param {Function} props.onRun - Run code handler
- * @param {Function} props.onSubmit - Submit code handler
- */
-export default function ProblemHeader({ onRun, onSubmit }) {
+export default function ProblemHeader({ onRun, onSubmit, isRunning }) {
+  const { isAuthenticated } = useAuth()
+  console.log(isRunning)
+
   return (
     <div className="relative h-12 w-full bg-bg-primary/50">
       <nav className="h-full w-full bg-bg-card flex items-center justify-between px-4">
@@ -31,29 +29,41 @@ export default function ProblemHeader({ onRun, onSubmit }) {
 
       {/* Centered Button List */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2">
-        <Button
+        {/* <Button
           variant="ghost"
           title="Debug"
           size="icon"
           className="h-8 w-8 bg-button-primary hover:bg-button-hover text-black transition"
         >
           <Bug className="h-4 w-4" />
-        </Button>
+        </Button> */}
         <Button
           onClick={onRun}
           variant="ghost"
           title="Run"
           className="h-8 bg-button-primary hover:bg-button-hover text-black transition"
+          disabled={!isAuthenticated || isRunning !== ""}
         >
-          <Play className="h-4 w-4" />
+          {!isAuthenticated
+            ? <LockKeyhole className="size-4" />
+            : isRunning === "run"
+              ? <Loader className="animate-spin size-4" />
+              : <Play className="h-4 w-4" />
+          }
           Run
         </Button>
         <Button
           onClick={onSubmit}
           title="Submit"
           className="h-8 bg-button-primary hover:bg-button-hover text-black text-sm transition"
+          disabled={!isAuthenticated || isRunning !== ""}
         >
-          <Upload className="size-4" />
+          {!isAuthenticated
+            ? <LockKeyhole className="size-4" />
+            : isRunning === "submit"
+              ? <Loader className="animate-spin size-4" />
+              : <Upload className="size-4" />
+          }
           Submit
         </Button>
       </div>

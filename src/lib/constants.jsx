@@ -82,6 +82,23 @@ const ENDPOINTS = {
   DELETE_COURSE: `${API_URL}/course/delete/:id`,
   ENROLL_COURSE: `${API_URL}/course/enroll/:id`,
   UNENROLL_COURSE: `${API_URL}/course/unenroll/:id`,
+  RATE_COMMENT_COURSE: `${API_URL}/course/rate`,
+  GET_COMMENT_COURSE: `${API_URL}/course/rating/:id`,
+  CHECK_ENROLL: `${API_URL}/course/enroll/check/:id`,
+
+   //Chapter
+   GET_CHAPTERS: `${API_URL}/chapter/list`,
+   GET_CHAPTER_BY_COURSE_ID: `${API_URL}/chapter/by-course/:id`,
+   GET_CHAPTER_DETAIL: `${API_URL}/chapter/detail/:id`,
+   CREATE_CHAPTER: `${API_URL}/chapter/add`,
+   UPDATE_CHAPTER: `${API_URL}/chapter/update/:id`, 
+ 
+   //Lesson
+   GET_LESSONS: `${API_URL}/lesson/list`,
+   GET_LESSON_BY_CHAPTERID: `${API_URL}/lesson/by-chapter/:id`,
+   GET_LESSON_DETAIL: `${API_URL}/lesson/detail/:id`,
+   CREATE_LESSON: `${API_URL}/lesson/add`,
+   UPDATE_LESSON: `${API_URL}/lesson/update/:id`,
 
   //Topic
   GET_TOPIC_LIST: `${API_URL}/tag/all-topic`,
@@ -102,12 +119,17 @@ const ENDPOINTS = {
   GET_MY_FAVOURITE: `${API_URL}/problem/list-favourite`,
   TAG_FAVOURITE: `${API_URL}/problem/tag-favourite/`,
   UNTAG_FAVOURITE: `${API_URL}/problem/untag-favourite/`,
+  //video 
+  GET_VIDEO_URL: `${API_URL}/:videoUrl/signed-url`,
+
+  //DownloadFile lesson
+  DOWNLOAD_FILE_LESSON: (fileKey) => `${API_URL}/lesson/download-file?key=${encodeURIComponent(fileKey)}`,
 
   //image
- GET_IMAGE: (imageKey) => `${API_URL}/s3/presigned-url?key=${encodeURIComponent(imageKey)}`
+  GET_IMAGE: (imageKey) => `${API_URL}/s3/presigned-url?key=${encodeURIComponent(imageKey)}`
+
+
 }
-
-
 
 const CONSTANTS = {
   ACCESS_TOKEN: "access_token",

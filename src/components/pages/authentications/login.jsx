@@ -105,7 +105,7 @@ export default function LoginPage() {
       if (Object.keys(newErrors).length > 0) {
         setErrors(newErrors)
       } else {
-        const result = await login(apiCall, formData)
+        const result = await login(formData)
         if (!result.status) {
           if (result.error) {
             newErrors.general = result.error

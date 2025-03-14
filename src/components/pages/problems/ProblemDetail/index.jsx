@@ -9,7 +9,13 @@ import "highlight.js/styles/default.css"
 import "./styles.css"
 
 // API imports
-import { getProblemDescription, getProblemEditorial, getProblemInitCode, getProblemSolutions, getProblemSubmission } from "@/lib/api/problem_api"
+import {
+  getProblemDescription,
+  getProblemEditorial,
+  getProblemInitCode,
+  getProblemSolutions,
+  getProblemSubmission
+} from "@/lib/api/problem_api"
 import { runCode, submitCode } from "@/lib/api/code_api"
 
 // Component imports
@@ -19,10 +25,10 @@ import LeftPanelContent from "./components/left-panel/left-panel-content"
 import CodePanel from "./components/right-panel/code-panel"
 import TestCasePanel from "./components/right-panel/test-case-panel"
 import { useAuth } from "@/providers/AuthProvider"
-import { mockEditorial, mockSolutions, mockSubmissions } from "./fake-data"
 import { leftTabEnum } from "./data/data"
 import { debounce } from "lodash"
 import SubmissionDetail from "./components/right-panel/submission-detail"
+import LoadingScreen from "@/components/common/shared/other/loading"
 
 export default function ProblemDetail() {
   const { id } = useParams()
@@ -32,6 +38,10 @@ export default function ProblemDetail() {
 
   const [openedTabEditorial, setOpenedTabEditorial] = useState(false)
   const [openedTabSolution, setOpenedTabSolution] = useState(false)
+
+  // Loading
+  const [isLoading, setIsLoading] = useState(false)
+  const [isRunning, setIsRunning] = useState("")
 
   // Panel state
   const [leftSize, setLeftSize] = useState(50)
@@ -72,6 +82,8 @@ export default function ProblemDetail() {
   useEffect(() => {
     console.log(selectedSubmissionId);
   }, [selectedSubmissionId])
+  // Language
+  const [language, setLanguage] = useState("Java")
 
   // Panel resize detection
   useEffect(() => {
@@ -120,10 +132,15 @@ export default function ProblemDetail() {
   const fetchProblemDescription = async () => {
     if (!id) return
     if (!description) {
-      const result = await getProblemDescription(apiCall, id)
-      if (result.status && result.data) {
-        setDescription(result.data)
-        setProblemId(result.data.id)
+      setIsLoading(true)
+      try {
+        const result = await getProblemDescription(apiCall, id)
+        if (result.status && result.data) {
+          setDescription(result.data)
+          setProblemId(result.data.id)
+        }
+      } finally {
+        setIsLoading(false)
       }
     }
   }
@@ -131,9 +148,14 @@ export default function ProblemDetail() {
   const fetchProblemEditorial = async () => {
     if (!id) return
     if (!editorial) {
-      const result = await getProblemEditorial(apiCall, id)
-      if (result.status && result.data) {
-        setEditorial(result.data)
+      setIsLoading(true)
+      try {
+        const result = await getProblemEditorial(apiCall, id)
+        if (result.status && result.data) {
+          setEditorial(result.data)
+        }
+      } finally {
+        setIsLoading(false)
       }
     }
     // const eds = mockEditorial.editorialDtos[0]
@@ -141,23 +163,33 @@ export default function ProblemDetail() {
   }
 
   const fetchProblemSolutions = useCallback(
-    debounce(async (
-      page = 0,
-      size = 10,
-      title = null,
-      languageName = null,
-      sortBy = null,
-      ascending = null,
-      topics = []
-    ) => {
-      if (!id) return
-      if (!solutions || page != null) {
-        const result = await getProblemSolutions(apiCall, id, page, size, title, languageName, sortBy, ascending, topics)
-        if (result.status) {
-          setSolutions(result.data)
+    debounce(
+      async (page = 0, size = 10, title = null, languageName = null, sortBy = null, ascending = null, topics = []) => {
+        if (!id) return
+        if (!solutions || page != null) {
+          setIsLoading(true)
+          try {
+            const result = await getProblemSolutions(
+              apiCall,
+              id,
+              page,
+              size,
+              title,
+              languageName,
+              sortBy,
+              ascending,
+              topics
+            )
+            if (result.status) {
+              setSolutions(result.data)
+            }
+          } finally {
+            setIsLoading(false)
+          }
         }
-      }
-    }, 500), // Debounce 500ms
+      },
+      500
+    ), // Debounce 500ms
     []
   )
 
@@ -184,10 +216,14 @@ export default function ProblemDetail() {
   const fetchProblemSubmission = async () => {
     if (!id) return
     if (!submissions) {
-      const result = await getProblemSubmission(apiCall, id)
-      if (result.status && result.data) {
-        setSubmissions(result.data)
-        setSelectedSubmissionId(result.data[0].id);
+      setIsLoading(true)
+      try {
+        const result = await getProblemSubmission(apiCall, id)
+        if (result.status && result.data) {
+          setSubmissions(result.data)
+        }
+      } finally {
+        setIsLoading(false)
       }
     }
     //   const sus = mockSubmissions
@@ -206,19 +242,44 @@ export default function ProblemDetail() {
     )
   }
 
+  async function onLanguageChange(language) {
+    setIsLoading(true)
+    try {
+      const result = await getProblemInitCode(id, language)
+      if (result.status && result.data) {
+        setCode(result.data.template)
+        setTestCases(result.data.testCases)
+        setLanguage(language)
+      } else {
+        console.error("Failed to fetch initial code template:", result.message)
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   // Initial data loading
   useEffect(() => {
     const fetchInitialData = async () => {
       if (!id) return
 
-      // Fetch problem description
-      fetchProblemDescription()
+      setIsLoading(true)
+      try {
+        // Fetch problem description
+        const descResult = await getProblemDescription(apiCall, id)
+        if (descResult.status && descResult.data) {
+          setDescription(descResult.data)
+          setProblemId(descResult.data.id)
+        }
 
-      // Fetch initial code template
-      const result = await getProblemInitCode(id, "Java")
-      if (result.status && result.data) {
-        setCode(result.data.template)
-        setTestCases(result.data.testCases)
+        // Fetch initial code template
+        const codeResult = await getProblemInitCode(id, "Java")
+        if (codeResult.status && codeResult.data) {
+          setCode(codeResult.data.template)
+          setTestCases(codeResult.data.testCases)
+        }
+      } finally {
+        setIsLoading(false)
       }
     }
 
@@ -238,23 +299,37 @@ export default function ProblemDetail() {
   }
 
   async function handleRunCode() {
-    const result = await runCode(apiCall, id, code, "Java")
-    setResults(result)
-    setShowResult(true)
-    setIsResultActive(true)
-    setActiveResult("0")
+    setIsRunning("run")
+    try {
+      const result = await runCode(apiCall, id, code, language)
+      setResults(result)
+      setShowResult(true)
+      setIsResultActive(true)
+      setActiveResult("0")
+    } finally {
+      setIsRunning("")
+    }
   }
 
   async function handleSubmitCode() {
-    const result = await submitCode(apiCall, id, code, "Java")
-    setSubmitted(result)
-    setShowSubmitted(true)
-    setIsSubmittedActive(true)
+    setIsRunning("submit")
+    try {
+      const result = await submitCode(apiCall, id, code, language)
+      setSubmitted(result)
+      setShowSubmitted(true)
+      setIsSubmittedActive(true)
+    } finally {
+      setIsRunning("")
+    }
   }
 
   return (
     <div className="h-screen flex flex-col">
-      <ProblemHeader onRun={handleRunCode} onSubmit={handleSubmitCode} />
+      <ProblemHeader
+        onRun={handleRunCode}
+        onSubmit={handleSubmitCode}
+        isRunning={isRunning}
+      />
 
       <div className="flex-1 p-2 bg-bg-primary/50">
         <PanelGroup direction="horizontal" onLayout={(sizes) => setLeftSize(sizes[0])}>
@@ -327,8 +402,11 @@ export default function ProblemDetail() {
           </Panel>
 
         </PanelGroup>
-      </div >
-    </div >
+      </div>
+      {isLoading &&
+        <LoadingScreen />
+      }
+    </div>
   )
 }
 
