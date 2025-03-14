@@ -1,23 +1,41 @@
 "use client"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Mail, User, Edit, KeyRound } from "lucide-react"
+import { Mail, User, Edit, KeyRound, Circle, ChevronUp, ChevronDown } from "lucide-react"
 import FooterSection from "@/components/common/shared/footer";
 import HeaderSection from "@/components/common/shared/header";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react"
-import { changePassword, editProfile, getUserProfile } from "../../../lib/api/user_api";
+import { changePassword, editProfile, getAcceptanceRate, getNumberLanguageSolved, getNumberSkillSolved, getNumberTopicSolved, getUserProfile } from "../../../lib/api/user_api";
 import { useAuth } from "@/providers/AuthProvider"
 import { EditProfileDialog } from "./edit";
 import LoadingScreen from "@/components/common/shared/other/loading";
 import { toast } from "@/hooks/use-toast";
 import { ChangePasswordDialog } from "./change-password";
 import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { ENDPOINTS } from "@/lib/constants";
+import { RadialChart } from "@/components/common/shared/other/radial-chart";
+import MyProgress from "./my-progress";
+import MySubmission from "./my-submission";
+import MyFavourite from "./my-favourite";
+import Tabs from "./components/tabs";
 
 export default function Profile() {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const [currentUser, setCurrentUser] = useState(null);
+    const [stats, setStats] = useState(null);
+    const [rates, setRates] = useState(null);
+    const [isTopicOpen, setIsTopicOpen] = useState(true);
+    const [isSkillOpen, setIsSkillOpen] = useState(true);
+    const [isLanguageOpen, setIsLanguageOpen] = useState(true);
+    const [languageSolved, setLanguageSolved] = useState(null);
+    const [topicSolved, setTopicSolved] = useState(null);
+    const [fundamentalSkillSolved, setFundamentalSkillSolved] = useState(null);
+    const [intermediateSkillSolved, setIntermediateSkillSolved] = useState(null);
+    const [advancedSolved, setAdvancedSkillSolved] = useState(null);
     const { apiCall } = useAuth()
     const { isAuthenticated, user, logout } = useAuth()
     const [isEditProfileDialogOpen, setIsEditProfileDialogOpen] = useState(false)
@@ -28,6 +46,20 @@ export default function Profile() {
         username: "",
         fullname: ""
     })
+    const tabs = [
+        {
+            label: "My Progress",
+            content: <MyProgress />,
+        },
+        {
+            label: "My Submission",
+            content: <MySubmission />,
+        },
+        {
+            label: "My Favourite",
+            content: <MyFavourite />,
+        }
+    ]
 
     const fetchCurrentUserProfile = async () => {
         try {
@@ -49,8 +81,76 @@ export default function Profile() {
         }
     }
 
+    const fetchLanguageSolved = async () => {
+        try {
+            setIsLoading(true);
+            const data = await getNumberLanguageSolved(apiCall);
+            setLanguageSolved(data);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    const fetchAdvancedSkillSolved = async () => {
+        try {
+            setIsLoading(true);
+            const data = await getNumberSkillSolved(apiCall, "ADVANCED");
+            setAdvancedSkillSolved(data);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    const fetchIntermediateSkillSolved = async () => {
+        try {
+            setIsLoading(true);
+            const data = await getNumberSkillSolved(apiCall, "INTERMEDIATE");
+            setIntermediateSkillSolved(data);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    const fetchFundamentalSkillSolved = async () => {
+        try {
+            setIsLoading(true);
+            const data = await getNumberSkillSolved(apiCall, "FUNDAMENTAL");
+            setFundamentalSkillSolved(data);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    const fetchTopicSolved = async () => {
+        try {
+            setIsLoading(true);
+            const data = await getNumberTopicSolved(apiCall);
+            console.log(data);
+            setTopicSolved(data);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     useEffect(() => {
         fetchCurrentUserProfile();
+        fetchLanguageSolved();
+        fetchAdvancedSkillSolved();
+        fetchFundamentalSkillSolved();
+        fetchIntermediateSkillSolved();
+        fetchTopicSolved();
+        fetchStats();
+        fetchAcceptanceRate();
     }, []);
 
     const handleEditProfile = (profile) => {
@@ -107,6 +207,63 @@ export default function Profile() {
         } finally {
         }
     }
+    const getColorForLabel = (label) => {
+        switch (label) {
+            case "EASY":
+                return "rgb(74, 222, 128)"
+            case "MEDIUM":
+                return "rgb(234, 179, 8)"
+            case "HARD":
+                return "rgb(239, 68, 68)"
+            default:
+                return "#ccc"
+        }
+    }
+    const fetchStats = async () => {
+        try {
+            const response = await apiCall(ENDPOINTS.GET_STATS_PROBLEM)
+            const data = await response.json()
+
+            const transformedStats = {
+                mainLabel: "Solved",
+                mainCount: data.find(item => item.name === "ALL")?.noAchived || 0,
+                mainTotal: data.find(item => item.name === "ALL")?.noTotal || 0,
+                mainColor: "#98ff99",
+                sideStats: data
+                    .filter(item => item.name !== "ALL")
+                    .map(item => ({
+                        label: item.name.charAt(0) + item.name.slice(1).toLowerCase(),
+                        count: item.noAchived,
+                        total: item.noTotal,
+                        color: getColorForLabel(item.name)
+                    })),
+                className: ""
+            }
+            console.log(transformedStats);
+            setStats(transformedStats)
+        } catch (error) {
+            console.error("Error fetching stats:", error)
+        }
+    }
+
+    const fetchAcceptanceRate = async () => {
+        try {
+            const response = await getAcceptanceRate(apiCall);
+
+            const transformedStats = {
+                mainLabel: "Accepted",
+                mainCount: response.rate,
+                mainTotal: response.total,
+                mainColor: "#98ff99",
+                sideStats: [],
+                className: "w-20"
+            }
+            console.log(transformedStats);
+            setRates(transformedStats)
+        } catch (error) {
+            console.error("Error fetching stats:", error)
+        }
+    }
 
     return (
         <>
@@ -117,7 +274,7 @@ export default function Profile() {
                 <main className="p-4 px-24">
                     {/* Study Plan Section */}
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-8">
-                        <div className="md:col-span-3 border-2 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
+                        <div className="md:col-span-3">
                             {currentUser != null && <Card className="p-6 md:p-8 bg-black">
                                 <CardContent>
                                     <div className="flex flex-col md:flex-row items-center gap-6">
@@ -154,17 +311,186 @@ export default function Profile() {
                                         </Button>
                                     </div>
                                 </CardContent>
+
+                                <CardContent>
+                                    {languageSolved != null && <div className="mt-6">
+                                        <div className="flex justify-between">
+                                            <div className="font-bold text-xl text-primary-text">
+                                                Languages
+                                            </div>
+                                            <div className="cursor-pointer" onClick={() => setIsLanguageOpen(!isLanguageOpen)}>
+                                                {isLanguageOpen ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+                                            </div>
+                                        </div>
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: isLanguageOpen ? 1 : 0, height: isLanguageOpen ? "auto" : 0 }}
+                                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                                            className="overflow-hidden">
+                                            <div className="mt-4">
+                                                {languageSolved.map((language) => (
+                                                    <div className="flex justify-between items-center mt-4">
+                                                        <div className="text-primary-text border-2 rounded-xl px-3 py-1 bg-gray-800">
+                                                            {language.name}
+                                                        </div>
+                                                        <div className="text-primary-text">
+                                                            <span className="font-bold">{language.number}</span> problems solved
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    </div>}
+
+                                    {topicSolved != null && <div className="mt-6">
+                                        <div className="flex justify-between">
+                                            <div className="font-bold text-xl text-primary-text">
+                                                Topics
+                                            </div>
+                                            <div className="cursor-pointer" onClick={() => setIsTopicOpen(!isTopicOpen)}>
+                                                {isTopicOpen ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+                                            </div>
+                                        </div>
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: isTopicOpen ? 1 : 0, height: isTopicOpen ? "auto" : 0 }}
+                                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                                            className="overflow-hidden">
+                                            <div className="flex flex-row flex-wrap">
+                                                {topicSolved.map((topic) => (
+                                                    <div className="flex items-center mt-4">
+                                                        <div className="text-primary-text border-2 rounded-xl px-3 py-1 bg-gray-800">
+                                                            {topic.name}
+                                                        </div>
+                                                        <div className="text-primary-text ml-2 mr-4">
+                                                            <span className="font-bold">x{topic.number}</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                        </motion.div>
+                                    </div>}
+
+                                    {(fundamentalSkillSolved != null || intermediateSkillSolved != null || advancedSolved != null) && <div className="mt-6">
+                                        <div className="flex justify-between">
+                                            <div className="font-bold text-xl text-primary-text">
+                                                Skills
+                                            </div>
+                                            <div className="cursor-pointer" onClick={() => setIsSkillOpen(!isSkillOpen)}>
+                                                {isSkillOpen ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+                                            </div>
+                                        </div>
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: isSkillOpen ? 1 : 0, height: isSkillOpen ? "auto" : 0 }}
+                                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                                            className="overflow-hidden">
+                                            <div className="flex flex-row flex-wrap">
+                                                {fundamentalSkillSolved != null &&
+                                                    <div>
+                                                        <div className="flex mt-6 items-center">
+                                                            <div>
+                                                                <Circle className={`h-4 w-4 fill-green-500 text-green-500`} />
+                                                            </div>
+                                                            <div className="ml-2 text-primary-text font-bold">
+                                                                Fundamental
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-wrap">
+                                                            {fundamentalSkillSolved.map((skill) => (
+                                                                <div className="flex items-center mt-4">
+                                                                    <div className="text-primary-text border-2 rounded-xl px-3 py-1 bg-gray-800">
+                                                                        {skill.name}
+                                                                    </div>
+                                                                    <div className="text-primary-text ml-2 mr-4">
+                                                                        <span className="font-bold">x{skill.number}</span>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                }
+
+                                                {intermediateSkillSolved != null &&
+                                                    <div>
+                                                        <div className="flex mt-6 items-center">
+                                                            <div>
+                                                                <Circle className={`h-4 w-4 fill-yellow-500 text-yellow-500`} />
+                                                            </div>
+                                                            <div className="ml-2 text-primary-text font-bold">
+                                                                Intermediate
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-wrap">
+                                                            {intermediateSkillSolved.map((skill) => (
+                                                                <div className="flex items-center mt-4">
+                                                                    <div className="text-primary-text border-2 rounded-xl px-3 py-1 bg-gray-800">
+                                                                        {skill.name}
+                                                                    </div>
+                                                                    <div className="text-primary-text ml-2 mr-4">
+                                                                        <span className="font-bold">x{skill.number}</span>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                }
+
+                                                {advancedSolved != null &&
+                                                    <div>
+                                                        <div className="flex mt-6 items-center">
+                                                            <div>
+                                                                <Circle className={`h-4 w-4 fill-red-500 text-red-500`} />
+                                                            </div>
+                                                            <div className="ml-2 text-primary-text font-bold">
+                                                                Advanced
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-wrap">
+                                                            {advancedSolved.map((skill) => (
+                                                                <div className="flex items-center mt-4">
+                                                                    <div className="text-primary-text border-2 rounded-xl px-3 py-1 bg-gray-800">
+                                                                        {skill.name}
+                                                                    </div>
+                                                                    <div className="text-primary-text ml-2 mr-4">
+                                                                        <span className="font-bold">x{skill.number}</span>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                }
+
+                                            </div>
+                                        </motion.div>
+                                    </div>}
+                                </CardContent>
                             </Card>}
                         </div>
                         <div className="md:col-span-5 bg-black border-2 border-black rounded-lg">
-
+                            <div className="flex items-center grid grid-cols-1 gap-6 md:grid-cols-3">
+                                <div className="md:col-span-2 ">
+                                    {stats != null && <Card className=" bg-black border-0 aspect-video rounded-xl">
+                                        <RadialChart {...stats} />
+                                    </Card>}
+                                </div>
+                                <div className="md:col-span-1">
+                                    {rates != null && <Card className=" bg-black border-0 aspect-video rounded-xl">
+                                        <RadialChart {...rates} />
+                                    </Card>}
+                                </div>
+                            </div>
+                            <div className="mt-6">
+                                <Tabs tabs={tabs} defaultTab={0} />
+                            </div>
                         </div>
                     </div>
-                </main>
+                </main >
                 <FooterSection />
-            </div>}
+            </div >}
             <EditProfileDialog open={isEditProfileDialogOpen} onOpenChange={setIsEditProfileDialogOpen} onSubmit={handleEditProfile} profile={profile} setProfile={setProfile} />
-            <ChangePasswordDialog open={isChangePasswordDialogOpen} onOpenChange={setIsChangePasswordDialogOpen} onSubmit={handleChangePassword}  />
+            <ChangePasswordDialog open={isChangePasswordDialogOpen} onOpenChange={setIsChangePasswordDialogOpen} onSubmit={handleChangePassword} />
 
         </>
     );
