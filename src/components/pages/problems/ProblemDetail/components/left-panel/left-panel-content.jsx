@@ -25,10 +25,13 @@ export default function LeftPanelContent({
   activeTab,
   isCompact,
   description,
+  setDescription,
   editorial,
   solutions,
   onchangeFilterSolutions,
-  submissions
+  submissions,
+  selectedSubmissionId,
+  setSelectedSubmissionId
 }) {
 
   const [showSolution, setShowSolution] = useState(false)
@@ -37,7 +40,7 @@ export default function LeftPanelContent({
   return (
     <div className={cn("p-4 overflow-auto no-scrollbar flex-1 max-h-[calc(100vh-104px)] ", isCompact ? "hidden" : "")}>
       <div className="prose dark:prose-invert min-w-[420px]">
-        {activeTab === leftTabEnum.description && <ProblemDescription description={description} id={id} problemId={problemId} />}
+        {activeTab === leftTabEnum.description && <ProblemDescription description={description} setDescription={setDescription} id={id} problemId={problemId} />}
         {activeTab === leftTabEnum.editorial && <ProblemEditorial editorial={editorial} />}
         {activeTab === leftTabEnum.solutions &&
           <ProblemSolutions
@@ -49,7 +52,7 @@ export default function LeftPanelContent({
             onchangeFilter={onchangeFilterSolutions}
           />
         }
-        {activeTab === leftTabEnum.submissions && <ProblemSubmissions submissionsData={submissions} />}
+        {activeTab === leftTabEnum.submissions && <ProblemSubmissions submissionsData={submissions} selectedSubmissionId={selectedSubmissionId} setSelectedSubmissionId={setSelectedSubmissionId}/>}
       </div>
     </div>
   )

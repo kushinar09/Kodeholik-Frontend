@@ -18,7 +18,7 @@ const SubmissionStatus = {
   PENDING: "PENDING"
 }
 
-export default function ProblemSubmissions({ submissionsData }) {
+export default function ProblemSubmissions({ submissionsData, selectedSubmissionId, setSelectedSubmissionId}) {
 
   const { isAuthenticated } = useAuth()
 
@@ -55,7 +55,7 @@ export default function ProblemSubmissions({ submissionsData }) {
   }
 
   const getTextColorClass = (status) => {
-    return status === SubmissionStatus.ACCEPTED ? "text-green-600" : "text-red-600"
+    return status === "SUCCESS" ? "text-green-600" : "text-red-600"
   }
 
   // Helper function to format status for display
@@ -121,7 +121,7 @@ export default function ProblemSubmissions({ submissionsData }) {
                     </TableHeader>
                     <TableBody>
                       {submissions.map((submission, index) => (
-                        <TableRow key={submission.id}>
+                        <TableRow className={`cursor-pointer ${selectedSubmissionId == submission.id ? 'bg-gray-300 hover:bg-gray-300': ''}`} onClick={() => setSelectedSubmissionId(submission.id)} key={submission.id}>
                           <TableCell className="font-medium">{index + 1}</TableCell>
                           <TableCell className={getTextColorClass(submission.status)}>
                             {formatStatus(submission.status)}

@@ -36,6 +36,7 @@ const ENDPOINTS = {
   GET_INFOR: `${API_URL}/user/current`,
   ROTATE_TOKEN: `${API_URL}/auth/rotate-token`,
   POST_LOGOUT: `${API_URL}/auth/logout`,
+  PUT_CHANGE_PASSWORD: `${API_URL}/auth/change-password`,
 
   POST_FORGOT_PASSWORD: `${API_URL}/auth/reset-password-init?username=:gmail`,
   GET_CHECK_RESET_TOKEN: `${API_URL}/auth/reset-password-check?token=:token`,
@@ -49,10 +50,13 @@ const ENDPOINTS = {
 
   GET_PROBLEM_COMMENTS: `${API_URL}/comment/problem/:id`,
   POST_COMMENT: `${API_URL}/comment/post`,
-  GET_COMMENTS_REPLY: `${API_URL}/comment/list-reply/:id`,
+  GET_COMMENTS_REPLY: `${API_URL}/comment/list-reply/`,
+  UPVOTE_COMMENT: `${API_URL}/comment/upvote/`,
+  UNUPVOTE_COMMENT: `${API_URL}/comment/unupvote/`,
 
   GET_PROBLEM_SOLUTIONS: `${API_URL}/problem-solution/list/:id`,
   GET_PROBLEM_SUBMISSIONS: `${API_URL}/problem-submission/list/:id`,
+  GET_SUBMISSION_DETAIL: `${API_URL}/problem-submission/detail/`,
   GET_SEARCH_PROBLEM: `${API_URL}/problem/search`,
   POST_CREATE_PROBLEM: `${API_URL}/problem/add-problem`,
   POST_UPDATE_PROBLEM: `${API_URL}/problem/update/:id`,
@@ -99,6 +103,19 @@ const ENDPOINTS = {
   // code
   POST_RUN_CODE: `${API_URL}/problem-submission/run/:id`,
   POST_SUBMIT_CODE: `${API_URL}/problem-submission/submit/:id`,
+
+  //User
+  GET_PROFILE: `${API_URL}/user/current`,
+  POST_EDIT_PROFILE: `${API_URL}/user/edit-profile`,
+  GET_NUMBER_LANGUAGE_SOLVED: `${API_URL}/problem-submission/number-language`,
+  GET_NUMBER_TOPIC_SOLVED: `${API_URL}/problem-submission/number-topic`,
+  GET_NUMBER_SKILL_SOLVED: `${API_URL}/problem-submission/number-skill`,
+  GET_ACCEPTANCE_RATE: `${API_URL}/problem-submission/acceptance-rate`,
+  GET_MY_PROGRESS: `${API_URL}/problem-submission/my-progress`,
+  GET_MY_SUBMISSION: `${API_URL}/problem-submission/my-submission`,
+  GET_MY_FAVOURITE: `${API_URL}/problem/list-favourite`,
+  TAG_FAVOURITE: `${API_URL}/problem/tag-favourite/`,
+  UNTAG_FAVOURITE: `${API_URL}/problem/untag-favourite/`,
 
   //image
   GET_IMAGE: (imageKey) => `${API_URL}/s3/presigned-url?key=${encodeURIComponent(imageKey)}`,

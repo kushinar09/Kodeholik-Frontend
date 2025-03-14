@@ -27,6 +27,7 @@ import TestCasePanel from "./components/right-panel/test-case-panel"
 import { useAuth } from "@/providers/AuthProvider"
 import { leftTabEnum } from "./data/data"
 import { debounce } from "lodash"
+import SubmissionDetail from "./components/right-panel/submission-detail"
 import LoadingScreen from "@/components/common/shared/other/loading"
 
 export default function ProblemDetail() {
@@ -77,6 +78,13 @@ export default function ProblemDetail() {
 
   // Language
   const [language, setLanguage] = useState("Java")
+
+  // Submission id
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
+
+  useEffect(() => {
+    console.log(selectedSubmissionId);
+  }, [selectedSubmissionId])
 
   // Panel resize detection
   useEffect(() => {
@@ -214,6 +222,7 @@ export default function ProblemDetail() {
         const result = await getProblemSubmission(apiCall, id)
         if (result.status && result.data) {
           setSubmissions(result.data)
+          setSelectedSubmissionId(result.data[0].id);
         }
       } finally {
         setIsLoading(false)
@@ -286,6 +295,7 @@ export default function ProblemDetail() {
   }
 
   const handleTabChange = (tabId, tabLabel) => {
+    console.log(tabLabel);
     fetchData(tabLabel)
     setActiveTab(tabId)
   }
@@ -337,9 +347,12 @@ export default function ProblemDetail() {
                   activeTab={activeTab}
                   isCompact={isCompactLeft}
                   description={description}
+                  setDescription={setDescription}
                   editorial={editorial}
                   solutions={solutions}
                   submissions={submissions}
+                  selectedSubmissionId={selectedSubmissionId}
+                  setSelectedSubmissionId={setSelectedSubmissionId}
                   onchangeFilterSolutions={onchangeFilterSolutions}
                 />
               </div>
@@ -352,18 +365,24 @@ export default function ProblemDetail() {
           <Panel className="min-w-[40px] overflow-auto">
             <PanelGroup direction="vertical">
               {/* Right Top Panel - Code Editor */}
-              <Panel className="min-h-[40px] rounded-md overflow-hidden">
-                <CodePanel
-                  isSubmittedActive={isSubmittedActive}
-                  setIsSubmittedActive={setIsSubmittedActive}
-                  isCompact={isCompactRight}
-                  code={code}
-                  onCodeChange={handleCodeChange}
-                  submitted={submitted}
-                  showSubmitted={showSubmitted}
-                  onLanguageChange={onLanguageChange}
+              {activeTab != 'Submissions' &&
+                <Panel className="min-h-[40px] rounded-md overflow-hidden">
+                  <CodePanel
+                    isSubmittedActive={isSubmittedActive}
+                    setIsSubmittedActive={setIsSubmittedActive}
+                    isCompact={isCompactRight}
+                    code={code}
+                    onCodeChange={handleCodeChange}
+                    submitted={submitted}
+                    showSubmitted={showSubmitted}
+                    onLanguageChange={onLanguageChange}
                 />
-              </Panel>
+                </Panel>}
+
+              {activeTab == 'Submissions' &&
+                <Panel className="min-h-[40px] rounded-md overflow-hidden">
+                  <SubmissionDetail activeTab={activeTab} setActiveTab={setActiveTab} isCompact={isCompactRight} id={selectedSubmissionId} />
+                </Panel>}
 
               <PanelResizeHandle className="splitter splitter_horz relative h-1.5 transition-colors" />
 
@@ -384,11 +403,9 @@ export default function ProblemDetail() {
               </Panel>
             </PanelGroup>
           </Panel>
+
         </PanelGroup>
       </div>
-      {isLoading &&
-        <LoadingScreen />
-      }
     </div>
   )
 }
