@@ -18,11 +18,11 @@ import NotFoundError from "./components/pages/errors/not-found-error"
 import GeneralError from "./components/pages/errors/general-error"
 import MaintenanceError from "./components/pages/errors/maintenance-error"
 import WaitingRoom from "./components/pages/exam/waiting-room"
-import CodeEditor from "./components/common/editor-code/CodeEditor"
 import CreateCourse from "./components/pages/courses/CreateCourse"
 import UpdateCourse from "./components/pages/courses/UpdateCourse"
 import ExamList from "./components/pages/exam/list"
-import SocketComponent from "./components/pages/exam/take-exam/test"
+import WebSocketComponent from "./components/pages/exam/take-exam/test"
+import { SocketProvider } from "./providers/SocketProvider"
 
 function App() {
   const queryClient = new QueryClient()
@@ -44,7 +44,7 @@ function App() {
                 <Route path="/problem/:id" element={<ProblemDetail />} />
 
                 {/* test */}
-                <Route path="/socket" element={<SocketComponent />} />
+                <Route path="/socket" element={<WebSocketComponent />} />
                 {/* auth */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/forgot" element={<ForgotPassword />} />

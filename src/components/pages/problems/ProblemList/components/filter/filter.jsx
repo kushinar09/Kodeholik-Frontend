@@ -21,7 +21,7 @@ export function FilterPanel({
   onSkillsChange
 }) {
   return (
-    <Card className={`border-primary bg-bg-card backdrop-blur-sm mb-4 mt-[108px] ${isFiltersOpen ? "" : "hidden"}`}>
+    <Card className={`border-primary bg-bg-card backdrop-blur-sm mb-4 ${isFiltersOpen ? "" : "hidden"}`}>
       <CardContent className="p-6 space-y-6">
         <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
           <CollapsibleContent className="space-y-6">

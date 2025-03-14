@@ -2,6 +2,7 @@
 
 import { Link } from "react-router-dom"
 import UserActionMenu from "../other/user-action-menu"
+import Notification from "../other/notification"
 
 export default function HeaderSection({ currentActive = "Problems" }) {
   return (
@@ -26,8 +27,10 @@ export default function HeaderSection({ currentActive = "Problems" }) {
           </Link>
         </div>
 
-        {/* Using the extracted UserActionMenu component */}
-        <UserActionMenu />
+        <div className="flex items-center space-x-4">
+          <Notification />
+          <UserActionMenu />
+        </div>
       </nav>
     </div>
   )
