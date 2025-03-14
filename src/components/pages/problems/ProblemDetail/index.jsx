@@ -363,23 +363,20 @@ export default function ProblemDetail() {
           <Panel className="min-w-[40px] overflow-auto">
             <PanelGroup direction="vertical">
               {/* Right Top Panel - Code Editor */}
-              {activeTab != 'Submissions' &&
-                <Panel className="min-h-[40px] rounded-md overflow-hidden">
-                  <CodePanel
-                    isSubmittedActive={isSubmittedActive}
-                    setIsSubmittedActive={setIsSubmittedActive}
-                    isCompact={isCompactRight}
-                    code={code}
-                    onCodeChange={handleCodeChange}
-                    submitted={submitted}
-                    showSubmitted={showSubmitted}
-                  />
-                </Panel>}
 
-              {activeTab == 'Submissions' &&
-                <Panel className="min-h-[40px] rounded-md overflow-hidden">
-                  <SubmissionDetail activeTab={activeTab} setActiveTab={setActiveTab} isCompact={isCompactRight} id={selectedSubmissionId} />
-                </Panel>}
+              <Panel className="min-h-[40px] rounded-md overflow-hidden">
+                {activeTab != 'Submissions' && <CodePanel
+                  isSubmittedActive={isSubmittedActive}
+                  setIsSubmittedActive={setIsSubmittedActive}
+                  isCompact={isCompactRight}
+                  code={code}
+                  onCodeChange={handleCodeChange}
+                  submitted={submitted}
+                  showSubmitted={showSubmitted}
+                />}
+                {activeTab == 'Submissions' && <SubmissionDetail activeTab={activeTab} setActiveTab={setActiveTab} isCompact={isCompactRight} id={selectedSubmissionId} />
+              }
+              </Panel>
 
               <PanelResizeHandle className="splitter splitter_horz relative h-1.5 transition-colors" />
 

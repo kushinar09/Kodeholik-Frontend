@@ -53,6 +53,7 @@ const ENDPOINTS = {
   GET_COMMENTS_REPLY: `${API_URL}/comment/list-reply/`,
   UPVOTE_COMMENT: `${API_URL}/comment/upvote/`,
   UNUPVOTE_COMMENT: `${API_URL}/comment/unupvote/`,
+  EDIT_COMMENT: `${API_URL}/comment/edit/`,
 
   GET_PROBLEM_SOLUTIONS: `${API_URL}/problem-solution/list/:id`,
   GET_PROBLEM_SUBMISSIONS: `${API_URL}/problem-submission/list/:id`,
