@@ -50,10 +50,13 @@ const ENDPOINTS = {
 
   GET_PROBLEM_COMMENTS: `${API_URL}/comment/problem/:id`,
   POST_COMMENT: `${API_URL}/comment/post`,
-  GET_COMMENTS_REPLY: `${API_URL}/comment/list-reply/:id`,
+  GET_COMMENTS_REPLY: `${API_URL}/comment/list-reply/`,
+  UPVOTE_COMMENT: `${API_URL}/comment/upvote/`,
+  UNUPVOTE_COMMENT: `${API_URL}/comment/unupvote/`,
 
   GET_PROBLEM_SOLUTIONS: `${API_URL}/problem-solution/list/:id`,
   GET_PROBLEM_SUBMISSIONS: `${API_URL}/problem-submission/list/:id`,
+  GET_SUBMISSION_DETAIL: `${API_URL}/problem-submission/detail/`,
   GET_SEARCH_PROBLEM: `${API_URL}/problem/search`,
   POST_CREATE_PROBLEM: `${API_URL}/problem/add-problem`,
   POST_UPDATE_PROBLEM: `${API_URL}/problem/update/:id`,

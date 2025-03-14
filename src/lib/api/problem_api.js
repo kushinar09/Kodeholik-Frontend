@@ -147,3 +147,34 @@ export async function getCourseList() {
   }
   return response.json()
 }
+
+export async function getSubmissionDetail(apiCall, submissionId) {
+  const url = `${ENDPOINTS.GET_SUBMISSION_DETAIL}${submissionId}`
+  console.log(url);
+  const response = await apiCall(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+  if (response.ok) {
+    const text = await response.text()
+    if (!text) {
+      return { status: true, data: null }
+    }
+
+    try {
+      const data = JSON.parse(text)
+      return { status: true, data }
+    } catch (error) {
+      console.error("Error parsing JSON:", error)
+      return { status: false, error: "Invalid JSON format" }
+    }
+  }
+
+  if (response.status === 404) {
+    return { status: false, message: "Problem not found" }
+  }
+
+  return { status: false }
+}
