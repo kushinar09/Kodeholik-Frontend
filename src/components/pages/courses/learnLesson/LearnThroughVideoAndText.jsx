@@ -46,7 +46,6 @@ export default function LearnThroughVideoAndText() {
 
       try {
         setLoading(true)
-
         const courseData = await getCourse(id)
         setCourse(courseData)
 
@@ -69,7 +68,6 @@ export default function LearnThroughVideoAndText() {
           }
         }
 
-        // Calculate mock progress (would be replaced with actual progress tracking)
         const totalLessons = chaptersWithLessons.reduce((sum, chapter) => sum + chapter.lessons.length, 0)
         const completedLessons = Math.floor(Math.random() * (totalLessons / 3)) // Mock data
         setProgress(totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0)
@@ -87,23 +85,21 @@ export default function LearnThroughVideoAndText() {
   const handleLessonSelect = async (lesson, chapter = null) => {
     setSelectedLesson(lesson)
     if (chapter) setSelectedChapter(chapter)
-    setVideoUrl(null)
+    setVideoUrl(null) // Reset video URL
     setResourceError(null)
 
     try {
       if (lesson.type === "VIDEO" && lesson.videoUrl) {
         if (lesson.videoUrl.match(/^[a-zA-Z0-9_-]{11}$/)) {
-          setVideoUrl(lesson.videoUrl) // YouTube ID
+          setVideoUrl(lesson.videoUrl) // Set YouTube ID
         } else {
           const video = await getVideo(lesson.videoUrl)
-          setVideoUrl(video.url) // Server-hosted signed URL
+          setVideoUrl(video.url) // Set server-hosted URL
         }
-      } else if ((lesson.type === "DOCUMENT" || lesson.attachedFile) && !lesson.videoUrl) {
-        if (!lesson.attachedFile) {
-          setResourceError("No document attached to this lesson")
-        }
-      } else if (lesson.type === "VIDEO" && !lesson.videoUrl && !lesson.attachedFile) {
-        setResourceError("No video available for this lesson")
+      } else if (lesson.type === "DOCUMENT" && lesson.attachedFile) {
+        // No video URL for documents, handled in rendering
+      } else if (lesson.type === "VIDEO" && !lesson.videoUrl) {
+        setResourceError("No video URL provided for this lesson")
       }
     } catch (err) {
       console.error("Failed to fetch lesson resource:", err)
@@ -113,14 +109,10 @@ export default function LearnThroughVideoAndText() {
   }
 
   const handleDownload = async () => {
-    if (!selectedLesson || !selectedLesson.attachedFile) {
-      console.error("No attached file to download for lesson:", selectedLesson)
-      return
-    }
+    if (!selectedLesson || !selectedLesson.attachedFile) return
 
     try {
       const fileUrl = await downloadFileLesson(selectedLesson.attachedFile)
-
       const link = document.createElement("a")
       link.href = fileUrl
       link.download = selectedLesson.attachedFile.replace("lessons/", "")
@@ -139,57 +131,35 @@ export default function LearnThroughVideoAndText() {
 
   const findNextLesson = () => {
     if (!selectedLesson || !selectedChapter) return null
-
     const currentChapterIndex = chapters.findIndex((c) => c.id === selectedChapter.id)
     const currentLessonIndex = selectedChapter.lessons.findIndex((l) => l.id === selectedLesson.id)
 
-    // Check if there's another lesson in the current chapter
     if (currentLessonIndex < selectedChapter.lessons.length - 1) {
-      return {
-        lesson: selectedChapter.lessons[currentLessonIndex + 1],
-        chapter: selectedChapter,
-      }
+      return { lesson: selectedChapter.lessons[currentLessonIndex + 1], chapter: selectedChapter }
     }
-
-    // Check if there's another chapter
     if (currentChapterIndex < chapters.length - 1) {
       const nextChapter = chapters[currentChapterIndex + 1]
       if (nextChapter.lessons && nextChapter.lessons.length > 0) {
-        return {
-          lesson: nextChapter.lessons[0],
-          chapter: nextChapter,
-        }
+        return { lesson: nextChapter.lessons[0], chapter: nextChapter }
       }
     }
-
     return null
   }
 
   const findPreviousLesson = () => {
     if (!selectedLesson || !selectedChapter) return null
-
     const currentChapterIndex = chapters.findIndex((c) => c.id === selectedChapter.id)
     const currentLessonIndex = selectedChapter.lessons.findIndex((l) => l.id === selectedLesson.id)
 
-    // Check if there's a previous lesson in the current chapter
     if (currentLessonIndex > 0) {
-      return {
-        lesson: selectedChapter.lessons[currentLessonIndex - 1],
-        chapter: selectedChapter,
-      }
+      return { lesson: selectedChapter.lessons[currentLessonIndex - 1], chapter: selectedChapter }
     }
-
-    // Check if there's a previous chapter
     if (currentChapterIndex > 0) {
       const prevChapter = chapters[currentChapterIndex - 1]
       if (prevChapter.lessons && prevChapter.lessons.length > 0) {
-        return {
-          lesson: prevChapter.lessons[prevChapter.lessons.length - 1],
-          chapter: prevChapter,
-        }
+        return { lesson: prevChapter.lessons[prevChapter.lessons.length - 1], chapter: prevChapter }
       }
     }
-
     return null
   }
 
@@ -254,7 +224,6 @@ export default function LearnThroughVideoAndText() {
   return (
     <div className="min-h-screen bg-bg-primary from-gray-900 to-gray-950 text-white">
       <div className="container mx-auto p-6">
-        {/* Course Header */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
@@ -289,16 +258,14 @@ export default function LearnThroughVideoAndText() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main Content Area */}
           <div className="lg:col-span-3 space-y-6">
             {selectedLesson && (
               <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 overflow-hidden">
-                {/* Video or Document Section */}
                 <div className="relative">
                   {selectedLesson.type === "VIDEO" && videoUrl ? (
                     <div className="bg-black">
                       {videoUrl.match(/^[a-zA-Z0-9_-]{11}$/) ? (
-                        <YouTubePlayer videoId={videoUrl} />
+                        <YouTubePlayer key={selectedLesson.id} videoId={videoUrl} />
                       ) : (
                         <video width="100%" height="auto" controls className="aspect-video mx-auto">
                           <source src={videoUrl} type="video/mp4" />
@@ -306,23 +273,17 @@ export default function LearnThroughVideoAndText() {
                         </video>
                       )}
                     </div>
-                  ) : (
-                    selectedLesson.type === "VIDEO" &&
-                    !videoUrl &&
-                    !selectedLesson.attachedFile && (
-                      <div className="flex flex-col items-center justify-center h-64 bg-gray-900">
-                        <AlertCircle className="h-12 w-12 text-red-400 mb-2" />
-                        <p className="text-red-400">Video not available</p>
-                      </div>
-                    )
-                  )}
+                  ) : selectedLesson.type === "VIDEO" && !videoUrl ? (
+                    <div className="flex flex-col items-center justify-center h-64 bg-gray-900">
+                      <AlertCircle className="h-12 w-12 text-red-400 mb-2" />
+                      <p className="text-red-400">Video not available</p>
+                    </div>
+                  ) : null}
 
-                  {(selectedLesson.type === "DOCUMENT" || selectedLesson.attachedFile) && !videoUrl && (
+                  {selectedLesson.type === "DOCUMENT" && selectedLesson.attachedFile && (
                     <div className="flex flex-col items-center justify-center h-64 bg-gray-900/50 p-6">
                       <FileText className="h-16 w-16 text-blue-400 mb-4" />
-                      <p className="text-gray-300 mb-4 text-center">
-                        {getDisplayFileName(selectedLesson.attachedFile)}
-                      </p>
+                      <p className="text-gray-300 mb-4 text-center">{getDisplayFileName(selectedLesson.attachedFile)}</p>
                       <Button
                         onClick={handleDownload}
                         className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-all"
@@ -339,7 +300,6 @@ export default function LearnThroughVideoAndText() {
                   )}
                 </div>
 
-                {/* Lesson Info */}
                 <div className="p-6">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                     <div>
@@ -369,12 +329,10 @@ export default function LearnThroughVideoAndText() {
                     </div>
                   </div>
 
-                  {/* Lesson Description */}
                   {selectedLesson.description && (
                     <div className="prose prose-invert max-w-none mt-4 text-gray-300">{selectedLesson.description}</div>
                   )}
 
-                  {/* Mark as Complete Button */}
                   <div className="mt-6 flex justify-end">
                     <Button className="bg-green-600 hover:bg-green-700">
                       <CheckCircle2 className="h-4 w-4 mr-2" /> Mark as Complete
@@ -385,7 +343,6 @@ export default function LearnThroughVideoAndText() {
             )}
           </div>
 
-          {/* Course Outline Sidebar */}
           <Card className="bg-gray-800/30 border-gray-700/50 h-fit sticky top-6">
             <CardContent className="p-4">
               <h2 className="font-bold mb-4 text-lg text-white flex items-center">
@@ -423,9 +380,7 @@ export default function LearnThroughVideoAndText() {
                           className={`flex items-center justify-between p-4 hover:bg-gray-800/50 cursor-pointer transition-colors ${
                             selectedLesson?.id === lesson.id ? "bg-gray-800/80 border-l-2 border-blue-500" : ""
                           }`}
-                          onClick={() => {
-                            handleLessonSelect(lesson, chapter)
-                          }}
+                          onClick={() => handleLessonSelect(lesson, chapter)}
                         >
                           <div className="flex items-center">
                             <div className="w-6 h-6 flex items-center justify-center mr-3 text-xs text-gray-400">
@@ -455,4 +410,3 @@ export default function LearnThroughVideoAndText() {
     </div>
   )
 }
-

@@ -15,15 +15,20 @@ export default function YouTubePlayer({ videoId }) {
   const [volume, setVolume] = useState(100)
   const [isMuted, setIsMuted] = useState(false)
   const [isControlsVisible, setIsControlsVisible] = useState(true)
-  let hideControlsTimeout
+  let hideControlsTimeout = null
 
   useEffect(() => {
-    const tag = document.createElement("script")
-    tag.src = "https://www.youtube.com/iframe_api"
-    const firstScriptTag = document.getElementsByTagName("script")[0]
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
+    // Load YouTube API if not already loaded
+    if (!window.YT) {
+      const tag = document.createElement("script")
+      tag.src = "https://www.youtube.com/iframe_api"
+      const firstScriptTag = document.getElementsByTagName("script")[0]
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
+    }
 
-    window.onYouTubeIframeAPIReady = () => {
+    const initializePlayer = () => {
+      if (!window.YT || !window.YT.Player) return // Wait for API to load
+
       playerRef.current = new window.YT.Player("youtube-player", {
         videoId: videoId,
         playerVars: {
@@ -39,10 +44,15 @@ export default function YouTubePlayer({ videoId }) {
       })
     }
 
+    window.onYouTubeIframeAPIReady = initializePlayer
+    if (window.YT && window.YT.Player) initializePlayer() // If API is already loaded
+
     return () => {
       if (playerRef.current) {
         playerRef.current.destroy()
+        playerRef.current = null
       }
+      if (hideControlsTimeout) clearTimeout(hideControlsTimeout)
     }
   }, [videoId])
 
@@ -72,7 +82,6 @@ export default function YouTubePlayer({ videoId }) {
 
   const togglePlay = () => {
     if (!isReady || !playerRef.current) return
-
     if (isPlaying) {
       playerRef.current.pauseVideo()
     } else {
@@ -83,7 +92,6 @@ export default function YouTubePlayer({ videoId }) {
 
   const handleProgressChange = (e) => {
     if (!isReady || !playerRef.current || !duration) return
-
     const rect = progressBarRef.current.getBoundingClientRect()
     const x = e.clientX - rect.left
     const newProgress = (x / rect.width) * 100
@@ -94,7 +102,6 @@ export default function YouTubePlayer({ videoId }) {
 
   const handleVolumeChange = (e) => {
     if (!isReady || !playerRef.current) return
-
     const newVolume = Number.parseFloat(e.target.value)
     playerRef.current.setVolume(newVolume)
     setVolume(newVolume)
@@ -103,7 +110,6 @@ export default function YouTubePlayer({ videoId }) {
 
   const toggleMute = () => {
     if (!isReady || !playerRef.current) return
-
     const newMuted = !isMuted
     playerRef.current.setVolume(newMuted ? 0 : volume)
     setIsMuted(newMuted)
@@ -117,19 +123,15 @@ export default function YouTubePlayer({ videoId }) {
 
   const handleMouseMove = () => {
     setIsControlsVisible(true)
-    clearTimeout(hideControlsTimeout)
+    if (hideControlsTimeout) clearTimeout(hideControlsTimeout)
     hideControlsTimeout = setTimeout(() => {
-      if (isPlaying) {
-        setIsControlsVisible(false)
-      }
+      if (isPlaying) setIsControlsVisible(false)
     }, 3000)
   }
 
   const handleMouseLeave = () => {
     if (isPlaying) {
-      hideControlsTimeout = setTimeout(() => {
-        setIsControlsVisible(false)
-      }, 3000)
+      hideControlsTimeout = setTimeout(() => setIsControlsVisible(false), 3000)
     }
   }
 
@@ -142,7 +144,6 @@ export default function YouTubePlayer({ videoId }) {
     >
       <div id="youtube-player" className="w-full h-full" />
 
-      {/* Play/Pause Overlay Button */}
       <button
         onClick={togglePlay}
         className={cn(
@@ -156,7 +157,6 @@ export default function YouTubePlayer({ videoId }) {
         </div>
       </button>
 
-      {/* Controls Bar */}
       <div
         className={cn(
           "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-bg-primary to-transparent px-4 py-3",
@@ -164,7 +164,6 @@ export default function YouTubePlayer({ videoId }) {
           isPlaying && !isControlsVisible ? "opacity-0" : "opacity-100",
         )}
       >
-        {/* Custom Progress Bar */}
         <div
           ref={progressBarRef}
           className="w-full h-1 bg-text-muted rounded-full mb-4 cursor-pointer relative"
@@ -178,7 +177,6 @@ export default function YouTubePlayer({ videoId }) {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            {/* Play/Pause Button */}
             <Button
               variant="ghost"
               size="icon"
@@ -187,19 +185,15 @@ export default function YouTubePlayer({ videoId }) {
             >
               {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
             </Button>
-
-            {/* Time Display */}
             <span className="text-sm text-text-primary">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
-
-            {/* Volume Control */}
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={toggleMute}
-                className="text-text-primary hover:bg-button-secondary  "
+                className="text-text-primary hover:bg-button-secondary"
               >
                 {isMuted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
               </Button>
@@ -214,8 +208,6 @@ export default function YouTubePlayer({ videoId }) {
               />
             </div>
           </div>
-
-          {/* Fullscreen Button */}
           <Button
             variant="ghost"
             size="icon"
@@ -229,4 +221,3 @@ export default function YouTubePlayer({ videoId }) {
     </div>
   )
 }
-

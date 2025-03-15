@@ -3,18 +3,20 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BookOpen, FileText } from "lucide-react"
+import { BookOpen, FileText, MessageSquare } from "lucide-react"
 import Header from "@/components/common/shared/header"
 import FooterSection from "@/components/common/shared/footer"
-import { getCourse, enrollCourse, unEnrollCourse, getImage, checkEnrollCourse } from "@/lib/api/course_api"
+import { getCourse, enrollCourse, unEnrollCourse, getImage, checkEnrollCourse, getCourseDiscussion } from "@/lib/api/course_api"
 import { getChapterByCourseId } from "@/lib/api/chapter_api"
 import { getLessonByChapterId } from "@/lib/api/lesson_api"
 import CourseDetail from "./components/courseDetail"
 import CourseModule from "./components/courseModule"
 import RateCommentCourse from "./components/rateCommentCourse"
+import CourseDiscussion from "./components/CourseDiscussion" // Import CourseDiscussion
 
 export default function CourseDetailPage() {
   const [open, setOpen] = useState(false)
+  const [showChat, setShowChat] = useState(false) // State for chat visibility
   const { id } = useParams()
   const navigate = useNavigate()
   const [course, setCourse] = useState(null)
@@ -32,7 +34,6 @@ export default function CourseDetailPage() {
       try {
         const courseData = await getCourse(id)
         setCourse(courseData)
-
         const chaptersData = await getChapterByCourseId(id)
         const chaptersWithLessons = await Promise.all(
           chaptersData.map(async (chapter) => {
@@ -41,18 +42,12 @@ export default function CourseDetailPage() {
           })
         )
         setChapters(chaptersWithLessons)
-
         const url = await getImage(courseData.image)
         setImageUrl(url)
-
-        // Check enrollment status
-        console.log("Checking enrollment for course:", id);
-        const enrolled = await checkEnrollCourse(id);
-        console.log("Enroll status:", enrolled);
-        setIsEnrolled(enrolled); // Directly set boolean
+        const enrolled = await checkEnrollCourse(id)
+        setIsEnrolled(enrolled)
       } catch (error) {
-        console.error("Fetch error:", error);
-        setError(error.message);
+        setError(error.message)
       } finally {
         setLoading(false)
       }
@@ -142,6 +137,22 @@ export default function CourseDetailPage() {
           <CourseModule chapters={chapters} toggleChapter={toggleChapter} navigate={navigate} />
         </Tabs>
       </div>
+
+      {/* Floating Chat Icon */}
+      <button
+        onClick={() => setShowChat(!showChat)}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors z-50"
+      >
+        <MessageSquare className="w-6 h-6" />
+      </button>
+
+      {/* Chat Window */}
+      {showChat && (
+        <div className="fixed bottom-24 right-6 w-100 h-150 bg-bg-card rounded-lg shadow-lg z-50 flex flex-col">
+          <CourseDiscussion onClose={() => setShowChat(false)} />
+        </div>
+      )}
+
       <FooterSection />
     </div>
   )

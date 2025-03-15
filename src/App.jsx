@@ -23,7 +23,7 @@ import WaitingRoom from "./components/pages/exam/waiting-room"
 import CodeEditor from "./components/common/editor-code/CodeEditor"
 import CreateCourse from "./components/pages/courses/CreateCourse"
 import UpdateCourse from "./components/pages/courses/UpdateCourse"
-import CourseDiscussion from "./components/pages/courses/CourseDiscussion"
+import CourseDiscussion from "./components/pages/courses/CourseDetail/components/CourseDiscussion"
 
 function App() {
   const queryClient = new QueryClient()

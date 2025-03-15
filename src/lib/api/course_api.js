@@ -322,3 +322,47 @@ export async function updateCourse(id, courseData, imageFile, apiCall) {
       throw error // Propagate the error from apiCall
     }
   }
+
+  export async function getCourseDiscussion(id) {
+    const url = ENDPOINTS.GET_COURSE_DISCUSSION.replace(":id", id) // Remove comma from placeholder
+    console.log("Fetching discussion from URL:", url)
+  
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+      })
+      console.log("Response Status:", response.status)
+
+    if (!response.ok) {
+        const errorText = await response.text()
+        console.error("Server Response:", errorText)
+        throw new Error(`Failed to fetch discussion: ${response.status} - ${errorText}`)
+      }
+  
+      const data = await response.json()
+      console.log("Fetched discussion:", data)
+      return data
+    } catch (error) {
+      console.error("Error fetching discussion:", error.message)
+      throw error
+    }
+  }
+
+  export async function discussionCourse(data, apiCall) {
+    try {
+      const responseData = await apiCall(ENDPOINTS.POST_COURSE_DISCUSSION, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+      console.log("discussionCourse Response Data:", responseData)
+      return responseData // Return the parsed data directly
+    } catch (error) {
+      console.error("discussionCourse Error:", error.message)
+      throw error // Propagate the error from apiCall
+    }
+  }

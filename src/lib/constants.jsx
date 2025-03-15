@@ -82,6 +82,9 @@ const ENDPOINTS = {
   GET_COMMENT_COURSE: `${API_URL}/course/rating/:id`,
   CHECK_ENROLL: `${API_URL}/course/enroll/check/:id`,
 
+  GET_COURSE_DISCUSSION: `${API_URL}/course/discussion/:id`,
+  POST_COURSE_DISCUSSION: `${API_URL}/course/comment`,
+
    //Chapter
    GET_CHAPTERS: `${API_URL}/chapter/list`,
    GET_CHAPTER_BY_COURSE_ID: `${API_URL}/chapter/by-course/:id`,
