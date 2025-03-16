@@ -20,12 +20,11 @@ import CodePanel from "./components/right-panel/code-panel"
 import TestCasePanel from "./components/right-panel/test-case-panel"
 import HeaderOption from "./components/header-option"
 
-export default function TakeExam() {
-  const { id } = useParams()
-  const { apiCall } = useAuth()
-
-  const [problemId, setProblemId] = useState(0)
-
+export default function TakeExam({
+  problemTitle,
+  problemDescription,
+  compileInformation
+}) {
   // Panel state
   const [leftSize, setLeftSize] = useState(50)
   const [leftWidth, setLeftWidth] = useState(0)
@@ -121,48 +120,13 @@ export default function TakeExam() {
 
   const isCompactLeft = leftWidth <= 40
 
-  const fetchProblemDescription = async () => {
-    if (!id) return
-    if (!description) {
-      const result = await getProblemDescription(id)
-      if (result.status && result.data) {
-        setDescription(result.data)
-        setProblemId(result.data.id)
-      }
-    }
-  }
-
-  // Initial data loading
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      if (!id) return
-
-      // Fetch problem description
-      fetchProblemDescription()
-
-      // Fetch initial code template
-      const result = await getProblemInitCode(id, "Java")
-      if (result.status && result.data) {
-        setCode(result.data.template)
-        setTestCases(result.data.testCases)
-      }
-    }
-
-    fetchInitialData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id])
-
   // Code execution handlers
   const handleCodeChange = (newCode) => {
     setCode(newCode)
   }
 
   async function handleRunCode() {
-    const result = await runCode(apiCall, id, code, "Java")
-    setResults(result)
-    setShowResult(true)
-    setIsResultActive(true)
-    setActiveResult("0")
+
   }
 
   return (
@@ -178,8 +142,6 @@ export default function TakeExam() {
                 <TabNavigation isCompact={isCompactLeft} />
 
                 <LeftPanelContent
-                  id={id}
-                  problemId={problemId}
                   isCompact={isCompactLeft}
                   description={description}
                 />
@@ -225,4 +187,5 @@ export default function TakeExam() {
     </div>
   )
 }
+
 

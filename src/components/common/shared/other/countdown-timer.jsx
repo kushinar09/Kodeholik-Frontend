@@ -33,9 +33,7 @@ export default function CountdownTimer({ initialSeconds = 1800, onComplete }) {
   return (
     <div className="flex items-center gap-1 text-sm font-semibold text-primary">
       <span>
-        {days}d {String(hours).padStart(2, "0")}:
-        {String(minutes).padStart(2, "0")}:
-        {String(remainingSeconds).padStart(2, "0")}
+        {days && days > 0 ? days + "d " : ""}{String(hours).padStart(2, "0")}:{String(minutes).padStart(2, "0")}:{String(remainingSeconds).padStart(2, "0")}
       </span>
     </div>
   )

@@ -14,7 +14,7 @@ import { FilterPanel } from "./components/filter/filter"
 import { useAuth } from "@/providers/AuthProvider"
 
 export default function ProblemPage() {
-  const { isAuthenticated } = useAuth()
+  const { apiCall, isAuthenticated } = useAuth()
   const [problems, setProblems] = useState([])
 
   const [searchQuery, setSearchQuery] = useState({
@@ -126,9 +126,8 @@ export default function ProblemPage() {
 
     const fetchStats = async () => {
       try {
-        const response = await fetch(ENDPOINTS.GET_STATS_PROBLEM)
+        const response = await apiCall(ENDPOINTS.GET_STATS_PROBLEM)
         const data = await response.json()
-
         const transformedStats = {
           mainLabel: "Solve",
           mainCount: data.find(item => item.name === "ALL")?.noAchived || 0,

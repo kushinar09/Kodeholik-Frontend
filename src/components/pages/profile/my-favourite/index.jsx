@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge"
 import { useNavigate } from "react-router-dom";
 import { ArrowDown, ArrowUp } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 
 export default function MyFavourite() {
@@ -71,10 +71,8 @@ export default function MyFavourite() {
     const untagFavouriteProblem = async (link) => {
         try {
             await untagFavourite(apiCall, link);
-            toast({
-                title: "Untag Problem",
-                description: "Untag problem successful",
-                variant: "default" // destructive
+            toast.success("Untag Problem", {
+                description: "Untag problem successful"
             })
             fetchMyFavourite();
         } catch (error) {

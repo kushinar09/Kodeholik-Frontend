@@ -1,7 +1,6 @@
 "use client"
 
 import CountdownTimer from "@/components/common/shared/other/countdown-timer"
-import { toast } from "@/hooks/use-toast"
 import { ENDPOINTS } from "@/lib/constants"
 import { useAuth } from "@/providers/AuthProvider"
 import { Calendar, Clock, CheckCircle } from "lucide-react"
@@ -17,6 +16,7 @@ import {
   AlertDialogTitle
 } from "@/components/ui/alert-dialog"
 import ExamResultsDialog from "./ExamResult"
+import { toast } from "sonner"
 
 export default function ExamCard({
   exam,
@@ -34,12 +34,43 @@ export default function ExamCard({
   const [examResults, setExamResults] = useState(null)
   const [isEnrolled, setIsEnrolled] = useState(type === "mylist")
 
-  const marginSeconds = 40000000
+  const marginSeconds = 300 // 5 minutes
+
+  const isWithinMargin = (dateTime, marginSeconds) => {
+    // Manually parse DD/MM/YYYY, HH:mm format
+    const [datePart, timePart] = dateTime.split(", ")
+    const [day, month, year] = datePart.split("/").map(Number)
+    const [hours, minutes] = timePart.split(":").map(Number)
+
+    const givenTime = new Date(year, month - 1, day, hours, minutes)
+    const now = new Date()
+
+    if (isNaN(givenTime.getTime())) return false
+
+    const diffInSeconds = (givenTime - now) / 1000
+
+    return diffInSeconds <= marginSeconds && diffInSeconds >= 0
+  }
+
+  const [isWithinMarginPeriod, setIsWithinMarginPeriod] = useState(isWithinMargin(exam.startTime, marginSeconds))
 
   // Update isEnrolled if type changes
   useEffect(() => {
     setIsEnrolled(type === "mylist")
   }, [type])
+
+  useEffect(() => {
+    // Check initially
+    setIsWithinMarginPeriod(isWithinMargin(exam.startTime, marginSeconds))
+
+    // Set up interval to check every second
+    const intervalId = setInterval(() => {
+      setIsWithinMarginPeriod(isWithinMargin(exam.startTime, marginSeconds))
+    }, 1000)
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId)
+  }, [exam.startTime, marginSeconds])
 
   const getSecondsUntilStart = (dateTimeString) => {
     if (!dateTimeString) return 0
@@ -78,18 +109,6 @@ export default function ExamCard({
       return false
     }
   }
-
-  const isWithinMargin = (dateTime, marginSeconds) => {
-    const givenTime = new Date(dateTime)
-    const now = new Date()
-
-    if (isNaN(givenTime)) return false
-
-    const diffInSeconds = Math.abs((now - givenTime) / 1000)
-
-    return diffInSeconds <= marginSeconds
-  }
-
 
   const handleClickExam = async (id, actionType, canEnroll = true) => {
     if (!id) {
@@ -131,10 +150,8 @@ export default function ExamCard({
         const results = await response.json()
         setExamResults(results)
       } else {
-        toast({
-          title: "Error",
+        toast.error("Error", {
           description: "Failed to fetch exam results. Please try again.",
-          variant: "destructive",
           duration: 3000
         })
         // Close the dialog if there's an error
@@ -142,10 +159,8 @@ export default function ExamCard({
       }
     } catch (error) {
       console.error("Error fetching exam results:", error)
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "An error occurred. Please try again.",
-        variant: "destructive",
         duration: 3000
       })
       // Close the dialog if there's an error
@@ -165,10 +180,8 @@ export default function ExamCard({
     try {
       if (actionType.toLowerCase() === "enroll") {
         if (!canEnroll) {
-          toast({
-            title: "Alert",
+          toast.info("Alert", {
             description: "You have taken another exam during this time, please check your list.",
-            variant: "default",
             duration: 3000
           })
           return
@@ -178,10 +191,8 @@ export default function ExamCard({
         })
 
         if (response.ok) {
-          toast({
-            title: "Success",
+          toast.success("Enroll Success", {
             description: "You have successfully enrolled in this exam.",
-            variant: "default",
             duration: 3000
           })
 
@@ -190,7 +201,7 @@ export default function ExamCard({
 
           // Notify parent component about successful enrollment
           if (typeof onEnrollSuccess === "function") {
-            onEnrollSuccess(exam)
+            onEnrollSuccess()
           }
         }
       }
@@ -201,10 +212,8 @@ export default function ExamCard({
         })
 
         if (response.ok) {
-          toast({
-            title: "Success",
+          toast.success("Unenroll success", {
             description: "You have been unenrolled from this exam.",
-            variant: "default",
             duration: 3000
           })
 
@@ -213,7 +222,7 @@ export default function ExamCard({
 
           // Notify parent component about successful unenrollment
           if (typeof onUnenrollSuccess === "function") {
-            onUnenrollSuccess(exam)
+            onUnenrollSuccess()
           }
         }
       }
@@ -223,10 +232,8 @@ export default function ExamCard({
       }
     } catch (error) {
       console.error("Error executing action:", error)
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "An error occurred. Please try again.",
-        variant: "destructive",
         duration: 3000
       })
     } finally {
@@ -267,17 +274,7 @@ export default function ExamCard({
         <div className="p-4 border-b">
           <div className="flex justify-between items-start">
             <h3 className="text-lg font-medium">{exam.title || "Untitled Exam"}</h3>
-            {inFuture(exam.startTime) ? (
-              <CountdownTimer initialSeconds={getSecondsUntilStart(exam.startTime)} />
-            ) : (
-              <div className="flex items-center">
-                <span className="relative flex h-2 w-2 mr-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                </span>
-                <span className="px-2 py-1 text-xs font-medium rounded-full bg-primary text-bg-card">Live Now</span>
-              </div>
-            )}
+            {inFuture(exam.startTime) && <CountdownTimer initialSeconds={getSecondsUntilStart(exam.startTime)} />}
           </div>
         </div>
         <div className="p-4 space-y-2">
@@ -317,18 +314,24 @@ export default function ExamCard({
               onClick={() =>
                 handleClickExam(
                   exam.code,
-                  isWithinMargin(exam.startTime, marginSeconds) ? "join-waiting" : exam.status === "NOT_STARTED" ? "unenroll" : exam.status === "STARTED" ? "view-results" : ""
+                  isWithinMarginPeriod
+                    ? "join-waiting"
+                    : exam.status === "NOT_STARTED"
+                      ? "unenroll"
+                      : exam.status === "STARTED"
+                        ? "view-results"
+                        : ""
                 )
               }
-              disabled={isLoading || (exam.status !== "NOT_STARTED" && exam.status !== "STARTED")}
-              className={`w-full py-2 px-4 rounded-md font-medium text-sm ${isLoading ? "opacity-70 cursor-not-allowed" : ""} ${exam.status !== "NOT_STARTED" && exam.status !== "STARTED"
-                ? "cursor-default bg-primary/70"
-                : "cursor-pointer bg-primary text-bg-card hover:bg-primary-button-hover"
-              }`}
+              disabled={isLoading || exam.status !== "NOT_STARTED"}
+              className={`w-full py-2 px-4 rounded-md font-medium text-sm ${isLoading ? "opacity-70 cursor-not-allowed" : ""} ${exam.status !== "NOT_STARTED"
+                  ? "cursor-default bg-primary/70 text-gray-700"
+                  : "cursor-pointer bg-primary text-bg-card hover:bg-primary-button-hover"
+                }`}
             >
               {isLoading
                 ? "Processing..."
-                : isWithinMargin(exam.startTime, marginSeconds)
+                : isWithinMarginPeriod
                   ? "Join"
                   : exam.status === "NOT_STARTED"
                     ? "Unenroll"

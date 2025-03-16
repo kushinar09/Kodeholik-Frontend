@@ -25,10 +25,20 @@ const GLOBALS = {
   ]
 }
 
-const API_URL = import.meta.env.VITE_API_URL
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api/v1"
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080"
+const WEBSOCKET_URL = import.meta.env.VITE_WEBSOCKET_URL || "http://localhost:8080/ws"
 
 const ENDPOINTS = {
+  // Web socket
+  WEBSOCKET: WEBSOCKET_URL,
+  WEBSOCKET_NOTIFICATION: `${WEBSOCKET_URL}/notification?token=:token`,
+  WEBSOCKET_EXAM: `${WEBSOCKET_URL}?token=:token`,
+
+  // Notification
+  GET_NOTIFICATIONS: `${API_URL}/user/notifications`,
+  GET_NOTIFICATIONS_TOKEN: `${API_URL}/auth/get-token-noti`,
+
   // Auth
   POST_LOGIN: `${API_URL}/auth/login`,
   LOGIN_GOOGLE: `${BACKEND_URL}/oauth2/authorization/google`,
@@ -123,7 +133,7 @@ const ENDPOINTS = {
   // Exam
   GET_LIST_EXAM: `${API_URL}/exam/pending-list`,
   GET_MY_LIST_EXAM: `${API_URL}/exam/list`,
-  GET_TOKEN_EXAM: `${API_URL}/exam/get-token/:token`,
+  GET_TOKEN_EXAM: `${API_URL}/exam/get-token/:id`,
   POST_ENROLL_EXAM: `${API_URL}/exam/enroll/:id`,
   POST_UNENROLL_EXAM: `${API_URL}/exam/unenroll/:id`,
   POST_RUN_EXAM: `${API_URL}/exam/run/:id?link=:idProblem`,

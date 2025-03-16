@@ -63,7 +63,7 @@ export default function ExamList() {
   const fetchAllExams = useCallback(async () => {
     try {
       setAllExamsLoading(true)
-      // Fetch data and wait at least 500ms before stopping loading
+      // Fetch data and wait at least 300ms before stopping loading
       const [response] = await Promise.all([
         apiCall(ENDPOINTS.GET_LIST_EXAM),
         new Promise((resolve) => setTimeout(resolve, 300))
@@ -80,8 +80,8 @@ export default function ExamList() {
         setAllExams([])
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch exams")
-      console.error("Error fetching all exams:", err)
+      window.location.href = "/"
+      console.error("Error fetching exams:", err)
     } finally {
       setAllExamsLoading(false)
     }
@@ -127,18 +127,18 @@ export default function ExamList() {
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch my exams")
-        console.error("Error fetching my exams:", err)
+        console.error("Error fetching exams:", err)
       } finally {
         setMyExamsLoading(false)
       }
-    }, 400), // Debounce 500ms
+    }, 400), // Debounce
     []
   )
 
   // Function to fetch my exams (wrapper for the debounced function)
-  const fetchMyExams = useCallback(() => {
-    debouncedFetchMyExams(currentPage, searchTitle, dateRange, searchStatus)
-  }, [currentPage, searchTitle, dateRange, searchStatus, debouncedFetchMyExams])
+  const fetchMyExams = useCallback(async () => {
+    await debouncedFetchMyExams(currentPage, searchTitle, dateRange, searchStatus)
+  }, [currentPage, searchTitle, dateRange, searchStatus])
 
   // Initial data fetch
   useEffect(() => {
@@ -246,31 +246,11 @@ export default function ExamList() {
     fetchMyExams(currentPage, searchTitle, dateRange, searchStatus)
   }
 
-  const handleEnrollSuccess = (enrolledExam) => {
-    // // Add the exam to myExams list with NOT_STARTED status
-    // const updatedExam = {
-    //   ...enrolledExam,
-    //   status: "NOT_STARTED"
-    // }
-
-    // // Use a safer approach to update the array
-    // setMyExams((currentExams) => {
-    //   // Ensure currentExams is an array
-    //   const examsArray = Array.isArray(currentExams) ? currentExams : []
-    //   return [...examsArray, updatedExam]
-    // })
-    // window.location.reload()
+  const handleEnrollSuccess = () => {
     fetchAllData()
   }
 
-  const handleUnenrollSuccess = (unenrolledExam) => {
-    // // Remove the exam from myExams list
-    // setMyExams((currentExams) => {
-    //   // Ensure currentExams is an array
-    //   const examsArray = Array.isArray(currentExams) ? currentExams : []
-    //   return examsArray.filter((exam) => exam.code !== unenrolledExam.code)
-    // })
-    // window.location.reload()
+  const handleUnenrollSuccess = () => {
     fetchAllData()
   }
 

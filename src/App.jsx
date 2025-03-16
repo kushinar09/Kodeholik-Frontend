@@ -1,6 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-import { Toaster } from "./components/ui/toaster"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import ProblemDetail from "./components/pages/problems/ProblemDetail"
 import ForgotPassword from "./components/pages/authentications/forgot"
 import LoginPage from "./components/pages/authentications/login"
@@ -22,22 +20,33 @@ import CreateCourse from "./components/pages/courses/CreateCourse"
 import UpdateCourse from "./components/pages/courses/UpdateCourse"
 import ExamList from "./components/pages/exam/list"
 import WebSocketComponent from "./components/pages/exam/take-exam/test"
-import { SocketProvider } from "./providers/SocketProvider"
 import Profile from "./components/pages/profile"
+import { Toaster } from "sonner"
+import { SocketProvider } from "./providers/SocketNotificationProvider"
+import ExamProblems from "./components/pages/exam/exam-problem"
+import { SocketExamProvider } from "./providers/SocketExamProvider"
 
 function App() {
-  const queryClient = new QueryClient()
   return (
     <>
-      <QueryClientProvider client={queryClient}>
-        <Router>
-          <AuthProvider>
+      <Router>
+        <AuthProvider>
+          <SocketProvider>
             <div className="mx-auto">
               <Routes>
                 {/* exam */}
-                <Route path="/exam/:id/wait" element={<WaitingRoom />} />
                 <Route path="/exam" element={<ExamList />} />
-                <Route path="/exam/:id/" element={<TakeExam />} />
+                <Route
+                  path="/exam/*"
+                  element={
+                    <SocketExamProvider>
+                      <Routes>
+                        <Route path=":id/wait" element={<WaitingRoom />} />
+                        <Route path=":id" element={<ExamProblems />} />
+                      </Routes>
+                    </SocketExamProvider>
+                  }
+                />
 
                 {/* problem */}
                 <Route path="/" element={<ProblemPage />} />
@@ -66,13 +75,12 @@ function App() {
                 <Route path="/500" element={<GeneralError />} />
                 <Route path="/503" element={<MaintenanceError />} />
                 <Route path="*" element={<NotFoundError />} />
-
               </Routes>
             </div>
-          </AuthProvider>
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
+          </SocketProvider>
+        </AuthProvider>
+      </Router>
+      <Toaster richColors />
     </>
   )
 }

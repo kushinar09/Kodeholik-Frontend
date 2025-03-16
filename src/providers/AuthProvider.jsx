@@ -24,8 +24,11 @@ const notThrowErrorEndpoint = [
   ENDPOINTS.GET_PROBLEM_EDITORIAL,
   ENDPOINTS.GET_PROBLEM_SUBMISSIONS,
   ENDPOINTS.GET_PROBLEM_SOLUTIONS,
-  ENDPOINTS.GET_MY_LIST_EXAM,
-  ENDPOINTS.GET_LIST_EXAM
+  ENDPOINTS.GET_STATS_PROBLEM,
+  ENDPOINTS.GET_NOTIFICATIONS,
+  ENDPOINTS.GET_NOTIFICATIONS_TOKEN,
+  ENDPOINTS.GET_INFOR,
+  ENDPOINTS.GET_TOKEN_EXAM
 ]
 
 // List of endpoints that don't need token rotation
@@ -55,6 +58,8 @@ export const AuthProvider = ({ children }) => {
   const [apiErrors, setApiErrors] = useState({})
   // Track active API requests to manage loading state
   const [activeRequests, setActiveRequests] = useState(0)
+  // Track pending API calls to ensure they complete before showing error pages
+  const pendingApiCalls = useRef(new Map())
 
   // Check if the user is authenticated on mount
   const checkAuthStatus = useCallback(async (force = false) => {
@@ -142,11 +147,16 @@ export const AuthProvider = ({ children }) => {
   }
 
   // Add an error to the errors state
-  const addApiError = useCallback((errorType, errorDetails) => {
-    setApiErrors((prev) => ({
-      ...prev,
-      [errorType]: errorDetails
-    }))
+  const addApiError = useCallback((url, errorType, errorDetails) => {
+    if (inEndpointList(notThrowErrorEndpoint, url)) return
+
+    // Only add the error if there are no pending API calls for this URL
+    if (!pendingApiCalls.current.has(url)) {
+      setApiErrors((prev) => ({
+        ...prev,
+        [errorType]: errorDetails
+      }))
+    }
   }, [])
 
   // Clear a specific error
@@ -209,7 +219,6 @@ export const AuthProvider = ({ children }) => {
           setUser(null)
           return response.status
         }
-
         // After successful token rotation, update auth status
         await checkAuthStatus(true)
         return 200
@@ -231,6 +240,12 @@ export const AuthProvider = ({ children }) => {
   }
 
   const apiCall = async (url, options = {}) => {
+    // Generate a unique request ID for tracking this API call
+    const requestId = `${url}-${Date.now()}`
+
+    // Register this API call as pending
+    pendingApiCalls.current.set(requestId, true)
+
     // Check if this endpoint requires authentication
     const requiresAuth = !inEndpointList(guestEndpoints, url) && !inEndpointList(notThrowErrorEndpoint, url)
 
@@ -245,20 +260,15 @@ export const AuthProvider = ({ children }) => {
       if (!authCheckInProgress.current) {
         await checkAuthStatus(true)
       }
-
-      // After checking, if still not authenticated, handle the error
-      if (!isAuthenticated) {
-        addApiError("auth", { status: 401 })
-        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 })
-      }
     }
+
+    // Continue with the API call regardless of auth status
 
     incrementActiveRequests()
 
     if (!options.headers) {
       options.headers = {}
     }
-
     options.headers = {
       ...(options.headers || {}),
       "Access-Control-Allow-Origin": "http://localhost:5174",
@@ -269,6 +279,10 @@ export const AuthProvider = ({ children }) => {
     try {
       let response = await fetch(url, options)
 
+      // For debugging purposes only
+      // const responseClone = response.clone()
+      // responseClone.text().then((text) => console.log(url, text))
+
       // Handle token refresh if needed
       if (response.status === 401 && !inEndpointList(notCallRotateTokenEndpoints, url)) {
         const refreshStatus = await refreshAccessToken()
@@ -278,7 +292,8 @@ export const AuthProvider = ({ children }) => {
           response = await fetch(url, options)
         } else {
           // Handle different error statuses
-          addApiError("auth", { status: refreshStatus })
+          pendingApiCalls.current.delete(requestId)
+          addApiError(url, "auth", { status: refreshStatus })
           return new Response(JSON.stringify({ error: "Authentication failed" }), { status: refreshStatus })
         }
       }
@@ -290,12 +305,29 @@ export const AuthProvider = ({ children }) => {
         if (response.status === 401) {
           setIsAuthenticated(false)
           setUser(null)
-          addApiError("auth", { status: 401 })
+
+          // Only add the error if this endpoint should trigger errors
+          if (!inEndpointList(notThrowErrorEndpoint, url)) {
+            // Wait a small delay to ensure the response is fully processed
+            setTimeout(() => {
+              pendingApiCalls.current.delete(requestId)
+              addApiError(url, "auth", { status: 401 })
+            }, 100)
+          } else {
+            pendingApiCalls.current.delete(requestId)
+          }
         } else if (!inEndpointList(notThrowErrorEndpoint, url)) {
-          addApiError(errorKey, { status: response.status })
+          // Wait a small delay to ensure the response is fully processed
+          setTimeout(() => {
+            pendingApiCalls.current.delete(requestId)
+            addApiError(url, errorKey, { status: response.status })
+          }, 100)
+        } else {
+          pendingApiCalls.current.delete(requestId)
         }
       } else {
         // Clear errors for this URL on success
+        pendingApiCalls.current.delete(requestId)
         const baseUrl = url.split("?")[0]
         Object.keys(apiErrors).forEach((key) => {
           if (key.startsWith(baseUrl)) {
@@ -307,8 +339,10 @@ export const AuthProvider = ({ children }) => {
       return response
     } catch (error) {
       console.error("API call error:", error)
+      pendingApiCalls.current.delete(requestId)
+
       if (!inEndpointList(notThrowErrorEndpoint, url)) {
-        addApiError("network", { status: 500 })
+        addApiError(url, "network", { status: 500 })
       }
       throw error
     } finally {
@@ -353,15 +387,17 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // Only show error page if there's an error and it's not from a notThrowErrorEndpoint
+  // Only show error page if there's an error, it's not from a notThrowErrorEndpoint,
+  // and there are no pending API calls
   const shouldShowErrorPage = () => {
     const hasError = Object.keys(apiErrors).length > 0
     const isFromNoThrowEndpoint = Object.keys(apiErrors).some((key) => {
       const baseUrl = key.split("-")[0]
       return inEndpointList(notThrowErrorEndpoint, baseUrl)
     })
+    const hasPendingCalls = pendingApiCalls.current.size > 0
 
-    return hasError && !isFromNoThrowEndpoint
+    return hasError && !isFromNoThrowEndpoint && !hasPendingCalls
   }
 
   // Add a login function to ensure both states are set properly:
@@ -421,3 +457,4 @@ export const useAuth = () => {
   }
   return context
 }
+

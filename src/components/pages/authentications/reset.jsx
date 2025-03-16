@@ -10,10 +10,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { PasswordInput } from "@/components/ui/password-input"
-import { toast } from "@/hooks/use-toast"
 import LoadingScreen from "@/components/common/shared/other/loading"
 
 import { validateResetToken, resetPassword } from "@/lib/api/auth_api"
+import { toast } from "sonner"
 
 // Schema for password validation
 const formSchema = z
@@ -65,10 +65,8 @@ export default function ResetPassword() {
       await resetPassword(token, values.password)
       navigate("/login", { state: { resetSuccess: true } })
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
+      toast.error("Error", {
+        description: error.message
       })
     }
   }
