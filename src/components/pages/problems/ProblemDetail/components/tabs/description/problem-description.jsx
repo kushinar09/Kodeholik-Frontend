@@ -106,8 +106,8 @@ export default function ProblemDescription({ description, setDescription, id, pr
       <SkillSection skills={description.skillList}></SkillSection>
       <Separator className="my-2" />
       <TopicSection topics={description.topicList}></TopicSection>
-      <Separator className="my-2" />
-      <DiscussionSection id={id} problemId={problemId} />
+      <Separator className="midy-2" />
+      <DiscussionSection id={id} locationId={problemId} type={"PROBLEM"} activeTab={"DETAIL"}/>
     </>
   )
 }

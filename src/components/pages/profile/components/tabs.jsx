@@ -8,7 +8,7 @@ export default function Tabs({ tabs, defaultTab = 0, className }) {
 
   return (
     <div className={cn("w-full", className)}>
-      <div className="ml-2">
+      <div className="ml-6">
         <div className="flex">
           {tabs.map((tab, index) => (
             <button

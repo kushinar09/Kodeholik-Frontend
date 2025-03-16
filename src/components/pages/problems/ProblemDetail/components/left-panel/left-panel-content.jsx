@@ -31,12 +31,12 @@ export default function LeftPanelContent({
   onchangeFilterSolutions,
   submissions,
   selectedSubmissionId,
-  setSelectedSubmissionId
+  setSelectedSubmissionId,
+  showSolution,
+  setShowSolution,
+  currentSolutionId,
+  setCurrentSolutionId
 }) {
-
-  const [showSolution, setShowSolution] = useState(false)
-  const [currentSolutionId, setCurrentSolutionId] = useState(0)
-
   return (
     <div className={cn("p-4 overflow-auto no-scrollbar flex-1 max-h-[calc(100vh-104px)] ", isCompact ? "hidden" : "")}>
       <div className="prose dark:prose-invert min-w-[420px]">

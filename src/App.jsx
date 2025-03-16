@@ -25,6 +25,7 @@ import CreateCourse from "./components/pages/courses/CreateCourse"
 import UpdateCourse from "./components/pages/courses/UpdateCourse"
 import Profile from "./components/pages/profile"
 import CourseDiscussion from "./components/pages/courses/CourseDiscussion"
+import ShareSolution from "./components/pages/problems/ShareSolution"
 
 function App() {
   const queryClient = new QueryClient()
@@ -44,7 +45,8 @@ function App() {
                 <Route path="/" element={<ProblemPage />} />
                 <Route path="/problems" element={<ProblemPage />} />
                 <Route path="/problem/:id" element={<ProblemDetail />} />
-
+                <Route path="/problem-submission/:id/:submission" element={<ProblemDetail />} />
+                <Route path="/problem-solution/:id/:solution" element={<ProblemDetail />} />
                 {/* test */}
                 <Route path="/markdown" element={<MarkdownEditor />} />
                 <Route path="/code" element={
@@ -55,7 +57,7 @@ function App() {
                   </div>
                 }
                 />
-
+                <Route path="/share-solution/:link/:submission" element={<ShareSolution/>} />
                 {/* auth */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/forgot" element={<ForgotPassword />} />

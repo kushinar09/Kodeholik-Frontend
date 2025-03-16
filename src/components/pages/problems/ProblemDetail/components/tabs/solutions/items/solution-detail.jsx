@@ -7,9 +7,12 @@ import "highlight.js/styles/default.css"
 import { useEffect, useState } from "react"
 import { ArrowLeft } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
-import DiscussionSection from "./solution-comments"
 import { ENDPOINTS } from "@/lib/constants"
 import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
+import DiscussionSection from "../../description/problem-comments"
+import { Button } from "@/components/ui/button"
+import { unupvoteSolution, upvoteSolution } from "@/lib/api/problem_api"
+import { toast } from "@/hooks/use-toast"
 
 export default function SolutionDetail({ solutionId, handleBack }) {
   const [solution, setSolution] = useState(null)
@@ -74,6 +77,46 @@ export default function SolutionDetail({ solutionId, handleBack }) {
     })
   }, [solution])
 
+  const toggleUpvote = async (id) => {
+    try {
+      if (!solution.currentUserVoted) {
+        const response = await upvoteSolution(apiCall, id);
+        if (response.status) {
+          toast({
+            title: "Upvote Solution",
+            description: "Upvote solution successful",
+            variant: "default" // destructive
+          })
+          setSolution((prevSolution) => ({
+            ...prevSolution,  // Giữ nguyên các thuộc tính cũ
+            noUpvote: prevSolution.noUpvote + 1, // Tăng giá trị
+            currentUserVoted: true, // Cập nhật giá trị mới
+          }));
+          
+        }
+      }
+      else {
+        const response = await unupvoteSolution(apiCall, id);
+        if (response.status) {
+          toast({
+            title: "Unupvote Solution",
+            description: "Unupvote solution successful",
+            variant: "default" // destructive
+          })
+          setSolution((prevSolution) => ({
+            ...prevSolution,  // Giữ nguyên các thuộc tính cũ
+            noUpvote: prevSolution.noUpvote - 1 > 0 ? prevSolution.noUpvote - 1 : 0, // Tăng giá trị
+            currentUserVoted: false, // Cập nhật giá trị mới
+          }));
+          
+        }
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   const { isAuthenticated } = useAuth()
 
   if (!isAuthenticated) {
@@ -112,7 +155,17 @@ export default function SolutionDetail({ solutionId, handleBack }) {
       {solution ? (
         <>
           <h2 className="text-xl font-bold mb-4">{solution.title}</h2>
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div>
+            <Button variant="ghost" size="icon" onClick={() => toggleUpvote(solution.id)} className="h-3 w-3">
+              {solution.currentUserVoted ? <svg className="h-4 w-4 text-yellow-500" fill="currentColor" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>
+                : <svg className="h-4 w-4 text-black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>}
+            </Button>
+            <span className="ml-2">
+
+              {solution.noUpvote}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2 mb-4 mt-4">
             {solution.skills?.map((skill, index) => (
               <span
                 key={index}
@@ -168,7 +221,9 @@ export default function SolutionDetail({ solutionId, handleBack }) {
             </div>
           )}
           <Separator className="my-4" />
-          <DiscussionSection solutionId={solutionId} />
+          {/* <DiscussionSection solutionId={solutionId} /> */}
+          <DiscussionSection locationId={solutionId} type={"SOLUTION"} activeTab={"SOLUTION"} />
+
         </>
       ) : (
         <div className="text-gray-500">Solution not found</div>

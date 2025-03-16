@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuth } from "@/providers/AuthProvider"
 import { format } from "date-fns"
 import { ArrowDownAZ, ArrowUpAZ } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 const SubmissionStatus = {
   ACCEPTED: "ACCEPTED",
@@ -26,6 +26,9 @@ export default function ProblemSubmissions({ submissionsData, selectedSubmission
   const [sortDirection, setSortDirection] = useState("asc")
   const [submissions, setSubmissions] = useState(submissionsData)
 
+  useEffect(() => {
+    setSubmissions(submissionsData);
+  }, [submissionsData])
   const handleSort = (field) => {
     const newDirection = sortField === field && sortDirection === "asc" ? "desc" : "asc"
 
@@ -95,7 +98,7 @@ export default function ProblemSubmissions({ submissionsData, selectedSubmission
   return (
     <>
       {submissions
-        ?
+        &&
         <>
           <h2 className="text-xl font-bold mb-4">Your Submissions</h2>
           {submissions && submissions.length > 0 ? (
@@ -147,7 +150,6 @@ export default function ProblemSubmissions({ submissionsData, selectedSubmission
             <div className="text-muted-foreground">No submissions yet</div>
           )}
         </>
-        : <div className="text-gray-500">No submissions yet</div>
       }
     </>
   )

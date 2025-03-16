@@ -21,7 +21,7 @@ import { motion } from "framer-motion";
 import { editComment, unupvoteComment, upvoteComment } from "@/lib/api/comment_api"
 import { toast } from "@/hooks/use-toast"
 
-export default function DiscussionSection({ id, problemId }) {
+export default function DiscussionSection({ id, locationId, type, activeTab}) {
   const [isCollapsed, setIsCollapsed] = useState(true)
   const [comment, setComment] = useState("")
   const [comments, setComments] = useState([])
@@ -40,11 +40,12 @@ export default function DiscussionSection({ id, problemId }) {
   const [isEditOpen, setIsEditOpen] = useState([])
   const { apiCall, isAuthenticated, user } = useAuth()
 
-  const fetchComments = useCallback(async () => {
-    if (!id) return
+  const fetchComments = async () => {
     try {
       const response = await apiCall(
-        `${ENDPOINTS.GET_PROBLEM_COMMENTS.replace(":id", id)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
+        type == "PROBLEM" 
+        ? `${ENDPOINTS.GET_PROBLEM_COMMENTS.replace(":id", id)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
+        : `${ENDPOINTS.GET_SOLUTION_COMMENTS.replace(":id", locationId)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
       )
       if (!response.ok) throw new Error("Failed to fetch comments")
       const data = await response.json()
@@ -56,17 +57,18 @@ export default function DiscussionSection({ id, problemId }) {
           }))
         }
       }
+      console.log(page);
       setComments(data.content.filter(c => c.replyId === null))
       setTotalPages(data.totalPages)
       setTotalComments(data.totalElements)
     } catch (error) {
       console.error("Error fetching comments:", error)
     }
-  }, [id, page, sortBy, ascending])
+  }
 
   useEffect(() => {
-    fetchComments()
-  }, [fetchComments])
+    fetchComments();
+  }, [id, page, sortBy, ascending, activeTab])
 
   function toggleCollapsed() {
     setIsCollapsed(!isCollapsed)
@@ -74,13 +76,14 @@ export default function DiscussionSection({ id, problemId }) {
 
   async function UploadComment() {
     try {
-      const response = await postComment(apiCall, problemId, comment)
+      const response = await postComment(apiCall, locationId, comment, null, type)
+      console.log(response.data.id)
       if (response.status) {
         setComment("")
         setTotalComments(totalComments + 1)
         setComments((prev) => {
           const newComment = {
-            id: 0,
+            id: response.data.id,
             comment: comment,
             noUpvote: 0,
             createdBy: {
@@ -296,12 +299,12 @@ export default function DiscussionSection({ id, problemId }) {
       replyId: commentId,
       voted: false
     }
-
     try {
-      const response = await postComment(apiCall, problemId, replyText, commentId)
+      const response = await postComment(apiCall, locationId, replyText, commentId, type)
       if (response.status) {
         setTotalComments(totalComments + 1)
       }
+      newReply.id = response.data.id;
     } catch (error) {
       console.error("Error posting comment:", error)
     }
@@ -412,7 +415,7 @@ export default function DiscussionSection({ id, problemId }) {
           </Button>}
         </div>
 
-        {totalComments > 0 && <motion.div
+        {<motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: !isCollapsed ? 1 : 0, height: !isCollapsed ? "auto" : 0 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -708,7 +711,7 @@ export default function DiscussionSection({ id, problemId }) {
                 ))}
             </div>
 
-            {totalPages > 2 &&
+            {totalPages >= 2 &&
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>

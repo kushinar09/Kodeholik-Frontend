@@ -32,6 +32,8 @@ import LoadingScreen from "@/components/common/shared/other/loading"
 
 export default function ProblemDetail() {
   const { id } = useParams()
+  const {submission} = useParams();
+  const {solution} = useParams(); 
   const { apiCall } = useAuth()
 
   const [problemId, setProblemId] = useState(0)
@@ -50,7 +52,7 @@ export default function ProblemDetail() {
   const [isCompactRight, setIsCompactRight] = useState(false)
 
   // Tab state
-  const [activeTab, setActiveTab] = useState(leftTabEnum.description)
+  const [activeTab, setActiveTab] = useState(submission == null ? (solution == null ? leftTabEnum.description : leftTabEnum.solutions) : leftTabEnum.submissions)
 
   // Problem data state
   const [description, setDescription] = useState(null)
@@ -75,12 +77,15 @@ export default function ProblemDetail() {
   const [submitted, setSubmitted] = useState()
   const [showSubmitted, setShowSubmitted] = useState(false)
   const [isSubmittedActive, setIsSubmittedActive] = useState(false)
+  const [showSolution, setShowSolution] = useState(solution == null ? false : true)
 
   // Submission id
-  const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState(submission);
+  const [currentSolutionId, setCurrentSolutionId] = useState(solution != null ? solution : 0)
 
   useEffect(() => {
     console.log(selectedSubmissionId);
+    fetchProblemSubmission();
   }, [selectedSubmissionId])
   // Language
   const [language, setLanguage] = useState("Java")
@@ -219,6 +224,7 @@ export default function ProblemDetail() {
       setIsLoading(true)
       try {
         const result = await getProblemSubmission(apiCall, id)
+        console.log(result.data)
         if (result.status && result.data) {
           setSubmissions(result.data)
         }
@@ -352,6 +358,10 @@ export default function ProblemDetail() {
                   selectedSubmissionId={selectedSubmissionId}
                   setSelectedSubmissionId={setSelectedSubmissionId}
                   onchangeFilterSolutions={onchangeFilterSolutions}
+                  showSolution={showSolution}
+                  setShowSolution={setShowSolution}
+                  currentSolutionId={currentSolutionId}
+                  setCurrentSolutionId={setCurrentSolutionId}
                 />
               </div>
             </div>
@@ -365,17 +375,19 @@ export default function ProblemDetail() {
               {/* Right Top Panel - Code Editor */}
 
               <Panel className="min-h-[40px] rounded-md overflow-hidden">
-                {activeTab != 'Submissions' && <CodePanel
+                <CodePanel
                   isSubmittedActive={isSubmittedActive}
                   setIsSubmittedActive={setIsSubmittedActive}
                   isCompact={isCompactRight}
                   code={code}
                   onCodeChange={handleCodeChange}
                   submitted={submitted}
+                  setSubmitted={setSubmitted}
                   showSubmitted={showSubmitted}
-                />}
-                {activeTab == 'Submissions' && <SubmissionDetail activeTab={activeTab} setActiveTab={setActiveTab} isCompact={isCompactRight} id={selectedSubmissionId} />
-              }
+                  setShowSubmitted={setShowSubmitted}
+                  activeTab={activeTab}
+                  selectedSubmissionId={selectedSubmissionId}
+                />
               </Panel>
 
               <PanelResizeHandle className="splitter splitter_horz relative h-1.5 transition-colors" />

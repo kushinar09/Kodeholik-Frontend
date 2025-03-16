@@ -70,6 +70,12 @@ const ENDPOINTS = {
   // Solutions
   GET_SOLUTION_DETAIL: `${API_URL}/problem-solution/detail/:id`,
   GET_SOLUTION_COMMENTS: `${API_URL}/comment/problem-solution/:id`,
+  POST_SOLUTION: `${API_URL}/problem-solution/post-solution`,
+  UPVOTE_SOLUTION: `${API_URL}/problem-solution/upvote/`,
+  UNUPVOTE_SOLUTION: `${API_URL}/problem-solution/unupvote/`,
+
+  // Submissions
+  GET_SUCCESS_SUBMISSION: `${API_URL}/problem-submission/success-list/`,
 
   // Search
   GET_SUGGEST_SEARCH: `${API_URL}/problem/suggest?searchText=:text`,
