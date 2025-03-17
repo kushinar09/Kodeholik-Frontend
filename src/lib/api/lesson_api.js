@@ -98,3 +98,26 @@ export async function createLesson(formData, apiCall) {
       throw error
     }
   }
+
+  export async function completedLesson(id, apiCall) {
+    const completeUrl = ENDPOINTS.COMPLETED_LESSON.replace(":id", id);
+    console.log("Fetching file from:", completeUrl);
+  
+    try {
+      const response = await apiCall(completeUrl, {
+        method: "POST",
+        credentials: "include",
+      });
+      console.log("Response Status:", response.status);
+  
+      if (!response.ok) {
+        throw new Error(`Failed to complete lesson. Status: ${response.status}`);
+      }
+  
+      const text = await response.text();
+      return text;
+    } catch (error) {
+      console.error("Error completing lesson:", error);
+      throw error;
+    }
+  }

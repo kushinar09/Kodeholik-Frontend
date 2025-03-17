@@ -1,8 +1,7 @@
-import { BookOpen, FileText, Video } from "lucide-react"
+import { BookOpen, FileText, Video, CheckCircle2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { TabsContent } from "@/components/ui/tabs"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
-import { Button } from "@/components/ui/button"
 
 export default function CourseModule({ chapters, toggleChapter, navigate }) {
   const handleToggle = (chapterId) => {
@@ -20,23 +19,19 @@ export default function CourseModule({ chapters, toggleChapter, navigate }) {
 
           {chapters.length > 0 ? (
             <Accordion type="single" collapsible className="w-full border-none space-y-3">
-              {chapters.map((chapter) => (
+              {chapters.map((chapter, index) => (
                 <AccordionItem
                   key={chapter.id}
                   value={`chapter-${chapter.id}`}
                   className="border border-gray-700 rounded-lg overflow-hidden"
                 >
                   <AccordionTrigger
-                    value={`chapter-${chapter.id}`}
                     className="hover:bg-gray-700/30 px-4 py-4 text-white flex justify-between items-center"
-                    onClick={(e) => {
-                      // Call handleToggle without overriding the default toggleItem behavior
-                      handleToggle(chapter.id)
-                    }}
+                    onClick={() => handleToggle(chapter.id)}
                   >
                     <div className="flex items-center">
                       <div className="bg-primary/20 text-primary w-10 h-10 rounded-full flex items-center justify-center mr-3">
-                        {chapter.id}
+                        {index + 1}
                       </div>
                       <div className="text-left">
                         <h3 className="font-medium">{chapter.title}</h3>
@@ -44,10 +39,7 @@ export default function CourseModule({ chapters, toggleChapter, navigate }) {
                       </div>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent
-                    value={`chapter-${chapter.id}`}
-                    className="bg-gray-900/30 border-t border-gray-700/50"
-                  >
+                  <AccordionContent className="bg-gray-900/30 border-t border-gray-700/50">
                     {chapter.lessons?.length > 0 ? (
                       <div className="divide-y divide-gray-700/50">
                         {chapter.lessons.map((lesson) => (
@@ -72,17 +64,11 @@ export default function CourseModule({ chapters, toggleChapter, navigate }) {
                                 </p>
                               </div>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-primary hover:text-primary hover:bg-primary/10"
-                              onClick={(e) => {
-                                e.stopPropagation() // Prevent accordion toggle on button click
-                                navigate(`#lesson-${lesson.id}`)
-                              }}
-                            >
-                              View
-                            </Button>
+                            {lesson.completed && (
+                              <div className="text-green-500 flex items-center">
+                                <CheckCircle2 className="h-5 w-5" />
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>

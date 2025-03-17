@@ -98,6 +98,7 @@ const ENDPOINTS = {
    GET_LESSON_DETAIL: `${API_URL}/lesson/detail/:id`,
    CREATE_LESSON: `${API_URL}/lesson/add`,
    UPDATE_LESSON: `${API_URL}/lesson/update/:id`,
+   COMPLETED_LESSON: `${API_URL}/lesson/complete/:id`,
 
   //Topic
   GET_TOPIC_LIST: `${API_URL}/tag/all-topic`,

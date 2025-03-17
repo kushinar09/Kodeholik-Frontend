@@ -1,4 +1,4 @@
-import { ArrowLeft, Star, BookOpen, Clock, Award, Calendar, Bookmark, BookmarkCheck, CheckCircle, Users, FileText, AlertCircle, Eye } from "lucide-react"
+import { ArrowLeft, Star, BookOpen, Clock, CheckCircle, Calendar, Bookmark, BookmarkCheck, Users, FileText, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -20,7 +20,7 @@ export default function CourseDetail({
   totalLessons,
   completedLessons,
   completionPercentage,
-  isEnrolled, // New prop
+  isEnrolled,
 }) {
   if (loading) {
     return (
@@ -88,6 +88,23 @@ export default function CourseDetail({
     navigate(`/learn/${course.id}`)
   }
 
+  const formatLastUpdated = (updatedAt) => {
+    if (!updatedAt) return "Unknown"
+    const [datePart, timePart] = updatedAt.split(", ")
+    const [day, month, year] = datePart.split("/").map(Number)
+    const [hours, minutes] = timePart.split(":").map(Number)
+    const updatedDate = new Date(year, month - 1, day, hours, minutes)
+    const currentDate = new Date("2025-03-17")
+    const diffMs = currentDate - updatedDate
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 0) return "Today"
+    if (diffDays === 1) return "Yesterday"
+    if (diffDays < 7) return `${diffDays} days ago`
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
+    return updatedDate.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })
+  }
+
   return (
     <>
       <Button
@@ -141,50 +158,57 @@ export default function CourseDetail({
               <div className="flex flex-wrap gap-3 mt-6">
                 {isEnrolled ? (
                   <>
-                  <Button
-                    size="lg"
-                    className="gap-2 bg-primary text-black hover:bg-bg-primary hover:text-primary"
-                    onClick={handleLearn}
-                  >
-                    <BookOpen className="h-5 w-5" /> Continue Learning
-                  </Button>
-                    <Dialog open={open} onOpenChange={setOpen}>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="lg"
-                          disabled={processing}
-                          className="gap-2 bg-primary text-black hover:bg-gray-700 hover:text-primary"
-                        >
-                          {processing ? (
-                            "Processing..."
-                          ) : (
-                            <>
-                              <Bookmark className="h-5 w-5" /> Unenroll
-                            </>
-                          )}
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="bg-gray-800 border-gray-700 text-white">
-                        <DialogTitle className="text-xl">Confirm Unenrollment</DialogTitle>
-                        <DialogDescription className="text-gray-300 mt-2">
-                          Are you sure you want to unenroll from this course? You may lose your progress.
-                        </DialogDescription>
-                        <DialogFooter className="flex justify-end gap-2 mt-6">
+                    <Button
+                      size="lg"
+                      className="gap-2 bg-primary text-black hover:bg-bg-primary hover:text-primary"
+                      onClick={handleLearn}
+                    >
+                      <BookOpen className="h-5 w-5" /> Continue Learning
+                    </Button>
+                    {completionPercentage !== 100 && (
+                      <Dialog open={open} onOpenChange={setOpen}>
+                        <DialogTrigger asChild>
                           <Button
                             variant="outline"
-                            onClick={() => setOpen(false)}
+                            size="lg"
                             disabled={processing}
-                            className="border-gray-600 text-black hover:bg-gray-700 hover:text-primary"
+                            className="gap-2 bg-primary text-black hover:bg-gray-700 hover:text-primary"
                           >
-                            Cancel
+                            {processing ? (
+                              "Processing..."
+                            ) : (
+                              <>
+                                <Bookmark className="h-5 w-5" /> Unenroll
+                              </>
+                            )}
                           </Button>
-                          <Button variant="destructive" className="border-gray-600 text-black hover:bg-gray-700 hover:text-primary" onClick={handleUnenroll} disabled={processing}>
-                            {processing ? "Unenrolling..." : "Yes, Unenroll"}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                        </DialogTrigger>
+                        <DialogContent className="bg-gray-800 border-gray-700 text-white">
+                          <DialogTitle className="text-xl">Confirm Unenrollment</DialogTitle>
+                          <DialogDescription className="text-gray-300 mt-2">
+                            Are you sure you want to unenroll from this course? You may lose your progress.
+                          </DialogDescription>
+                          <DialogFooter className="flex justify-end gap-2 mt-6">
+                            <Button
+                              variant="outline"
+                              onClick={() => setOpen(false)}
+                              disabled={processing}
+                              className="border-gray-600 text-black hover:bg-gray-700 hover:text-primary"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              className="border-gray-600 text-black hover:bg-gray-700 hover:text-primary"
+                              onClick={handleUnenroll}
+                              disabled={processing}
+                            >
+                              {processing ? "Unenrolling..." : "Yes, Unenroll"}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    )}
                   </>
                 ) : (
                   <Dialog open={open} onOpenChange={setOpen}>
@@ -213,7 +237,11 @@ export default function CourseDetail({
                         >
                           Cancel
                         </Button>
-                        <Button onClick={handleEnroll} className="border-gray-600 text-black hover:bg-gray-700 hover:text-primary" disabled={processing}>
+                        <Button
+                          onClick={handleEnroll}
+                          className="border-gray-600 text-black hover:bg-gray-700 hover:text-primary"
+                          disabled={processing}
+                        >
                           {processing ? "Enrolling..." : "Yes, Enroll"}
                         </Button>
                       </DialogFooter>
@@ -258,20 +286,22 @@ export default function CourseDetail({
                   <span className="text-white font-medium">4 weeks</span>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-gray-800/80 rounded-xl border border-gray-700/50">
-                  <div className="flex items-center">
-                    <Award className="h-5 w-5 mr-2 text-primary" />
-                    <span className="text-gray-300">Certificate</span>
+                {completionPercentage === 100 && (
+                  <div className="flex items-center justify-between p-4 bg-gray-800/80 rounded-xl border border-gray-700/50">
+                    <div className="flex items-center">
+                      <CheckCircle className="h-5 w-5 mr-2 text-primary" />
+                      <span className="text-gray-300">Completed</span>
+                    </div>
+                    <span className="text-white font-medium">Yes</span>
                   </div>
-                  <span className="text-white font-medium">Yes</span>
-                </div>
+                )}
 
                 <div className="flex items-center justify-between p-4 bg-gray-800/80 rounded-xl border border-gray-700/50">
                   <div className="flex items-center">
                     <Calendar className="h-5 w-5 mr-2 text-primary" />
                     <span className="text-gray-300">Last Updated</span>
                   </div>
-                  <span className="text-white font-medium">2 weeks ago</span>
+                  <span className="text-white font-medium">{formatLastUpdated(course.updatedAt)}</span>
                 </div>
               </div>
             </div>

@@ -6,17 +6,15 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BookOpen, FileText, MessageSquare } from "lucide-react"
 import Header from "@/components/common/shared/header"
 import FooterSection from "@/components/common/shared/footer"
-import { getCourse, enrollCourse, unEnrollCourse, getImage, checkEnrollCourse, getCourseDiscussion } from "@/lib/api/course_api"
-import { getChapterByCourseId } from "@/lib/api/chapter_api"
-import { getLessonByChapterId } from "@/lib/api/lesson_api"
+import { getCourse, enrollCourse, unEnrollCourse, getImage, checkEnrollCourse } from "@/lib/api/course_api"
 import CourseDetail from "./components/courseDetail"
 import CourseModule from "./components/courseModule"
 import RateCommentCourse from "./components/rateCommentCourse"
-import CourseDiscussion from "./components/CourseDiscussion" // Import CourseDiscussion
+import CourseDiscussion from "./components/CourseDiscussion"
 
 export default function CourseDetailPage() {
   const [open, setOpen] = useState(false)
-  const [showChat, setShowChat] = useState(false) // State for chat visibility
+  const [showChat, setShowChat] = useState(false)
   const { id } = useParams()
   const navigate = useNavigate()
   const [course, setCourse] = useState(null)
@@ -34,14 +32,7 @@ export default function CourseDetailPage() {
       try {
         const courseData = await getCourse(id)
         setCourse(courseData)
-        const chaptersData = await getChapterByCourseId(id)
-        const chaptersWithLessons = await Promise.all(
-          chaptersData.map(async (chapter) => {
-            const lessons = await getLessonByChapterId(chapter.id)
-            return { ...chapter, lessons }
-          })
-        )
-        setChapters(chaptersWithLessons)
+        setChapters(courseData.chapters || [])
         const url = await getImage(courseData.image)
         setImageUrl(url)
         const enrolled = await checkEnrollCourse(id)
@@ -61,6 +52,7 @@ export default function CourseDetailPage() {
       await enrollCourse(id)
       const updatedCourse = await getCourse(id)
       setCourse(updatedCourse)
+      setChapters(updatedCourse.chapters || [])
       setIsEnrolled(true)
       setOpen(false)
       alert("You have successfully enrolled!")
@@ -77,6 +69,7 @@ export default function CourseDetailPage() {
       await unEnrollCourse(id)
       const updatedCourse = await getCourse(id)
       setCourse(updatedCourse)
+      setChapters(updatedCourse.chapters || [])
       setIsEnrolled(false)
       setOpen(false)
       alert("You have successfully unenrolled!")
@@ -95,8 +88,11 @@ export default function CourseDetailPage() {
   }
 
   const totalLessons = chapters.reduce((acc, chapter) => acc + (chapter.lessons?.length || 0), 0)
-  const completedLessons = isEnrolled ? Math.floor(totalLessons * 0.3) : 0
-  const completionPercentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0
+  const completedLessons = chapters.reduce(
+    (acc, chapter) => acc + (chapter.lessons?.filter((lesson) => lesson.completed).length || 0),
+    0
+  )
+  const completionPercentage = course?.progress || 0 // Use API-provided progress
 
   return (
     <div className="min-h-screen bg-bg-primary from-gray-900 to-gray-800">

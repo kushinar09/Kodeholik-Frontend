@@ -17,10 +17,13 @@ import {
   BookOpen,
 } from "lucide-react"
 import { getCourse } from "@/lib/api/course_api"
-import { getLessonById } from "@/lib/api/lesson_api"
+import { getLessonById, completedLesson, downloadFileLesson } from "@/lib/api/lesson_api"
 import VideoLesson from "./components/videoLesson"
 import DocumentLesson from "./components/documentLesson"
 import CourseOutline from "./components/courseOutline"
+import LessonProblemButton from "./components/lessonProblemButton"
+import Header from "@/components/common/shared/header"
+import FooterSection from "@/components/common/shared/footer"
 
 export default function LearnThroughVideoAndText() {
   const { id } = useParams()
@@ -47,34 +50,32 @@ export default function LearnThroughVideoAndText() {
       try {
         setLoading(true)
         const courseData = await getCourse(id)
+        console.log("Course Data:", courseData) // Debug course data
         setCourse(courseData)
+        setChapters(courseData.chapters || [])
 
-        const chaptersWithLessons = await Promise.all(
-          courseData.chapters.map(async (chapter) => {
-            const lessons = await Promise.all(
-              chapter.lessons.map(async (lesson) => {
-                return await getLessonById(lesson.id)
-              })
-            )
-            return { ...chapter, lessons }
-          })
-        )
-
-        setChapters(chaptersWithLessons)
-
-        if (chaptersWithLessons.length > 0) {
-          const firstChapter = chaptersWithLessons[0]
+        if (courseData.chapters && courseData.chapters.length > 0) {
+          const firstChapter = courseData.chapters[0]
           setSelectedChapter(firstChapter)
           setActiveAccordion(`chapter-${firstChapter.id}`)
 
           if (firstChapter.lessons && firstChapter.lessons.length > 0) {
+            console.log("First Lesson:", firstChapter.lessons[0]) // Debug first lesson
             await handleLessonSelect(firstChapter.lessons[0], firstChapter)
           }
         }
 
-        const totalLessons = chaptersWithLessons.reduce((sum, chapter) => sum + chapter.lessons.length, 0)
-        const completedLessons = Math.floor(Math.random() * (totalLessons / 3))
-        setProgress(totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0)
+        const apiProgress = courseData.progress
+        if (apiProgress !== null && apiProgress !== undefined) {
+          setProgress(apiProgress)
+        } else {
+          const totalLessons = courseData.chapters.reduce((sum, chapter) => sum + (chapter.lessons?.length || 0), 0)
+          const completedLessons = courseData.chapters.reduce(
+            (sum, chapter) => sum + (chapter.lessons?.filter(l => l.completed).length || 0),
+            0
+          )
+          setProgress(totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0)
+        }
       } catch (err) {
         setError(`Failed to load course data: ${err.message}`)
         console.error("Fetch error:", err)
@@ -91,17 +92,27 @@ export default function LearnThroughVideoAndText() {
     if (chapter) setSelectedChapter(chapter)
     setVideoUrl(null)
     setResourceError(null)
-
+  
     try {
-      const lessonDetails = lesson.videoUrl ? lesson : await getLessonById(lesson.id)
-      
+      console.log("Selected Lesson Before Fetch:", lesson)
+      // Always fetch the latest lesson details to ensure correct videoUrl
+      const lessonDetails = await getLessonById(lesson.id)
+      console.log("Lesson Details After Fetch:", lessonDetails)
+      console.log("Video URL:", lessonDetails.videoUrl)
+  
       if (lessonDetails.type === "VIDEO" && lessonDetails.videoUrl) {
         if (lessonDetails.videoUrl.match(/^[a-zA-Z0-9_-]{11}$/)) {
+          console.log("Setting YouTube ID:", lessonDetails.videoUrl)
           setVideoUrl(lessonDetails.videoUrl) // YouTube ID
+        } else if (lessonDetails.videoUrl.startsWith("http")) {
+          console.log("Setting Direct URL:", lessonDetails.videoUrl)
+          setVideoUrl(lessonDetails.videoUrl) // Direct MP4 URL
         } else {
-          setVideoUrl(lessonDetails.videoUrl) // Direct URL
+          console.log("Invalid video URL (relative path):", lessonDetails.videoUrl)
+          setResourceError("Invalid video URL provided for this lesson")
         }
       } else if (lessonDetails.type === "DOCUMENT" && lessonDetails.attachedFile) {
+        console.log("Document Lesson Detected")
         // Document handling
       } else if (lessonDetails.type === "VIDEO" && !lessonDetails.videoUrl) {
         setResourceError("No video URL provided for this lesson")
@@ -112,15 +123,15 @@ export default function LearnThroughVideoAndText() {
       if (lesson.type === "VIDEO") setVideoUrl(null)
     }
   }
-
   const handleDownload = async () => {
     if (!selectedLesson || !selectedLesson.attachedFile) return
 
     try {
-      const fileUrl = `${ENDPOINTS.GET_LESSON_DETAIL.replace(":id", selectedLesson.id)}/download`
+      const fileUrl = await downloadFileLesson(selectedLesson.attachedFile)
+      console.log("Download URL:", fileUrl) // Debug download URL
       const link = document.createElement("a")
       link.href = fileUrl
-      link.download = selectedLesson.attachedFile.replace("lessons/", "")
+      link.download = selectedLesson.attachedFile.replace("lessons/", "") || "document"
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -128,6 +139,64 @@ export default function LearnThroughVideoAndText() {
       console.error("Failed to download file:", err)
       setResourceError(`Failed to download file: ${err.message}`)
     }
+  }
+
+  const handleMarkComplete = async () => {
+    try {
+      await completedLesson(selectedLesson.id, async (url, options) => {
+        const response = await fetch(url, options)
+        return response
+      })
+
+      const updatedLesson = { ...selectedLesson, completed: true }
+      setSelectedLesson(updatedLesson)
+
+      setChapters(prevChapters =>
+        prevChapters.map(chapter => ({
+          ...chapter,
+          lessons: chapter.lessons.map(lesson =>
+            lesson.id === selectedLesson.id ? updatedLesson : lesson
+          )
+        }))
+      )
+
+      const updatedCourse = await getCourse(id)
+      const apiProgress = updatedCourse.progress
+      if (apiProgress !== null && apiProgress !== undefined) {
+        setProgress(apiProgress)
+      } else {
+        const totalLessons = chapters.reduce((sum, chapter) => sum + (chapter.lessons?.length || 0), 0)
+        const completedLessons = chapters.reduce(
+          (sum, chapter) => sum + (chapter.lessons?.filter(l => l.completed || l.id === selectedLesson.id).length || 0),
+          0
+        )
+        setProgress(totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0)
+      }
+    } catch (err) {
+      console.error("Failed to mark lesson as complete:", err)
+      setResourceError(`Failed to mark as complete: ${err.message}`)
+    }
+  }
+
+  const handleLessonCompleted = (lessonId) => {
+    const updatedLesson = { ...selectedLesson, completed: true }
+    setSelectedLesson(updatedLesson)
+
+    setChapters(prevChapters =>
+      prevChapters.map(chapter => ({
+        ...chapter,
+        lessons: chapter.lessons.map(lesson =>
+          lesson.id === lessonId ? updatedLesson : lesson
+        )
+      }))
+    )
+
+    const totalLessons = chapters.reduce((sum, chapter) => sum + (chapter.lessons?.length || 0), 0)
+    const completedLessons = chapters.reduce(
+      (sum, chapter) => sum + (chapter.lessons?.filter(l => l.completed || l.id === lessonId).length || 0),
+      0
+    )
+    setProgress(totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0)
   }
 
   const findNextLesson = () => {
@@ -223,9 +292,10 @@ export default function LearnThroughVideoAndText() {
   const prevLesson = findPreviousLesson()
 
   return (
-    <div className="min-h-screen bg-bg-primary from-gray-900 to-gray-950 text-white ">
-      <div className="mx-36 relative">
-        <div className="mb-8 sticky top-0 z-10 bg-bg-primary">
+    <div className="min-h-screen bg-bg-primary from-gray-900 to-gray-950 text-white">
+      <Header />
+      <div className="mx-36">
+        <div className="mb-8 top-0 z-10 bg-bg-primary">
           <div className="absolute inset-x-0 -bottom-4 h-4 bg-gradient-to-b from-primary-bg to-transparent pointer-events-none" />
           <Button
             variant="ghost"
@@ -256,7 +326,7 @@ export default function LearnThroughVideoAndText() {
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/30">
                   <Clock className="h-3 w-3 mr-1" />{" "}
-                  {chapters.reduce((sum, chapter) => sum + chapter.lessons.length, 0)} Lessons
+                  {chapters.reduce((sum, chapter) => sum + (chapter.lessons?.length || 0), 0)} Lessons
                 </Badge>
                 <Badge variant="outline" className="bg-purple-500/10 text-purple-400 border-purple-500/30">
                   <BookOpen className="h-3 w-3 mr-1" /> {chapters.length} Chapters
@@ -272,15 +342,16 @@ export default function LearnThroughVideoAndText() {
               <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 overflow-hidden">
                 <div className="relative">
                   {selectedLesson.type === "VIDEO" && (
-                    <VideoLesson 
-                      videoUrl={videoUrl} 
-                      lessonId={selectedLesson.id} 
+                    <VideoLesson
+                      videoUrl={videoUrl}
+                      lessonId={selectedLesson.id}
                       resourceError={resourceError}
+                      onLessonCompleted={handleLessonCompleted}
                     />
                   )}
                   {selectedLesson.type === "DOCUMENT" && selectedLesson.attachedFile && (
-                    <DocumentLesson 
-                      attachedFile={selectedLesson.attachedFile} 
+                    <DocumentLesson
+                      attachedFile={selectedLesson.attachedFile}
                       onDownload={handleDownload}
                       resourceError={resourceError}
                     />
@@ -320,25 +391,46 @@ export default function LearnThroughVideoAndText() {
                     <div className="prose prose-invert max-w-none mt-4 text-gray-300">{selectedLesson.description}</div>
                   )}
 
+                  {selectedLesson.problems && selectedLesson.problems.length > 0 && (
+                    <div className="mt-6">
+                      <h3 className="text-lg font-semibold mb-2">Problems</h3>
+                      <div className="space-y-2">
+                        {selectedLesson.problems.map((problem) => (
+                          <LessonProblemButton key={problem.id} problem={problem} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="mt-6 flex justify-end">
-                    <Button className="bg-primary hover:bg-primary-button-hover text-bg-card">
-                      <CheckCircle2 className="h-4 w-4 mr-2" /> Mark as Complete
-                    </Button>
+                    {!selectedLesson.completed ? (
+                      <Button
+                        className="bg-primary hover:bg-primary-button-hover text-bg-card"
+                        onClick={handleMarkComplete}
+                      >
+                        <CheckCircle2 className="h-4 w-4 mr-2" /> Mark as Complete
+                      </Button>
+                    ) : (
+                      <div className="text-green-500 flex items-center">
+                        <CheckCircle2 className="h-4 w-4 mr-2" /> Completed
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          <CourseOutline 
-            chapters={chapters} 
-            selectedLesson={selectedLesson} 
-            activeAccordion={activeAccordion} 
-            setActiveAccordion={setActiveAccordion} 
+          <CourseOutline
+            chapters={chapters}
+            selectedLesson={selectedLesson}
+            activeAccordion={activeAccordion}
+            setActiveAccordion={setActiveAccordion}
             handleLessonSelect={handleLessonSelect}
           />
         </div>
       </div>
+      <FooterSection />
     </div>
   )
 }

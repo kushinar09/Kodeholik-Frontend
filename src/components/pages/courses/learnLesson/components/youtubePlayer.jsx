@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Maximize2, Pause, Play, Volume2, VolumeX } from "lucide-react"
 
-export default function YouTubePlayer({ videoId }) {
+export default function YouTubePlayer({ videoId, onNinetyPercentWatched }) {
   const playerRef = useRef(null)
   const containerRef = useRef(null)
   const progressBarRef = useRef(null)
@@ -15,10 +15,10 @@ export default function YouTubePlayer({ videoId }) {
   const [volume, setVolume] = useState(100)
   const [isMuted, setIsMuted] = useState(false)
   const [isControlsVisible, setIsControlsVisible] = useState(true)
+  const [hasReachedNinetyPercent, setHasReachedNinetyPercent] = useState(false) // Track if 90% was reached
   let hideControlsTimeout = null
 
   useEffect(() => {
-    // Load YouTube API if not already loaded
     if (!window.YT) {
       const tag = document.createElement("script")
       tag.src = "https://www.youtube.com/iframe_api"
@@ -27,7 +27,7 @@ export default function YouTubePlayer({ videoId }) {
     }
 
     const initializePlayer = () => {
-      if (!window.YT || !window.YT.Player) return // Wait for API to load
+      if (!window.YT || !window.YT.Player) return
 
       playerRef.current = new window.YT.Player("youtube-player", {
         videoId: videoId,
@@ -45,7 +45,7 @@ export default function YouTubePlayer({ videoId }) {
     }
 
     window.onYouTubeIframeAPIReady = initializePlayer
-    if (window.YT && window.YT.Player) initializePlayer() // If API is already loaded
+    if (window.YT && window.YT.Player) initializePlayer()
 
     return () => {
       if (playerRef.current) {
@@ -73,12 +73,18 @@ export default function YouTubePlayer({ videoId }) {
       if (playerRef.current && isPlaying) {
         const currentTime = playerRef.current.getCurrentTime()
         setCurrentTime(currentTime)
-        setProgress((currentTime / duration) * 100)
+        const newProgress = (currentTime / duration) * 100
+        setProgress(newProgress)
+
+        if (newProgress >= 90 && !hasReachedNinetyPercent) {
+          setHasReachedNinetyPercent(true)
+          onNinetyPercentWatched() // Notify parent component
+        }
       }
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [isReady, isPlaying, duration])
+  }, [isReady, isPlaying, duration, hasReachedNinetyPercent, onNinetyPercentWatched])
 
   const togglePlay = () => {
     if (!isReady || !playerRef.current) return
@@ -98,6 +104,11 @@ export default function YouTubePlayer({ videoId }) {
     const newTime = (newProgress / 100) * duration
     playerRef.current.seekTo(newTime, true)
     setProgress(newProgress)
+
+    if (newProgress >= 90 && !hasReachedNinetyPercent) {
+      setHasReachedNinetyPercent(true)
+      onNinetyPercentWatched()
+    }
   }
 
   const handleVolumeChange = (e) => {

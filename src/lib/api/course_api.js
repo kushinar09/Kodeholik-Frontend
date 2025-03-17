@@ -77,7 +77,10 @@ export async function getCourseList() {
   }
 
   export async function getCourse(id) {
-    const response = await fetch(ENDPOINTS.GET_COURSE.replace(":id", id))
+    const response = await fetch(ENDPOINTS.GET_COURSE.replace(":id", id), {
+      method: "GET",
+      credentials: "include",
+    })
     if (!response.ok) {
       throw new Error("Failed to fetch course")
     }
