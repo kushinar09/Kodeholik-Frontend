@@ -77,15 +77,15 @@ export const SocketProvider = ({ children }) => {
 
     // Handle connection
     client.onConnect = (frame) => {
-      console.log("✅ Connection successful!")
+      // console.log("✅ Connection successful!")
       setConnected(true)
 
       client.subscribe("/notification/" + user.username, (message) => {
-        console.log("📩 Received message:", message.body)
+        // console.log("📩 Received message:", message.body)
 
         try {
           const notification = JSON.parse(message.body)
-          console.log("Received notification:", notification)
+          // console.log("Received notification:", notification)
           // Add to notifications state
           setNotifications((prev) => [notification, ...prev])
           // Show toast notification

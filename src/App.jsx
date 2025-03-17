@@ -43,6 +43,7 @@ function App() {
                       <Routes>
                         <Route path=":id/wait" element={<WaitingRoom />} />
                         <Route path=":id" element={<ExamProblems />} />
+                        <Route path="*" element={<NotFoundError />} />
                       </Routes>
                     </SocketExamProvider>
                   }

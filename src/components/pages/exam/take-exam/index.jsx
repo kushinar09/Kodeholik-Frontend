@@ -1,17 +1,11 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { useParams } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels"
-import { useAuth } from "@/providers/AuthProvider"
 import "highlight.js/styles/default.css"
 
 import "./styles.css"
-
-// API imports
-import { getProblemDescription, getProblemInitCode } from "@/lib/api/problem_api"
-import { runCode } from "@/lib/api/code_api"
 
 // Component imports
 import TabNavigation from "./components/left-panel/tab-navigation"
@@ -21,18 +15,18 @@ import TestCasePanel from "./components/right-panel/test-case-panel"
 import HeaderOption from "./components/header-option"
 
 export default function TakeExam({
+  timeLeft,
+  handleBackToProblems,
   problemTitle,
   problemDescription,
   compileInformation
 }) {
+  // console.log(compileInformation)
   // Panel state
   const [leftSize, setLeftSize] = useState(50)
   const [leftWidth, setLeftWidth] = useState(0)
   const leftPanelRef = useRef(null)
   const [isCompactRight, setIsCompactRight] = useState(false)
-
-  // Problem data state
-  const [description, setDescription] = useState(null)
 
   // Code state
   const [code, setCode] = useState("")
@@ -131,7 +125,7 @@ export default function TakeExam({
 
   return (
     <div className="h-screen flex flex-col">
-      <HeaderOption onRun={handleRunCode} />
+      <HeaderOption handleBack={handleBackToProblems} onRun={handleRunCode} />
 
       <div className="flex-1 p-2 bg-bg-primary/50">
         <PanelGroup direction="horizontal" onLayout={(sizes) => setLeftSize(sizes[0])}>
@@ -143,7 +137,8 @@ export default function TakeExam({
 
                 <LeftPanelContent
                   isCompact={isCompactLeft}
-                  description={description}
+                  title={problemTitle}
+                  description={problemDescription}
                 />
               </div>
             </div>
@@ -158,8 +153,14 @@ export default function TakeExam({
               <Panel className="min-h-[40px] rounded-md overflow-hidden">
                 <CodePanel
                   isCompact={isCompactRight}
-                  code={code}
+                  code={"Phong dz"}
                   onCodeChange={handleCodeChange}
+                  language={"Java"}
+                  onLanguageChange={null}
+                  availableLanguages={[
+                    { value: "Java", label: "Java" },
+                    { value: "C", label: "C" }
+                  ]}
                 />
               </Panel>
 

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { CheckCircle2, FileText, XCircle, ArrowLeft, Loader2 } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import TakeExam from "../take-exam"
 import { useSocketExam } from "@/providers/SocketExamProvider"
@@ -12,29 +12,72 @@ import { toast } from "sonner"
 export default function ExamProblems() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { problems, examData, isConnected, token, connectSocket } = useSocketExam()
+  const { problems, examData, isConnected, token, examCode, connectSocket } = useSocketExam()
 
   const [isTimerRunning, setIsTimerRunning] = useState(true)
   const [timeLeft, setTimeLeft] = useState(3600)
   const [selectedProblem, setSelectedProblem] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [connectionAttempts, setConnectionAttempts] = useState(0)
+
+  // Use refs for values that shouldn't trigger re-renders
+  const isMountedRef = useRef(true)
+  const lastConnectionAttemptRef = useRef(0)
+  const timerIntervalRef = useRef(null)
 
   // Check if user accessed directly (not through waiting room)
   useEffect(() => {
-    // If we don't have a token or connection, redirect to waiting room
-    if (!token && !isConnected) {
-      navigate(`/exam/${id}/wait`)
-    } else {
-      setLoading(false)
-    }
-  }, [id, token, isConnected, navigate])
+    isMountedRef.current = true
 
-  // Reconnect socket if needed
-  useEffect(() => {
-    if (token && !isConnected) {
-      connectSocket(token)
+    const checkAccess = async () => {
+      if (!isMountedRef.current) return
+
+      // Rate limit connection attempts
+      const now = Date.now()
+      if (now - lastConnectionAttemptRef.current < 3000) return
+      lastConnectionAttemptRef.current = now
+
+      // If we don't have a token or connection after multiple attempts, redirect to waiting room
+      if (!token && !isConnected && connectionAttempts > 2) {
+        toast.error("Session not found. Redirecting to waiting room...")
+        navigate(`/exam/${id}/wait`)
+        return
+      }
+
+      // If we have token but not connected, try to connect
+      if (token && !isConnected && connectionAttempts < 3) {
+        if (isMountedRef.current) {
+          setConnectionAttempts((prev) => prev + 1)
+        }
+        try {
+          await connectSocket(token, examCode)
+        } catch (error) {
+          console.error("Connection error:", error)
+        }
+      } else if (isConnected) {
+        // We're connected, stop loading
+        if (isMountedRef.current) {
+          setLoading(false)
+        }
+      } else if (!token && connectionAttempts < 3) {
+        // No token yet, but we'll try a few times
+        if (isMountedRef.current) {
+          setConnectionAttempts((prev) => prev + 1)
+        }
+      }
     }
-  }, [token, isConnected, connectSocket])
+
+    // Call once immediately
+    checkAccess()
+
+    // Set up interval to check connection status - with a longer delay
+    const interval = setInterval(checkAccess, 5000) // Increased to 5 seconds
+
+    return () => {
+      isMountedRef.current = false
+      clearInterval(interval)
+    }
+  }, [id, token, isConnected, connectionAttempts, navigate, connectSocket, examCode])
 
   // Format seconds to HH:MM:SS
   const formatTime = (seconds) => {
@@ -59,49 +102,80 @@ export default function ExamProblems() {
     setSelectedProblem(null)
   }
 
-  // Set exam duration from exam data
+  // Set exam duration from exam data - only when examData changes
   useEffect(() => {
-    if (examData && examData.duration) {
-      setTimeLeft(examData.duration)
-      setIsTimerRunning(true)
-    } else if (examData) {
-      // Default to 1 hour if no duration specified
-      setTimeLeft(3600)
+    if (!examData || !isMountedRef.current) return
+
+    // Only update if the value would actually change
+    const newDuration = examData.duration || 3600
+
+    if (newDuration !== timeLeft) {
+      setTimeLeft(newDuration)
       setIsTimerRunning(true)
     }
-  }, [examData])
+  }, [examData, timeLeft])
 
   // Timer countdown effect
   useEffect(() => {
-    let interval
+    if (!isTimerRunning || timeLeft <= 0) return
 
-    if (isTimerRunning && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prevTime) => {
-          const newTime = prevTime - 1
-          if (newTime <= 0) {
-            clearInterval(interval)
-            // Auto-submit when time is up
-            handleSubmitExam()
-            return 0
-          }
-          return newTime
-        })
-      }, 1000)
+    // Clear any existing interval
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current)
     }
 
-    return () => clearInterval(interval)
-  }, [timeLeft, isTimerRunning])
+    timerIntervalRef.current = setInterval(() => {
+      if (!isMountedRef.current) return
+
+      setTimeLeft((prevTime) => {
+        const newTime = prevTime - 1
+        if (newTime <= 0) {
+          clearInterval(timerIntervalRef.current)
+          // Auto-submit when time is up
+          handleSubmitExam()
+          return 0
+        }
+        return newTime
+      })
+    }, 1000)
+
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current)
+      }
+    }
+  }, [isTimerRunning])
 
   // Handle submit exam
   const handleSubmitExam = () => {
-    // Here you would implement the actual submission logic
-    // For example, send a request to submit all answers
+    if (!isMountedRef.current) return
 
-    // For now, just navigate to a completion page or show a completion message
+    // Here you would implement the actual submission logic
     toast.success("Exam submitted successfully!")
-    setTimeout(() => navigate("/exam"), 2000)
+
+    // Use a ref to track if we've already navigated
+    if (!handleSubmitExam.hasNavigated) {
+      handleSubmitExam.hasNavigated = true
+      setTimeout(() => {
+        if (isMountedRef.current) {
+          navigate("/exam")
+        }
+      }, 2000)
+    }
   }
+
+  // Initialize the static property
+  handleSubmitExam.hasNavigated = false
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current)
+      }
+    }
+  }, [])
 
   // If loading, show loading state
   if (loading) {
@@ -111,8 +185,11 @@ export default function ExamProblems() {
           <CardHeader className="text-center">
             <h1 className="text-2xl font-bold">Loading Exam...</h1>
           </CardHeader>
-          <CardContent className="flex justify-center">
+          <CardContent className="flex flex-col items-center justify-center gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-muted-foreground">
+              {connectionAttempts > 0 ? "Attempting to connect..." : "Initializing exam..."}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -123,17 +200,9 @@ export default function ExamProblems() {
   if (selectedProblem) {
     return (
       <div className="flex flex-col h-screen">
-        <div className="flex justify-between items-center p-4 bg-background">
-          <Button variant="ghost" onClick={handleBackToProblems} className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Problems
-          </Button>
-          <div className="flex items-center gap-2 bg-bg-card px-4 py-2 rounded-md">
-            <span className="font-medium">Time Left: {formatTime(timeLeft)}</span>
-          </div>
-        </div>
-
         <TakeExam
+          timeLeft={formatTime(timeLeft)}
+          handleBackToProblems={handleBackToProblems}
           problemTitle={selectedProblem.title}
           problemDescription={selectedProblem.description}
           compileInformation={selectedProblem.compileInfo}

@@ -45,36 +45,32 @@ export function SocketExamProvider({ children }) {
       if (!response.ok) {
         let newError
         // Handle error cases
-        if (data.message.includes("already started or ended")) {
+        if (!data.startTime) {
           newError = { type: "late", message: data.message }
-        } else if (/^([0-2]\d|3[01])\/(0\d|1[0-2])\/\d{4}, ([01]\d|2[0-3]):[0-5]\d$/.test(data.details)) {
-          newError = {
-            type: "early",
-            message: data.message,
-            startTime: data.details
-          }
-          setStartTime(data.details)
+          setError(newError)
         } else {
           newError = {
             type: "early",
-            message: data.message
+            message: data.message,
+            startTime: data.startTime
           }
-          setError(newError)
+          setStartTime(data.startTime)
         }
         return { success: false, error: newError }
       }
 
       const result = {
         success: true,
-        Token: data.Token,
-        Username: data.Username,
-        Code: data.Code
+        token: data.token,
+        username: data.username,
+        code: data.code,
+        startTime: data.startTime
       }
       // Success case
-      setToken(data.Token)
-      setUsername(data.Username)
-      setExamCode(data.Code)
-      setStartTime(data.StartTime)
+      setToken(data.token)
+      setUsername(data.username)
+      setExamCode(data.code)
+      setStartTime(data.startTime)
       setError(null)
       return result
     } catch (err) {
@@ -85,7 +81,7 @@ export function SocketExamProvider({ children }) {
   }
 
   // Connect to socket with retry mechanism
-  const connectSocket = (tokenValue) => {
+  const connectSocket = (tokenValue, codeValue) => {
     if (!tokenValue) {
       console.error("Cannot connect: No token provided")
       return
@@ -112,9 +108,8 @@ export function SocketExamProvider({ children }) {
         setIsConnected(true)
         setConnectionAttempts(0)
         console.log("✅ Connected to WebSocket Exam")
-
         // Subscribe to exam topic
-        client.subscribe("/topic/exam", (message) => {
+        client.subscribe(`/topic/exam/${codeValue}`, (message) => {
           try {
             const examData = JSON.parse(message.body)
             setExamData(examData)
@@ -151,14 +146,14 @@ export function SocketExamProvider({ children }) {
         console.error("STOMP error", frame)
         setError({ type: "socket", message: "Socket connection error" })
         setIsConnected(false)
-        handleReconnect(tokenValue)
+        handleReconnect(tokenValue, codeValue)
       }
 
       client.onWebSocketError = (event) => {
         console.error("WebSocket error", event)
         setError({ type: "socket", message: "WebSocket connection error" })
         setIsConnected(false)
-        handleReconnect(tokenValue)
+        handleReconnect(tokenValue, codeValue)
       }
 
       client.onDisconnect = () => {
@@ -171,19 +166,19 @@ export function SocketExamProvider({ children }) {
     } catch (err) {
       console.error("Error activating STOMP client:", err)
       setError({ type: "socket", message: "Failed to connect to socket" })
-      handleReconnect(tokenValue)
+      handleReconnect(tokenValue, codeValue)
     }
   }
 
   // Handle reconnection with exponential backoff
-  const handleReconnect = (tokenValue) => {
+  const handleReconnect = (tokenValue, codeValue) => {
     if (connectionAttempts < 5) {
       const delay = Math.min(1000 * Math.pow(2, connectionAttempts), 30000)
       console.log(`Attempting to reconnect in ${delay / 1000} seconds...`)
 
       setTimeout(() => {
         setConnectionAttempts((prev) => prev + 1)
-        connectSocket(tokenValue)
+        connectSocket(tokenValue, codeValue)
       }, delay)
     } else {
       console.error("Max reconnection attempts reached")
