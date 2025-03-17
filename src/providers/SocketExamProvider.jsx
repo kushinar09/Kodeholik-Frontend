@@ -235,8 +235,6 @@ export function SocketExamProvider({ children }) {
       id: index,
       title: problem.problemTitle,
       description: problem.problemDescription,
-      status: "unsolved",
-      score: 0,
       compileInfo: problem.compileInformation
     }))
   }

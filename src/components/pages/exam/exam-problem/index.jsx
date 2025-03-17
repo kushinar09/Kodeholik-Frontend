@@ -8,17 +8,24 @@ import { useParams, useNavigate } from "react-router-dom"
 import TakeExam from "../take-exam"
 import { useSocketExam } from "@/providers/SocketExamProvider"
 import { toast } from "sonner"
+import { useAuth } from "@/providers/AuthProvider"
+import { ENDPOINTS } from "@/lib/constants"
+import { json } from "stream/consumers"
 
 export default function ExamProblems() {
   const { id } = useParams()
   const navigate = useNavigate()
+
   const { problems, examData, isConnected, token, examCode, connectSocket } = useSocketExam()
+  const { apiCall } = useAuth()
 
   const [isTimerRunning, setIsTimerRunning] = useState(true)
-  const [timeLeft, setTimeLeft] = useState(3600)
+  const [timeLeft, setTimeLeft] = useState(0)
   const [selectedProblem, setSelectedProblem] = useState(null)
   const [loading, setLoading] = useState(true)
   const [connectionAttempts, setConnectionAttempts] = useState(0)
+
+  const [storeCode, setStoreCode] = useState([])
 
   // Use refs for values that shouldn't trigger re-renders
   const isMountedRef = useRef(true)
@@ -88,7 +95,7 @@ export default function ExamProblems() {
     return [
       hours.toString().padStart(2, "0"),
       minutes.toString().padStart(2, "0"),
-      remainingSeconds.toString().padStart(2, "0"),
+      remainingSeconds.toString().padStart(2, "0")
     ].join(":")
   }
 
@@ -100,6 +107,58 @@ export default function ExamProblems() {
   // Handle back to problems list
   const handleBackToProblems = () => {
     setSelectedProblem(null)
+  }
+
+  const handleRunCode = async (code, language, problemLink) => {
+    try {
+      const response = await apiCall(ENDPOINTS.POST_RUN_EXAM.replace(":idProblem", problemLink).replace(":id", id), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          {
+            code: code,
+            languageName: language
+          }
+        )
+      })
+      const text = response.text()
+      if (response.ok) {
+        return { status: true, data: JSON.parse(text) }
+      } else {
+        try {
+          const data = JSON.parse(text)
+          return { status: false, message: data.message }
+        } catch (error) {
+          return { status: false, message: "Error in run code: " + error.message }
+        }
+      }
+    } catch (e) {
+      toast.error("Compile error: " + e.message)
+    }
+  }
+
+  const handleCodeChange = (code, language, problemLink) => {
+    setStoreCode((prevStoreCode) => {
+      const existingIndex = prevStoreCode.findIndex((item) => item.problemLink === problemLink)
+
+      if (existingIndex !== -1) {
+        return prevStoreCode.map((item) =>
+          item.problemLink === problemLink ?
+            {
+              ...item,
+              code: code,
+              languageName: language
+            }
+            : item
+        )
+      } else {
+        return [...prevStoreCode, {
+          problemLink: problemLink,
+          code: code,
+          languageName: language
+        }]
+      }
+    })
   }
 
   // Set exam duration from exam data - only when examData changes
@@ -201,11 +260,17 @@ export default function ExamProblems() {
     return (
       <div className="flex flex-col h-screen">
         <TakeExam
-          timeLeft={formatTime(timeLeft)}
+          idExam={id}
+          timeLeft={timeLeft}
           handleBackToProblems={handleBackToProblems}
+          problemLink={selectedProblem.link || ""}
           problemTitle={selectedProblem.title}
           problemDescription={selectedProblem.description}
           compileInformation={selectedProblem.compileInfo}
+          codeStore={storeCode.find((i) => i.problemLink === selectedProblem.link)?.code || ""}
+          languageStore={storeCode.find((i) => i.problemLink === selectedProblem.link)?.languageName || ""}
+          onRun={handleRunCode}
+          onCodeChange={handleCodeChange}
         />
       </div>
     )
@@ -227,7 +292,7 @@ export default function ExamProblems() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-bg-primary p-4">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-bg-primary to-bg-primary/80 p-4">
       <Card className="w-full max-w-md shadow-lg bg-bg-card text-text-primary border-none">
         <CardHeader className="text-center border-b pb-4">
           {/* Header */}
@@ -253,14 +318,6 @@ export default function ExamProblems() {
                   <div className="w-1 h-12 bg-blue-500 rounded-full mr-3"></div>
                   <div className="flex-1 flex justify-between items-center">
                     <span className="font-medium text-primary">{problem.title}</span>
-                    <div className="flex items-center gap-2">
-                      {problem.status === "unsolved" ? (
-                        <XCircle className="h-5 w-5 text-red-500" />
-                      ) : (
-                        <CheckCircle2 className="h-5 w-5 text-green-500" />
-                      )}
-                      <span>{problem.score}</span>
-                    </div>
                   </div>
                 </div>
               ))}

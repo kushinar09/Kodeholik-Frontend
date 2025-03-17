@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 
-export default function CountdownTimer({ initialSeconds = 1800, onComplete }) {
+export default function CountdownTimer({ initialSeconds = 1800, onComplete=null }) {
   const [seconds, setSeconds] = useState(initialSeconds)
 
   useEffect(() => {

@@ -13,24 +13,36 @@ import LeftPanelContent from "./components/left-panel/left-panel-content"
 import CodePanel from "./components/right-panel/code-panel"
 import TestCasePanel from "./components/right-panel/test-case-panel"
 import HeaderOption from "./components/header-option"
+import { useAuth } from "@/providers/AuthProvider"
+import { ENDPOINTS } from "@/lib/constants"
+import { toast } from "sonner"
 
 export default function TakeExam({
+  idExam,
   timeLeft,
   handleBackToProblems,
+  problemLink = null,
   problemTitle,
   problemDescription,
-  compileInformation
+  compileInformation,
+  codeStore,
+  languageStore,
+  onPenalty = null,
+  onRun,
+  onCodeChange
 }) {
-  // console.log(compileInformation)
   // Panel state
   const [leftSize, setLeftSize] = useState(50)
   const [leftWidth, setLeftWidth] = useState(0)
   const leftPanelRef = useRef(null)
   const [isCompactRight, setIsCompactRight] = useState(false)
 
+  const [isRunning, setIsRunning] = useState(false)
   // Code state
-  const [code, setCode] = useState("")
-  const [testCases, setTestCases] = useState([])
+  const [code, setCode] = useState(codeStore || compileInformation[0]?.template || "")
+  const [language, setLanguage] = useState(languageStore || compileInformation[0]?.language || "")
+  const [availableLanguages, setAvailableLanguages] = useState([])
+  const [testCases, setTestCases] = useState(compileInformation[0]?.testCases || [])
 
   // Test case state
   const [activeCase, setActiveCase] = useState("0")
@@ -41,31 +53,31 @@ export default function TakeExam({
   const [showResult, setShowResult] = useState(false)
   const [isResultActive, setIsResultActive] = useState(false)
 
-  const [isVisible, setIsVisible] = useState(true)
-  const [warningCount, setWarningCount] = useState(0)
-  const maxWarnings = 0
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden && warningCount < maxWarnings) {
-        setWarningCount((prev) => prev + 1)
-        alert(`Warning: Do not switch tabs! Warnings left: ${maxWarnings - (warningCount + 1)}`)
-      } else if (!document.hidden) {
-        setIsVisible(true)
-      }
-    }
+  // const [isVisible, setIsVisible] = useState(true)
+  // const [warningCount, setWarningCount] = useState(0)
+  // const maxWarnings = 0
+  // useEffect(() => {
+  //   const handleVisibilityChange = () => {
+  //     if (document.hidden && warningCount < maxWarnings) {
+  //       setWarningCount((prev) => prev + 1)
+  //       alert(`Warning: Do not switch tabs! Warnings left: ${maxWarnings - (warningCount + 1)}`)
+  //     } else if (!document.hidden) {
+  //       setIsVisible(true)
+  //     }
+  //   }
 
-    document.addEventListener("visibilitychange", handleVisibilityChange)
+  //   document.addEventListener("visibilitychange", handleVisibilityChange)
 
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange)
-    }
-  }, [warningCount, maxWarnings])
+  //   return () => {
+  //     document.removeEventListener("visibilitychange", handleVisibilityChange)
+  //   }
+  // }, [warningCount, maxWarnings])
 
-  useEffect(() => {
-    if (warningCount >= maxWarnings) {
-      // onPenalty()
-    }
-  }, [warningCount, maxWarnings])
+  // useEffect(() => {
+  //   if (warningCount >= maxWarnings) {
+  //     onPenalty()
+  //   }
+  // }, [warningCount, maxWarnings])
 
   // useEffect(() => {
   //   const handleKeyDown = (event) => {
@@ -97,6 +109,11 @@ export default function TakeExam({
   }, [leftWidth])
 
   useEffect(() => {
+    const languages = [...new Set(compileInformation.map(item => item.language))]
+    setAvailableLanguages(languages)
+  }, [compileInformation])
+
+  useEffect(() => {
     if (!leftPanelRef.current) return
 
     const resizeObserver = new ResizeObserver((entries) => {
@@ -116,16 +133,40 @@ export default function TakeExam({
 
   // Code execution handlers
   const handleCodeChange = (newCode) => {
+    console.log(language)
+    onCodeChange(newCode, language, problemLink)
     setCode(newCode)
   }
 
-  async function handleRunCode() {
+  const handleLanguageChange = (newLanguage) => {
+    const template = compileInformation.find((lang) => lang.language === newLanguage)
+    setLanguage(newLanguage)
+    setCode(template?.template || "")
+    setTestCases(template?.testCases || [])
+  }
 
+  const handleRunCode = async () => {
+    setIsRunning(true)
+    try {
+      const result = await onRun(code, language, problemLink)
+      if (!result.status) {
+        toast.error("Execution failed: " + result.message)
+        return
+      }
+      setResults(result.data)
+      setShowResult(true)
+      setIsResultActive(true)
+      setActiveResult("0")
+    } catch (e) {
+      toast.error("Compile error: " + e.message)
+    } finally {
+      setIsRunning(false)
+    }
   }
 
   return (
     <div className="h-screen flex flex-col">
-      <HeaderOption handleBack={handleBackToProblems} onRun={handleRunCode} />
+      <HeaderOption handleBack={handleBackToProblems} onRun={handleRunCode} timeLeft={timeLeft} isRunning={isRunning} />
 
       <div className="flex-1 p-2 bg-bg-primary/50">
         <PanelGroup direction="horizontal" onLayout={(sizes) => setLeftSize(sizes[0])}>
@@ -153,14 +194,11 @@ export default function TakeExam({
               <Panel className="min-h-[40px] rounded-md overflow-hidden">
                 <CodePanel
                   isCompact={isCompactRight}
-                  code={"Phong dz"}
+                  code={code}
                   onCodeChange={handleCodeChange}
-                  language={"Java"}
-                  onLanguageChange={null}
-                  availableLanguages={[
-                    { value: "Java", label: "Java" },
-                    { value: "C", label: "C" }
-                  ]}
+                  language={language || ""}
+                  onLanguageChange={handleLanguageChange}
+                  availableLanguages={availableLanguages}
                 />
               </Panel>
 

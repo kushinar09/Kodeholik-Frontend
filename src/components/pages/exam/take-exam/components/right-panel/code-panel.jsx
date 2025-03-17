@@ -5,27 +5,13 @@ import CodeEditor from "@/components/common/editor-code/CodeEditor"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState } from "react"
 
-/**
- * Panel for code editing and submission view
- * @param {Object} props - Component props
- * @param {boolean} props.isSubmittedActive - Whether submission view is active
- * @param {Function} props.setIsSubmittedActive - Function to toggle submission view
- * @param {boolean} props.isCompact - Whether the panel is in compact mode
- * @param {string} props.code - Current code
- * @param {Function} props.onCodeChange - Code change handler
- * @param {Object} props.submitted - Submission results
- * @param {boolean} props.showSubmitted - Whether to show submission results
- */
 export default function CodePanel({
   isCompact,
   code,
   onCodeChange,
-  language = "Java",
-  onLanguageChange = null,
-  availableLanguages = [
-    { value: "Java", label: "Java" },
-    { value: "C", label: "C" }
-  ]
+  language,
+  onLanguageChange,
+  availableLanguages
 }) {
 
   const [selectedLanguage, setSelectedLanguage] = useState(language)
@@ -83,8 +69,8 @@ export default function CodePanel({
                   </SelectTrigger>
                   <SelectContent>
                     {availableLanguages.map((lang) => (
-                      <SelectItem key={lang.value} value={lang.value}>
-                        {lang.label}
+                      <SelectItem key={lang} value={lang}>
+                        {lang}
                       </SelectItem>
                     ))}
                   </SelectContent>
