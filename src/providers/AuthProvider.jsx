@@ -237,7 +237,7 @@ export const AuthProvider = ({ children }) => {
         refreshAuth: checkAuthStatus
       }}
     >
-      {authError ? renderErrorPage() : children}
+      {authError && authError != 400 && authError != 500 ? renderErrorPage() : children}
     </AuthContext.Provider>
   )
 }

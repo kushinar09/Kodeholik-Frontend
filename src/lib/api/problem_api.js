@@ -1,4 +1,6 @@
+import { toast } from "@/hooks/use-toast"
 import { ENDPOINTS } from "../constants"
+import { MESSAGES } from "../messages"
 
 export async function getProblemDescription(apiCall, id) {
   const response = await apiCall(ENDPOINTS.GET_PROBLEM_DESCRIPTION.replace(":id", id))
@@ -231,24 +233,84 @@ export async function postSolution(apiCall, solution) {
     if (response.status == 400) {
       try {
         const errorData = await response.json();
-        toast.error("Error", {
-          description: errorData.message,
-          variant: "destructive"
+        let value = "";
+        if (Array.isArray(errorData.message)) {
+          for (let i = 0; i < errorData.message.length; i++) {
+            value += errorData.message[i].field + ": " + errorData.message[i].error + "; ";
+          }
+        }
+        else {
+          value += errorData.message;
+        }
+        toast({
+          title: "Error",
+          description: value,
+          variant: "destructive" // destructive
         });
       } catch (error) {
         console.error("Error parsing error response:", error);
       }
     }
     else if (response.status == 500) {
-      toast.error("Error", {
+      toast({
+        title: "Error",
         description: MESSAGES.MSG01,
-        variant: "destructive"
+        variant: "destructive" // destructive
       });
     }
     else if (response.status === 404) {
       return { status: false, message: "Problem not found" }
     }
     throw new Error("Failed to add user");
+
+  }
+
+}
+
+export async function editSolution(apiCall, solution, id) {
+  const url = `${ENDPOINTS.EDIT_SOLUTION}${id}`
+  const response = await apiCall(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(solution)
+  })
+  if (response.ok) {
+    console.log(response);
+    const text = await response.json()
+    return { status: true, data: text }
+  }
+  else {
+    if (response.status == 400) {
+      try {
+        const errorData = await response.json();
+        let value = "";
+        if (Array.isArray(errorData.message)) {
+          for (let i = 0; i < errorData.message.length; i++) {
+            value += errorData.message[i].field + ": " + errorData.message[i].error + "; ";
+          }
+        }
+        else {
+          value += errorData.message;
+        }
+        toast({
+          title: "Error",
+          description: value,
+          variant: "destructive" // destructive
+        });
+      } catch (error) {
+        console.error("Error parsing error response:", error);
+      }
+    }
+    else if (response.status == 500) {
+      toast({
+        title: "Error",
+        description: MESSAGES.MSG01,
+        variant: "destructive" // destructive
+      });
+    }
+    throw new Error("Failed to edit solution");
 
   }
 

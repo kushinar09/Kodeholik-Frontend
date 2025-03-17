@@ -73,7 +73,7 @@ const ENDPOINTS = {
   POST_SOLUTION: `${API_URL}/problem-solution/post-solution`,
   UPVOTE_SOLUTION: `${API_URL}/problem-solution/upvote/`,
   UNUPVOTE_SOLUTION: `${API_URL}/problem-solution/unupvote/`,
-
+  EDIT_SOLUTION: `${API_URL}/problem-solution/edit-solution/`,
   // Submissions
   GET_SUCCESS_SUBMISSION: `${API_URL}/problem-submission/success-list/`,
 

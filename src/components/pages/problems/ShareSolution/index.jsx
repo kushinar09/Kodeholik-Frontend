@@ -5,12 +5,12 @@ import HeaderSection from "@/components/common/shared/header";
 import ProblemHeader from "../ProblemDetail/components/problem-header-option";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FileText, Plus, Send, X } from "lucide-react";
+import { ArrowLeft, FileText, Plus, Send, X } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
-import { getAllSkills, getSuccessSubmissionList, postSolution } from "@/lib/api/problem_api";
+import { editSolution, getAllSkills, getSuccessSubmissionList, postSolution } from "@/lib/api/problem_api";
 import { useAuth } from "@/providers/AuthProvider";
 import { Badge } from "@/components/ui/badge";
 import Select from "react-select";
@@ -24,7 +24,7 @@ const requestData = {
     submissionId: []
 }
 
-export default function ShareSolution() {
+export default function ShareSolution({ solution, setIsEditMode }) {
 
     const { link } = useParams();
     const { submission } = useParams();
@@ -44,10 +44,31 @@ export default function ShareSolution() {
     const [description, setDescription] = useState("");
     const [title, setTitle] = useState("");
     const [canSubmit, setCanSubmit] = useState(false);
-
+    const [isEdit, setIsEdit] = useState(false);
+    const [currentSolutionId, setCurrentSolutionId] = useState(0);
+    const [problemLink, setProblemLink] = useState("")
     const fetchSuccessSubmissionList = async () => {
         try {
             const response = await getSuccessSubmissionList(apiCall, link);
+            let arr = [];
+            for (let i = 0; i < response.length; i++) {
+                if (response[i].id == submission) {
+                    setFirstSubmission(response[i]);
+                    setMarkdownValue(" # Intuition \n <!-- Describe your first thoughts on how to solve this problem. --> \n # Approach \n <!-- Describe your approach to solving the problem. --> \n # Complexity \n - Time complexity: \n <!-- Add your time complexity here, e.g. $$O(n)$$ --> \n - Space complexity: \n <!-- Add your space complexity here, e.g. $$O(n)$$ -->\n # Code \n <!--\nPlease select a code for your solution by clicking the 'Add Submission' button. \nIf you want to remove a selected code, click the 'X' icon in the button have id that you want to removed. \nYou cannot delete or edit the selected code here. \nPlease choose at least one code.\n--> \n" + "\nLOCKED-CODE \n//Submission " + response[i].id + " \n " + response[i].code + "\nLOCKED-CODE")
+                }
+                else {
+                    arr.push(response[i]);
+                }
+            }
+            setDropdownItems(arr);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const fetchSuccessSubmissionListByLink = async (problemLink) => {
+        try {
+            const response = await getSuccessSubmissionList(apiCall, problemLink);
             let arr = [];
             for (let i = 0; i < response.length; i++) {
                 if (response[i].id == submission) {
@@ -75,8 +96,30 @@ export default function ShareSolution() {
     }
 
     useEffect(() => {
-        fetchSuccessSubmissionList();
         fetchAllSkills();
+        if (solution == null) {
+            fetchSuccessSubmissionList();
+            setIsEdit(false);
+        }
+        else {
+            if (solution != null) {
+                setIsEdit(true);
+                setCurrentSolutionId(solution?.id)
+                fetchSuccessSubmissionListByLink(solution?.problem.link);
+                setProblemLink(solution?.problem.link);
+                setTitle(solution?.title)
+                setSolutionSkills(solution?.skills.map((skill) => skill) || []);
+                setSelectedSubmissionId(
+                    solution?.solutionCodes.map((solution) => solution.submissionId) || []
+                );
+                let value = solution.textSolution;
+                for (let i = 0; i < solution?.solutionCodes.length; i++) {
+                    value += "\nLOCKED-CODE \n//Submission " + solution?.solutionCodes[i].submissionId + " \n " + solution?.solutionCodes[i].solutionCode + "\nLOCKED-CODE"
+                }
+                setMarkdownValue(value);
+            }
+            console.log(solution);
+        }
     }, [])
 
     const handleOnChange = (value) => {
@@ -135,7 +178,7 @@ export default function ShareSolution() {
     };
 
     useEffect(() => {
-        if (title == "" || selectedSubmissionId.length == 0) {
+        if (title.length < 10 || selectedSubmissionId.length == 0) {
             setCanSubmit(false);
         }
         else {
@@ -146,21 +189,31 @@ export default function ShareSolution() {
     const submitSolution = () => {
         requestData.link = link;
         requestData.title = title;
-        requestData.textSolution =getValueRemoveLockedCode(markdownValue);
+        requestData.textSolution = getValueRemoveLockedCode(markdownValue);
         requestData.skills = solutionSkills;
         requestData.submissionId = selectedSubmissionId;
         // console.log(requestData);
         handlePostSolution();
     }
 
-    const handlePostSolution = async() => {
+    const handlePostSolution = async () => {
         try {
-            const response = await postSolution(apiCall, requestData);
-            if(response.status == true) {
-                toast.success("Post solution successful", { duration: 2000 });
-                navigate("/problem-solution/" + link + "/" + response.data.id)
+            if (!isEdit) {
+                const response = await postSolution(apiCall, requestData);
+                if (response.status == true) {
+                    toast.success("Post solution successful", { duration: 2000 });
+                    navigate("/problem-solution/" + link + "/" + response.data.id)
+                }
             }
-        } catch(error) {
+            else {
+                const response = await editSolution(apiCall, requestData, currentSolutionId);
+                console.log(response)
+                if (response.status == true) {
+                    toast.success("Edit solution successful", { duration: 2000 });
+                    window.location.href = ("/problem-solution/" + problemLink + "/" + response.data.id)
+                }
+            }
+        } catch (error) {
             console.log(error);
         }
     }
@@ -175,12 +228,19 @@ export default function ShareSolution() {
             <ProblemHeader />
             <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 mt-6">
                 <Card className="shadow-lg border-0">
+
                     <CardHeader className="pb-3 border-b">
-                        <h1 className="text-2xl font-bold text-green-500">Share Your Solution</h1>
+                        <div className="flex gap-2 items-center text-gray-500 cursor-pointer hover:underline" onClick={() => navigate("/problem-submission/" + link + "/" + submission)}>
+                            <span>
+                                <ArrowLeft className="w-4 h-4" />
+                            </span>
+                            Back
+                        </div>
+                        <h1 className="text-2xl font-bold text-green-500">{!isEdit ? "Share Your Solution" : "Edit Your Solution"}</h1>
                         <p className="text-muted-foreground">Share your approach to solving this problem with the community</p>
                     </CardHeader>
 
-                    <CardContent className="space-y-6 pt-6">
+                    <CardContent className="space-y-6 pt-4">
                         {/* Title Section */}
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
@@ -301,7 +361,7 @@ export default function ShareSolution() {
 
                     <CardFooter className="flex justify-end gap-3 pt-2 border-t">
                         <Button variant="outline">Cancel</Button>
-                        <Button className={`gap-2 bg-primary ${canSubmit ? "" : "disabled"}`} disabled={!canSubmit} onClick={() => submitSolution()}>
+                        <Button type="button" className={`gap-2 bg-primary ${canSubmit ? "" : "disabled"}`} disabled={!canSubmit} onClick={() => submitSolution()}>
                             <Send className="h-4 w-4" />
                             Post
                         </Button>

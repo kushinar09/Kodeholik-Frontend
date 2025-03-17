@@ -23,11 +23,13 @@ export default function LeftPanelContent({
   id,
   problemId,
   activeTab,
+  setActiveTab,
   isCompact,
   description,
   setDescription,
   editorial,
   solutions,
+  setSolutions,
   onchangeFilterSolutions,
   submissions,
   selectedSubmissionId,
@@ -35,7 +37,10 @@ export default function LeftPanelContent({
   showSolution,
   setShowSolution,
   currentSolutionId,
-  setCurrentSolutionId
+  setCurrentSolutionId,
+  setIsEditMode,
+  setCurrentSolution
+
 }) {
   return (
     <div className={cn("p-4 overflow-auto no-scrollbar flex-1 max-h-[calc(100vh-104px)] ", isCompact ? "hidden" : "")}>
@@ -45,11 +50,14 @@ export default function LeftPanelContent({
         {activeTab === leftTabEnum.solutions &&
           <ProblemSolutions
             solutions={solutions}
+            setSolutions={setSolutions}
             showSolution={showSolution}
             setShowSolution={setShowSolution}
             currentSolutionId={currentSolutionId}
             setCurrentSolutionId={setCurrentSolutionId}
             onchangeFilter={onchangeFilterSolutions}
+            setIsEditMode={setIsEditMode}
+            setCurrentSolution={setCurrentSolution}
           />
         }
         {activeTab === leftTabEnum.submissions && <ProblemSubmissions submissionsData={submissions} selectedSubmissionId={selectedSubmissionId} setSelectedSubmissionId={setSelectedSubmissionId}/>}

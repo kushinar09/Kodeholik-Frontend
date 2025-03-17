@@ -33,7 +33,9 @@ export default function CodePanel({
   showSubmitted,
   setShowSubmitted,
   activeTab,
+  setActiveTab,
   selectedSubmissionId,
+  problemLink,
   language = "Java",
   onLanguageChange,
   availableLanguages = [
@@ -174,8 +176,8 @@ export default function CodePanel({
               <CodeEditor initialCode={code} onChange={onCodeChange} language={selectedLanguage} />
             </>
           )}
-          {isSubmittedActive && submitted && activeTab != "Submissions" && <SubmittedCodeView submitted={submitted} code={code} />}
-          {isSubmittedActive && activeTab == "Submissions" && submitted && <SubmittedCodeView submitted={submitted} code={submitted.code} />}
+          {isSubmittedActive && submitted && activeTab != "Submissions" && <SubmittedCodeView submitted={submitted} code={code} setActiveTab={setActiveTab} problemLink={problemLink} selectedSubmissionId={selectedSubmissionId}/>}
+          {isSubmittedActive && activeTab == "Submissions" && submitted && <SubmittedCodeView submitted={submitted} code={submitted.code} setActiveTab={setActiveTab} problemLink={problemLink} selectedSubmissionId={selectedSubmissionId}/>}
         </div>
       </div>
     </div>
