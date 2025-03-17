@@ -101,7 +101,7 @@ export default function CourseDetailPage() {
   return (
     <div className="min-h-screen bg-bg-primary from-gray-900 to-gray-800">
       <Header />
-      <div className="container mx-auto p-6 max-w-6xl">
+      <div className="mx-48">
         <CourseDetail
           course={course}
           loading={loading}

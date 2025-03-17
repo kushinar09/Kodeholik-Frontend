@@ -119,7 +119,7 @@ export default function CoursePage() {
   return (
     <div className="min-h-screen bg-bg-primary">
       <Header />
-      <div className="container mx-auto p-6">
+      <div className=" mx-36 mt-2 ">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Explore Courses</h1>
           <p className="text-text-secondary">Discover and enroll in our wide range of courses</p>
