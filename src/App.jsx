@@ -58,15 +58,7 @@ function App() {
                 <Route path="/problem-submission/:id/:submission" element={<ProblemDetail />} />
                 <Route path="/problem-solution/:id/:solution" element={<ProblemDetail />} />
                 {/* test */}
-                <Route path="/markdown" element={<MarkdownEditor />} />
-                <Route path="/code" element={
-                  <div className="overflow-auto flex-1">
-                    <div className="min-w-[420px] h-full">
-                      <CodeEditor onChange={null} />
-                    </div>
-                  </div>
-                }
-                />
+       
                 <Route path="/share-solution/:link/:submission" element={<ShareSolution/>} />
                 <Route path="/socket" element={<WebSocketComponent />} />
                 {/* auth */}

@@ -42,6 +42,7 @@ export function SocketExamProvider({ children }) {
     try {
       const response = await apiCall(ENDPOINTS.GET_TOKEN_EXAM.replace(":id", examId))
       const data = await response.json()
+      console.log(data);
       if (!response.ok) {
         let newError
         // Handle error cases
@@ -131,15 +132,7 @@ export function SocketExamProvider({ children }) {
             }
           })
         }
-
-        // Subscribe to disconnect topic
-        if (username) {
-          client.subscribe(`/topic/disconnect/${username}`, (message) => {
-            console.error("Disconnect:", message.body)
-            client.deactivate()
-            setIsConnected(false)
-          })
-        } else console.log("Not found username infor")
+       
       }
 
       client.onStompError = (frame) => {
@@ -229,9 +222,16 @@ export function SocketExamProvider({ children }) {
 
   // Format exam problems data
   const formatProblems = (examData) => {
+    console.log(examData.details.problems.map((problem, index) => ({
+      id: index,
+      title: problem.problemTitle,
+      link: problem.problemLink,
+      description: problem.problemDescription,
+      compileInfo: problem.compileInformation
+    })))
     if (!examData || !examData.problems) return []
 
-    return examData.problems.map((problem, index) => ({
+    return examData.details.problems.map((problem, index) => ({
       id: index,
       title: problem.problemTitle,
       link: problem.problemLink,
