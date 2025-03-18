@@ -25,7 +25,7 @@ export default function ExamProblems() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const { problems, examData, isConnected, token, examCode, connectSocket, submitExamAnswers } = useSocketExam()
+  const { problems, examData, isConnected, token, examCode, username, connectSocket, submitExamAnswers } = useSocketExam()
   const { apiCall } = useAuth()
 
   const [isTimerRunning, setIsTimerRunning] = useState(true)
@@ -87,7 +87,7 @@ export default function ExamProblems() {
           setConnectionAttempts((prev) => prev + 1)
         }
         try {
-          await connectSocket(token, examCode)
+          await connectSocket(token, examCode, username)
         } catch (error) {
           console.error("Connection error:", error)
         }

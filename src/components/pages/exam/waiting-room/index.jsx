@@ -77,7 +77,7 @@ export default function WaitingRoom() {
       if (result.success) {
         setTokenData(result)
         // Connect to socket with the token
-        connectSocket(result.token, result.code)
+        connectSocket(result.token, result.code, result.username)
 
         // Handle startTime if it exists in the successful result
         if (result.startTime) {
