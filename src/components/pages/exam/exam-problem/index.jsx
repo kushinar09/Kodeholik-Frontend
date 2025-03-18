@@ -2,21 +2,30 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { CheckCircle2, FileText, XCircle, ArrowLeft, Loader2 } from "lucide-react"
+import { FileText, Loader2 } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate, useBlocker } from "react-router-dom"
 import TakeExam from "../take-exam"
 import { useSocketExam } from "@/providers/SocketExamProvider"
 import { toast } from "sonner"
 import { useAuth } from "@/providers/AuthProvider"
 import { ENDPOINTS } from "@/lib/constants"
-import { json } from "stream/consumers"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export default function ExamProblems() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const { problems, examData, isConnected, token, examCode, connectSocket } = useSocketExam()
+  const { problems, examData, isConnected, token, examCode, connectSocket, submitExamAnswers } = useSocketExam()
   const { apiCall } = useAuth()
 
   const [isTimerRunning, setIsTimerRunning] = useState(true)
@@ -27,10 +36,50 @@ export default function ExamProblems() {
 
   const [storeCode, setStoreCode] = useState([])
 
+  // Add state for confirmation dialogs
+  const [showSubmitDialog, setShowSubmitDialog] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   // Use refs for values that shouldn't trigger re-renders
   const isMountedRef = useRef(true)
   const lastConnectionAttemptRef = useRef(0)
   const timerIntervalRef = useRef(null)
+
+  // Block navigation when exam is in progress
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) => isTimerRunning && currentLocation.pathname !== nextLocation.pathname,
+  )
+
+  // Handle navigation blocking dialog
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      const confirmed = window.confirm(
+        "You have an exam in progress. Are you sure you want to leave? Your progress may be lost.",
+      )
+      if (confirmed) {
+        blocker.proceed()
+      } else {
+        blocker.reset()
+      }
+    }
+  }, [blocker])
+
+  // Add beforeunload event listener to prevent accidental page refresh/close
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isTimerRunning) {
+        e.preventDefault()
+        // Standard way to show a confirmation dialog before unloading
+        e.returnValue = "You have an exam in progress. Are you sure you want to leave? Your progress may be lost."
+        return e.returnValue
+      }
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload)
+    }
+  }, [isTimerRunning])
 
   // Check if user accessed directly (not through waiting room)
   useEffect(() => {
@@ -95,7 +144,7 @@ export default function ExamProblems() {
     return [
       hours.toString().padStart(2, "0"),
       minutes.toString().padStart(2, "0"),
-      remainingSeconds.toString().padStart(2, "0")
+      remainingSeconds.toString().padStart(2, "0"),
     ].join(":")
   }
 
@@ -114,12 +163,10 @@ export default function ExamProblems() {
       const response = await apiCall(ENDPOINTS.POST_RUN_EXAM.replace(":idProblem", problemLink).replace(":id", id), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          {
-            code: code,
-            languageName: language
-          }
-        )
+        body: JSON.stringify({
+          code: code,
+          languageName: language,
+        }),
       })
       const text = response.text()
       if (response.ok) {
@@ -143,20 +190,23 @@ export default function ExamProblems() {
 
       if (existingIndex !== -1) {
         return prevStoreCode.map((item) =>
-          item.problemLink === problemLink ?
-            {
-              ...item,
-              code: code,
-              languageName: language
-            }
-            : item
+          item.problemLink === problemLink
+            ? {
+                ...item,
+                code: code,
+                languageName: language,
+              }
+            : item,
         )
       } else {
-        return [...prevStoreCode, {
-          problemLink: problemLink,
-          code: code,
-          languageName: language
-        }]
+        return [
+          ...prevStoreCode,
+          {
+            problemLink: problemLink,
+            code: code,
+            languageName: language,
+          },
+        ]
       }
     })
   }
@@ -191,7 +241,7 @@ export default function ExamProblems() {
         if (newTime <= 0) {
           clearInterval(timerIntervalRef.current)
           // Auto-submit when time is up
-          handleSubmitExam()
+          performSubmitExam()
           return 0
         }
         return newTime
@@ -205,26 +255,39 @@ export default function ExamProblems() {
     }
   }, [isTimerRunning])
 
-  // Handle submit exam
+  // Show confirmation dialog before submitting
   const handleSubmitExam = () => {
     if (!isMountedRef.current) return
+    setShowSubmitDialog(true)
+  }
 
-    // Here you would implement the actual submission logic
-    toast.success("Exam submitted successfully!")
+  // Actual submission logic
+  const performSubmitExam = () => {
+    if (!isMountedRef.current || isSubmitting) return
 
-    // Use a ref to track if we've already navigated
-    if (!handleSubmitExam.hasNavigated) {
-      handleSubmitExam.hasNavigated = true
+    setIsSubmitting(true)
+
+    // Submit exam answers
+    if (submitExamAnswers(id, storeCode)) {
+      toast.success("Exam submitted successfully!")
+
+      // Stop the timer
+      setIsTimerRunning(false)
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current)
+      }
+
+      // Navigate after a short delay
       setTimeout(() => {
         if (isMountedRef.current) {
           navigate("/exam")
         }
       }, 2000)
+    } else {
+      toast.error("Error submitting exam!")
+      setIsSubmitting(false)
     }
   }
-
-  // Initialize the static property
-  handleSubmitExam.hasNavigated = false
 
   // Cleanup on unmount
   useEffect(() => {
@@ -325,12 +388,35 @@ export default function ExamProblems() {
           </div>
 
           <div className="p-6 pt-0 mt-4 flex justify-center">
-            <Button className="px-8 text-bg-card" onClick={handleSubmitExam}>
-              Submit Exam
+            <Button className="px-8 text-bg-card" onClick={handleSubmitExam} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit Exam"
+              )}
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Submit Confirmation Dialog */}
+      <AlertDialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Submit Exam</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to submit your exam?.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={performSubmitExam}>Submit</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

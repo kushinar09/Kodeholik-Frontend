@@ -139,7 +139,7 @@ export function SocketExamProvider({ children }) {
             client.deactivate()
             setIsConnected(false)
           })
-        }
+        } else console.log("Not found username infor")
       }
 
       client.onStompError = (frame) => {
@@ -239,6 +239,27 @@ export function SocketExamProvider({ children }) {
     }))
   }
 
+  // Function to submit exam answers
+  const submitExamAnswers = (idExam, problemAnswers) => {
+    if (!stompClient || !isConnected) {
+      toast.error("Not connected to exam server")
+      return false
+    }
+
+    try {
+      stompClient.publish({
+        destination: `/app/exam/submit/${idExam}`,
+        body: JSON.stringify(problemAnswers)
+      })
+      console.log("📤 Đã gửi yêu cầu bắt đầu bài thi.")
+      return true
+    } catch (error) {
+      console.error("Error submitting exam answers:", error)
+      toast.error("Failed to submit exam answers")
+      return false
+    }
+  }
+
   // Context value
   const value = {
     isConnected,
@@ -251,7 +272,8 @@ export function SocketExamProvider({ children }) {
     problems: examData ? formatProblems(examData) : [],
     fetchToken,
     connectSocket,
-    disconnectSocket
+    disconnectSocket,
+    submitExamAnswers
   }
 
   return <SocketExamContext.Provider value={value}>{children}</SocketExamContext.Provider>
