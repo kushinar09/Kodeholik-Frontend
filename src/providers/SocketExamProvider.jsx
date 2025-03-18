@@ -115,7 +115,7 @@ export function SocketExamProvider({ children }) {
           try {
             const examData = JSON.parse(message.body)
             setExamData(examData)
-            setDuration(examData.problems.duration)
+            setDuration(examData.details.duration)
             console.log("📩 Received exam data:", examData)
           } catch (err) {
             console.error("Error parsing exam data:", err)
@@ -225,14 +225,8 @@ export function SocketExamProvider({ children }) {
 
   // Format exam problems data
   const formatProblems = (examData) => {
-    console.log(examData.details.problems.map((problem, index) => ({
-      id: index,
-      title: problem.problemTitle,
-      link: problem.problemLink,
-      description: problem.problemDescription,
-      compileInfo: problem.compileInformation
-    })))
-    if (!examData || !examData.problems) return []
+
+    if (!examData || !examData.details.problems) return []
 
     return examData.details.problems.map((problem, index) => ({
       id: index,
