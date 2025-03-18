@@ -4,9 +4,9 @@ import ForgotPassword from "./components/pages/authentications/forgot"
 import LoginPage from "./components/pages/authentications/login"
 import ResetPassword from "./components/pages/authentications/reset"
 import CoursePage from "./components/pages/courses/ViewCoursePage"
-import CourseDetail from "./components/pages/courses/ViewCourseDetail"
+import CourseDetail from "./components/pages/courses/CourseDetail/index"
 
-import LearnThroughVideoAndText from "./components/pages/courses/LearnThroughVideoAndText"
+import LearnThroughVideoAndText from "./components/pages/courses/learnLesson/LearnThroughVideoAndText"
 import ProblemPage from "./components/pages/problems/ProblemList"
 import { AuthProvider } from "./providers/AuthProvider"
 import TakeExam from "./components/pages/exam/take-exam"
@@ -21,6 +21,8 @@ import UpdateCourse from "./components/pages/courses/UpdateCourse"
 import ExamList from "./components/pages/exam/list"
 import WebSocketComponent from "./components/pages/exam/take-exam/test"
 import Profile from "./components/pages/profile"
+import CourseDiscussion from "./components/pages/courses/CourseDiscussion"
+import ShareSolution from "./components/pages/problems/ShareSolution"
 import { Toaster } from "sonner"
 import { SocketProvider } from "./providers/SocketNotificationProvider"
 import ExamProblems from "./components/pages/exam/exam-problem"
@@ -53,8 +55,11 @@ function App() {
                 <Route path="/" element={<ProblemPage />} />
                 <Route path="/problems" element={<ProblemPage />} />
                 <Route path="/problem/:id" element={<ProblemDetail />} />
-
+                <Route path="/problem-submission/:id/:submission" element={<ProblemDetail />} />
+                <Route path="/problem-solution/:id/:solution" element={<ProblemDetail />} />
                 {/* test */}
+       
+                <Route path="/share-solution/:link/:submission" element={<ShareSolution/>} />
                 <Route path="/socket" element={<WebSocketComponent />} />
                 {/* auth */}
                 <Route path="/login" element={<LoginPage />} />
@@ -69,6 +74,10 @@ function App() {
                 <Route path="/learn" element={<LearnThroughVideoAndText />} />
                 {/* profile */}
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/learn/:id" element={<LearnThroughVideoAndText />} />
+                <Route path="/course/discusdion" element={<CourseDiscussion />} />
+
+
                 {/* error */}
                 <Route path="/401" element={<UnauthorisedError />} />
                 <Route path="/403" element={<ForbiddenError />} />

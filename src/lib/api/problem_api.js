@@ -1,4 +1,6 @@
+import { toast } from "@/hooks/use-toast"
 import { ENDPOINTS } from "../constants"
+import { MESSAGES } from "../messages"
 
 export async function getProblemDescription(apiCall, id) {
   const response = await apiCall(ENDPOINTS.GET_PROBLEM_DESCRIPTION.replace(":id", id))
@@ -102,7 +104,7 @@ export async function getProblemList(page = 0, size, sortBy, ascending, body) {
   return JSON.parse(text)
 }
 
-export async function postComment(apiCall, id, comment, commentReply = null, type = "PROBLEM") {
+export async function postComment(apiCall, id, comment, commentReply = null, type) {
   const response = await apiCall(ENDPOINTS.POST_COMMENT.replace(":id", id), {
     method: "POST",
     headers: {
@@ -118,7 +120,8 @@ export async function postComment(apiCall, id, comment, commentReply = null, typ
     )
   })
   if (response.ok) {
-    return { status: true }
+    const text = await response.json()
+    return { status: true, data: text }
   }
 
   if (response.status === 404) {
@@ -170,6 +173,178 @@ export async function getSubmissionDetail(apiCall, submissionId) {
       console.error("Error parsing JSON:", error)
       return { status: false, error: "Invalid JSON format" }
     }
+  }
+
+  if (response.status === 404) {
+    return { status: false, message: "Problem not found" }
+  }
+
+  return { status: false }
+}
+
+export async function getSuccessSubmissionList(apiCall, link) {
+  const url = `${ENDPOINTS.GET_SUCCESS_SUBMISSION}${link}`
+  const response = await apiCall(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify([])
+  })
+  if (!response.ok) {
+    throw new Error("Failed to fetch problems")
+  }
+  const text = await response.text()
+  if (!text) return null
+  return JSON.parse(text)
+}
+
+export async function getAllSkills(apiCall) {
+  const url = `${ENDPOINTS.GET_SKILLS_PROBLEM}`
+  const response = await apiCall(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+  if (!response.ok) {
+    throw new Error("Failed to fetch problems")
+  }
+  const text = await response.text()
+  if (!text) return null
+  return JSON.parse(text)
+}
+
+export async function postSolution(apiCall, solution) {
+  const url = `${ENDPOINTS.POST_SOLUTION}`
+  const response = await apiCall(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(solution)
+  })
+  if (response.ok) {
+    console.log(response);
+    const text = await response.json()
+    return { status: true, data: text }
+  }
+  else {
+    if (response.status == 400) {
+      try {
+        const errorData = await response.json();
+        let value = "";
+        if (Array.isArray(errorData.message)) {
+          for (let i = 0; i < errorData.message.length; i++) {
+            value += errorData.message[i].field + ": " + errorData.message[i].error + "; ";
+          }
+        }
+        else {
+          value += errorData.message;
+        }
+        toast({
+          title: "Error",
+          description: value,
+          variant: "destructive" // destructive
+        });
+      } catch (error) {
+        console.error("Error parsing error response:", error);
+      }
+    }
+    else if (response.status == 500) {
+      toast({
+        title: "Error",
+        description: MESSAGES.MSG01,
+        variant: "destructive" // destructive
+      });
+    }
+    else if (response.status === 404) {
+      return { status: false, message: "Problem not found" }
+    }
+    throw new Error("Failed to add user");
+
+  }
+
+}
+
+export async function editSolution(apiCall, solution, id) {
+  const url = `${ENDPOINTS.EDIT_SOLUTION}${id}`
+  const response = await apiCall(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(solution)
+  })
+  if (response.ok) {
+    console.log(response);
+    const text = await response.json()
+    return { status: true, data: text }
+  }
+  else {
+    if (response.status == 400) {
+      try {
+        const errorData = await response.json();
+        let value = "";
+        if (Array.isArray(errorData.message)) {
+          for (let i = 0; i < errorData.message.length; i++) {
+            value += errorData.message[i].field + ": " + errorData.message[i].error + "; ";
+          }
+        }
+        else {
+          value += errorData.message;
+        }
+        toast({
+          title: "Error",
+          description: value,
+          variant: "destructive" // destructive
+        });
+      } catch (error) {
+        console.error("Error parsing error response:", error);
+      }
+    }
+    else if (response.status == 500) {
+      toast({
+        title: "Error",
+        description: MESSAGES.MSG01,
+        variant: "destructive" // destructive
+      });
+    }
+    throw new Error("Failed to edit solution");
+
+  }
+
+}
+
+export async function upvoteSolution(apiCall, id) {
+  const url = `${ENDPOINTS.UPVOTE_SOLUTION}${id}`
+  const response = await apiCall(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+  if (response.ok) {
+    return { status: true }
+  }
+
+  if (response.status === 404) {
+    return { status: false, message: "Problem not found" }
+  }
+
+  return { status: false }
+}
+
+export async function unupvoteSolution(apiCall, id) {
+  const url = `${ENDPOINTS.UNUPVOTE_SOLUTION}${id}`
+  const response = await apiCall(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+  if (response.ok) {
+    return { status: true }
   }
 
   if (response.status === 404) {

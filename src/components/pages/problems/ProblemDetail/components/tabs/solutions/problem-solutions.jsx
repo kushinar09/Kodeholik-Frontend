@@ -42,10 +42,13 @@ const sortValue =
 
 export default function ProblemSolutions({
   solutions,
+  setSolutions,
   showSolution = false,
   setShowSolution,
   currentSolutionId = 0,
   setCurrentSolutionId,
+  setIsEditMode,
+  setCurrentSolution,
   onchangeFilter = null
 }) {
   const { isAuthenticated } = useAuth()
@@ -246,7 +249,7 @@ export default function ProblemSolutions({
               {solutions.content.length > 0 ? (
                 <div className="flex flex-col gap-4">
                   {solutions.content.map((solution, index) => (
-                    <SolutionCard key={index} infor={solution} handleClickSolution={handleClickSolution} />
+                    <SolutionCard key={index} infor={solution} solutions={solutions} setSolutions={setSolutions} handleClickSolution={handleClickSolution} setIsEditMode={setIsEditMode}/>
                   ))}
                 </div>
               ) : (
@@ -291,7 +294,7 @@ export default function ProblemSolutions({
           )
         }
       </div >
-      : <SolutionDetail solutionId={currentSolutionId} handleBack={handleBackClick} />
+      : <SolutionDetail solutionId={currentSolutionId} handleBack={handleBackClick} setIsEditMode={setIsEditMode} setCurrentSolution={setCurrentSolution}/>
   )
 }
 

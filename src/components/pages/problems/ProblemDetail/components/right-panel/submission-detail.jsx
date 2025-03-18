@@ -41,7 +41,6 @@ export default function SubmissionDetail({
 
     const fetchSubmissionDetail = async () => {
         try {
-            console.log(id);
             const response = await getSubmissionDetail(apiCall, id);
             setSubmitted(response.data);
             console.log(response);

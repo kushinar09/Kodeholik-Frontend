@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuth } from "@/providers/AuthProvider"
 import { format } from "date-fns"
 import { ArrowDownAZ, ArrowUpAZ } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 const SubmissionStatus = {
   ACCEPTED: "ACCEPTED",
@@ -18,7 +18,7 @@ const SubmissionStatus = {
   PENDING: "PENDING"
 }
 
-export default function ProblemSubmissions({ submissionsData, selectedSubmissionId, setSelectedSubmissionId}) {
+export default function ProblemSubmissions({ submissionsData, selectedSubmissionId, setSelectedSubmissionId }) {
 
   const { isAuthenticated } = useAuth()
 
@@ -26,6 +26,9 @@ export default function ProblemSubmissions({ submissionsData, selectedSubmission
   const [sortDirection, setSortDirection] = useState("asc")
   const [submissions, setSubmissions] = useState(submissionsData)
 
+  useEffect(() => {
+    setSubmissions(submissionsData);
+  }, [submissionsData])
   const handleSort = (field) => {
     const newDirection = sortField === field && sortDirection === "asc" ? "desc" : "asc"
 
@@ -94,62 +97,58 @@ export default function ProblemSubmissions({ submissionsData, selectedSubmission
 
   return (
     <>
-      {submissions
-        ?
-        <>
-          <h2 className="text-xl font-bold mb-4">Your Submissions</h2>
-          {submissions && submissions.length > 0 ? (
-            <Card className="w-full">
-              <CardContent className="p-0">
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12">#</TableHead>
-                        <TableHead className="cursor-pointer" onClick={() => handleSort("status")}>
-                          Status {renderSortIndicator("status")}
-                        </TableHead>
-                        <TableHead className="cursor-pointer" onClick={() => handleSort("languageName")}>
-                          Language {renderSortIndicator("languageName")}
-                        </TableHead>
-                        <TableHead>Runtime</TableHead>
-                        <TableHead>Memory</TableHead>
-                        <TableHead className="cursor-pointer" onClick={() => handleSort("createdAt")}>
-                          Submitted {renderSortIndicator("createdAt")}
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {submissions.map((submission, index) => (
-                        <TableRow className={`cursor-pointer ${selectedSubmissionId == submission.id ? 'bg-gray-300 hover:bg-gray-300': ''}`} onClick={() => setSelectedSubmissionId(submission.id)} key={submission.id}>
-                          <TableCell className="font-medium">{index + 1}</TableCell>
-                          <TableCell className={getTextColorClass(submission.status)}>
-                            {formatStatus(submission.status)}
-                          </TableCell>
-                          <TableCell>{submission.languageName}</TableCell>
-                          <TableCell>
-                            {submission.executionTime > 0 ? `${submission.executionTime.toFixed(1)} ms` : "-"}
-                          </TableCell>
-                          <TableCell>{submission.memoryUsage > 0 ? `${submission.memoryUsage.toFixed(1)} MB` : "-"}</TableCell>
-                          <TableCell>
-                            {submission.createdAt && !isNaN(new Date(submission.createdAt).getTime())
-                              ? format(new Date(submission.createdAt), "MMM d, yyyy HH:mm")
-                              : "N/A"}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="text-muted-foreground">No submissions yet</div>
-          )}
-        </>
-        : <div className="text-gray-500">No submissions yet</div>
-      }
+
+      <h2 className="text-xl font-bold mb-4">Your Submissions</h2>
+      {submissions && submissions.length > 0 ? (
+        <Card className="w-full">
+          <CardContent className="p-0">
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">#</TableHead>
+                    <TableHead className="cursor-pointer" onClick={() => handleSort("status")}>
+                      Status {renderSortIndicator("status")}
+                    </TableHead>
+                    <TableHead className="cursor-pointer" onClick={() => handleSort("languageName")}>
+                      Language {renderSortIndicator("languageName")}
+                    </TableHead>
+                    <TableHead>Runtime</TableHead>
+                    <TableHead>Memory</TableHead>
+                    <TableHead className="cursor-pointer" onClick={() => handleSort("createdAt")}>
+                      Submitted {renderSortIndicator("createdAt")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {submissions.map((submission, index) => (
+                    <TableRow className={`cursor-pointer ${selectedSubmissionId == submission.id ? 'bg-gray-300 hover:bg-gray-300' : ''}`} onClick={() => setSelectedSubmissionId(submission.id)} key={submission.id}>
+                      <TableCell className="font-medium">{index + 1}</TableCell>
+                      <TableCell className={getTextColorClass(submission.status)}>
+                        {formatStatus(submission.status)}
+                      </TableCell>
+                      <TableCell>{submission.languageName}</TableCell>
+                      <TableCell>
+                        {submission.executionTime > 0 ? `${submission.executionTime.toFixed(1)} ms` : "-"}
+                      </TableCell>
+                      <TableCell>{submission.memoryUsage > 0 ? `${submission.memoryUsage.toFixed(1)} MB` : "-"}</TableCell>
+                      <TableCell>
+                        {submission.createdAt && !isNaN(new Date(submission.createdAt).getTime())
+                          ? format(new Date(submission.createdAt), "MMM d, yyyy HH:mm")
+                          : "N/A"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="text-muted-foreground">No submissions yet</div>
+      )}
     </>
+
   )
 }
 

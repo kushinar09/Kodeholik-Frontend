@@ -63,6 +63,7 @@ const ENDPOINTS = {
   GET_COMMENTS_REPLY: `${API_URL}/comment/list-reply/`,
   UPVOTE_COMMENT: `${API_URL}/comment/upvote/`,
   UNUPVOTE_COMMENT: `${API_URL}/comment/unupvote/`,
+  EDIT_COMMENT: `${API_URL}/comment/edit/`,
 
   GET_PROBLEM_SOLUTIONS: `${API_URL}/problem-solution/list/:id`,
   GET_PROBLEM_SUBMISSIONS: `${API_URL}/problem-submission/list/:id`,
@@ -79,6 +80,12 @@ const ENDPOINTS = {
   // Solutions
   GET_SOLUTION_DETAIL: `${API_URL}/problem-solution/detail/:id`,
   GET_SOLUTION_COMMENTS: `${API_URL}/comment/problem-solution/:id`,
+  POST_SOLUTION: `${API_URL}/problem-solution/post-solution`,
+  UPVOTE_SOLUTION: `${API_URL}/problem-solution/upvote/`,
+  UNUPVOTE_SOLUTION: `${API_URL}/problem-solution/unupvote/`,
+  EDIT_SOLUTION: `${API_URL}/problem-solution/edit-solution/`,
+  // Submissions
+  GET_SUCCESS_SUBMISSION: `${API_URL}/problem-submission/success-list/`,
 
   // Search
   GET_SUGGEST_SEARCH: `${API_URL}/problem/suggest?searchText=:text`,
@@ -92,6 +99,9 @@ const ENDPOINTS = {
   DELETE_COURSE: `${API_URL}/course/delete/:id`,
   ENROLL_COURSE: `${API_URL}/course/enroll/:id`,
   UNENROLL_COURSE: `${API_URL}/course/unenroll/:id`,
+  RATE_COMMENT_COURSE: `${API_URL}/course/rate`,
+  GET_COMMENT_COURSE: `${API_URL}/course/rating/:id`,
+  CHECK_ENROLL: `${API_URL}/course/enroll/check/:id`,
 
   //Chapter
   GET_CHAPTERS: `${API_URL}/chapter/list`,
@@ -126,6 +136,11 @@ const ENDPOINTS = {
   GET_MY_FAVOURITE: `${API_URL}/problem/list-favourite`,
   TAG_FAVOURITE: `${API_URL}/problem/tag-favourite/`,
   UNTAG_FAVOURITE: `${API_URL}/problem/untag-favourite/`,
+  //video 
+  GET_VIDEO_URL: `${API_URL}/:videoUrl/signed-url`,
+
+  //DownloadFile lesson
+  DOWNLOAD_FILE_LESSON: (fileKey) => `${API_URL}/lesson/download-file?key=${encodeURIComponent(fileKey)}`,
 
   //image
   GET_IMAGE: (imageKey) => `${API_URL}/s3/presigned-url?key=${encodeURIComponent(imageKey)}`,

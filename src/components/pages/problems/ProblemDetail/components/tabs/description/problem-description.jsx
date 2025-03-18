@@ -2,14 +2,14 @@
 
 import { Separator } from "@/components/ui/separator"
 import DiscussionSection from "./problem-comments"
-import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 import SkillSection from "./problem-skill";
 import TopicSection from "./problem-topic";
 import { Badge } from "@/components/ui/badge";
-import { Star } from "lucide-react";
+import { Check, CheckIcon, Star } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/providers/AuthProvider";
 import { tagFavourite, untagFavourite } from "@/lib/api/user_api";
+import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 
 /**
  * Component to display problem description
@@ -106,8 +106,8 @@ export default function ProblemDescription({ description, setDescription, id, pr
       <SkillSection skills={description.skillList}></SkillSection>
       <Separator className="my-2" />
       <TopicSection topics={description.topicList}></TopicSection>
-      <Separator className="my-2" />
-      <DiscussionSection id={id} problemId={problemId} />
+      <Separator className="midy-2" />
+      <DiscussionSection id={id} locationId={problemId} type={"PROBLEM"} activeTab={"DETAIL"}/>
     </>
   )
 }

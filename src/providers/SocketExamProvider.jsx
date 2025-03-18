@@ -43,6 +43,7 @@ export function SocketExamProvider({ children }) {
     try {
       const response = await apiCall(ENDPOINTS.GET_TOKEN_EXAM.replace(":id", examId))
       const data = await response.json()
+      console.log(data);
       if (!response.ok) {
         let newError
         // Handle error cases
@@ -115,7 +116,7 @@ export function SocketExamProvider({ children }) {
             const examData = JSON.parse(message.body)
             console.log(examData)
             setExamData(examData)
-            setDuration(examData.problems.duration)
+            setDuration(examData.details.duration)
             console.log("📩 Received exam data:", examData)
           } catch (err) {
             console.error("Error parsing exam data:", err)
@@ -135,15 +136,7 @@ export function SocketExamProvider({ children }) {
             }
           })
         }
-
-        // Subscribe to disconnect topic
-        if (username) {
-          client.subscribe(`/topic/disconnect/${username}`, (message) => {
-            console.error("Disconnect:", message.body)
-            client.deactivate()
-            setIsConnected(false)
-          })
-        } else console.log("Not found username infor")
+       
       }
 
       client.onStompError = (frame) => {
@@ -233,9 +226,10 @@ export function SocketExamProvider({ children }) {
 
   // Format exam problems data
   const formatProblems = (examData) => {
-    if (!examData || !examData.problems) return []
 
-    return examData.problems.problems.map((problem, index) => ({
+    if (!examData || !examData.details.problems) return []
+
+    return examData.details.problems.map((problem, index) => ({
       id: index,
       title: problem.problemTitle,
       link: problem.problemLink,

@@ -119,8 +119,8 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
                 >
                   <span className="truncate max-w-[150px]">{problem.title}</span>
                   <Badge
-                    variant={problem.submissionResponseDto.status === "SUCCESS" ? "default" : "destructive"}
-                    className={`ml-1 ${problem.submissionResponseDto.status === "SUCCESS" ? "bg-green-500 text-white" : ""}`}
+                    variant={problem.submissionResponseDto && problem.submissionResponseDto.status === "SUCCESS" ? "default" : "destructive"}
+                    className={`ml-1 ${problem.submissionResponseDto && problem.submissionResponseDto.status === "SUCCESS" ? "bg-green-500 text-white" : ""}`}
                   >
                     {problem.point.toFixed(1)}
                   </Badge>
@@ -148,12 +148,13 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
                       </a>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Badge
-                        variant={problem.submissionResponseDto.status === "SUCCESS" ? "success" : "destructive"}
-                        className={`${problem.submissionResponseDto.status === "SUCCESS" ? "bg-green-500 text-white" : ""}`}
-                      >
-                        {problem.submissionResponseDto.status}
-                      </Badge>
+                      {problem.submissionResponseDto &&
+                        <Badge
+                          variant={problem.submissionResponseDto.status === "SUCCESS" ? "success" : "destructive"}
+                          className={`${problem.submissionResponseDto.status === "SUCCESS" ? "bg-green-500 text-white" : ""}`}
+                        >
+                          {problem.submissionResponseDto.status}
+                        </Badge>}
                       <div className="text-sm font-medium">{problem.point.toFixed(1)} points</div>
                     </div>
                   </div>

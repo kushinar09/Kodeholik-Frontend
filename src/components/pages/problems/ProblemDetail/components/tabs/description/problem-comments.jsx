@@ -1,6 +1,6 @@
 "use client"
 
-import { MessageCircle, ChevronDown, ChevronUp, MessageSquare, Send } from "lucide-react"
+import { MessageCircle, ChevronDown, ChevronUp, MessageSquare, Send, Edit, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -18,9 +18,10 @@ import { useAuth } from "@/providers/AuthProvider"
 import { Separator } from "@/components/ui/separator"
 import { postComment } from "@/lib/api/problem_api"
 import { motion } from "framer-motion";
-import { unupvoteComment, upvoteComment } from "@/lib/api/comment_api"
+import { editComment, unupvoteComment, upvoteComment } from "@/lib/api/comment_api"
+import { toast } from "@/hooks/use-toast"
 
-export default function DiscussionSection({ id, problemId }) {
+export default function DiscussionSection({ id, locationId, type, activeTab}) {
   const [isCollapsed, setIsCollapsed] = useState(true)
   const [comment, setComment] = useState("")
   const [comments, setComments] = useState([])
@@ -36,29 +37,38 @@ export default function DiscussionSection({ id, problemId }) {
   const [replyBoxes, setReplyBoxes] = useState({})
   const [replyTexts, setReplyTexts] = useState({})
   const [loadedReplies, setLoadedReplies] = useState({})
-
+  const [isEditOpen, setIsEditOpen] = useState([])
   const { apiCall, isAuthenticated, user } = useAuth()
 
-  const fetchComments = useCallback(async () => {
-    if (!id) return
+  const fetchComments = async () => {
     try {
       const response = await apiCall(
-        `${ENDPOINTS.GET_PROBLEM_COMMENTS.replace(":id", id)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
+        type == "PROBLEM" 
+        ? `${ENDPOINTS.GET_PROBLEM_COMMENTS.replace(":id", id)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
+        : `${ENDPOINTS.GET_SOLUTION_COMMENTS.replace(":id", locationId)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
       )
       if (!response.ok) throw new Error("Failed to fetch comments")
       const data = await response.json()
-
+      for (let i = 0; i < data.content.length; i++) {
+        if (data.content[i].user) {
+          setIsEditOpen((prev) => ({
+            ...prev,
+            [data.content[i].id]: false
+          }))
+        }
+      }
+      console.log(page);
       setComments(data.content.filter(c => c.replyId === null))
       setTotalPages(data.totalPages)
       setTotalComments(data.totalElements)
     } catch (error) {
       console.error("Error fetching comments:", error)
     }
-  }, [id, page, sortBy, ascending])
+  }
 
   useEffect(() => {
-    fetchComments()
-  }, [fetchComments])
+    fetchComments();
+  }, [id, page, sortBy, ascending, activeTab])
 
   function toggleCollapsed() {
     setIsCollapsed(!isCollapsed)
@@ -66,13 +76,14 @@ export default function DiscussionSection({ id, problemId }) {
 
   async function UploadComment() {
     try {
-      const response = await postComment(apiCall, problemId, comment)
+      const response = await postComment(apiCall, locationId, comment, null, type)
+      console.log(response.data.id)
       if (response.status) {
         setComment("")
         setTotalComments(totalComments + 1)
         setComments((prev) => {
           const newComment = {
-            id: 0,
+            id: response.data.id,
             comment: comment,
             noUpvote: 0,
             createdBy: {
@@ -130,6 +141,15 @@ export default function DiscussionSection({ id, problemId }) {
           ...prev,
           [commentId]: data
         }))
+        for (let i = 0; i < data.length; i++) {
+          if (data[i].user) {
+            setIsEditOpen((prev) => ({
+              ...prev,
+              [data[i].id]: false
+            }))
+          }
+        }
+
       }
     }
   }
@@ -149,6 +169,10 @@ export default function DiscussionSection({ id, problemId }) {
     }
   }
 
+  useEffect(() => {
+    console.log(isEditOpen)
+  }, [isEditOpen])
+
   const handleUpvoteUnupvoteComment = (comment) => {
     if (comment.voted) {
       toggleUnupvoteComment(comment);
@@ -163,10 +187,10 @@ export default function DiscussionSection({ id, problemId }) {
       upvoteComment(apiCall, comment.id);
       setComments((prevList) =>
         prevList.map((item) =>
-          item.id === comment.id ? { ...item, voted: !item.voted, noUpvote: item.noUpvote + 1  } : item
+          item.id === comment.id ? { ...item, voted: !item.voted, noUpvote: item.noUpvote + 1 } : item
         )
       );
-    } catch(error) {
+    } catch (error) {
       console.log(error);
     }
   }
@@ -179,37 +203,33 @@ export default function DiscussionSection({ id, problemId }) {
           item.id === comment.id ? { ...item, voted: !item.voted, noUpvote: item.noUpvote - 1 > 0 ? item.noUpvote - 1 : 0 } : item
         )
       );
-    } catch(error) {
+    } catch (error) {
       console.log(error);
     }
   }
 
   const updateUpvoted = (loadedReplies, comment) => {
     const replyId = comment.replyId;
-    console.log(comment)
-    console.log(loadedReplies[replyId])
 
     if (loadedReplies[replyId]) {
-        loadedReplies[replyId] = loadedReplies[replyId].map(reply =>
-            reply.id === comment.id ? { ...reply, voted: true, noUpvote: reply.noUpvote + 1  } : reply
-        );
-    }
-    
-    return { ...loadedReplies }; // Trả về một object mới để React nhận diện thay đổi
-};
-
-const updateUnupvoted = (loadedReplies, comment) => {
-  const replyId = comment.replyId;
-  console.log(comment)
-  console.log(loadedReplies[replyId])
-  if (loadedReplies[replyId]) {
       loadedReplies[replyId] = loadedReplies[replyId].map(reply =>
-          reply.id === comment.id ? { ...reply, voted: false, noUpvote: reply.noUpvote - 1 > 0 ? reply.noUpvote - 1 : 0  } : reply
+        reply.id === comment.id ? { ...reply, voted: true, noUpvote: reply.noUpvote + 1 } : reply
       );
-  }
-  
-  return { ...loadedReplies }; // Trả về một object mới để React nhận diện thay đổi
-};
+    }
+
+    return { ...loadedReplies }; // Trả về một object mới để React nhận diện thay đổi
+  };
+
+  const updateUnupvoted = (loadedReplies, comment) => {
+    const replyId = comment.replyId;
+    if (loadedReplies[replyId]) {
+      loadedReplies[replyId] = loadedReplies[replyId].map(reply =>
+        reply.id === comment.id ? { ...reply, voted: false, noUpvote: reply.noUpvote - 1 > 0 ? reply.noUpvote - 1 : 0 } : reply
+      );
+    }
+
+    return { ...loadedReplies }; // Trả về một object mới để React nhận diện thay đổi
+  };
 
   const handleUpvoteUnupvoteReply = (comment) => {
     if (comment.voted) {
@@ -223,9 +243,8 @@ const updateUnupvoted = (loadedReplies, comment) => {
   const toggleUpvoteReply = async (comment) => {
     try {
       upvoteComment(apiCall, comment.id);
-      console.log(loadedReplies);
       setLoadedReplies(updateUpvoted(loadedReplies, comment));
-    } catch(error) {
+    } catch (error) {
       console.log(error);
     }
   }
@@ -233,14 +252,13 @@ const updateUnupvoted = (loadedReplies, comment) => {
   const toggleUnupvoteReply = async (comment) => {
     try {
       unupvoteComment(apiCall, comment.id);
-      console.log(loadedReplies);
-      for(let i = 0; i < loadedReplies.length; i++) {
-        if(comment.replyId = loadedReplies[i]) {
+      for (let i = 0; i < loadedReplies.length; i++) {
+        if (comment.replyId = loadedReplies[i]) {
 
         }
       }
       setLoadedReplies(updateUnupvoted(loadedReplies, comment));
-    } catch(error) {
+    } catch (error) {
       console.log(error);
     }
   }
@@ -281,12 +299,12 @@ const updateUnupvoted = (loadedReplies, comment) => {
       replyId: commentId,
       voted: false
     }
-
     try {
-      const response = await postComment(apiCall, problemId, replyText, commentId)
+      const response = await postComment(apiCall, locationId, replyText, commentId, type)
       if (response.status) {
         setTotalComments(totalComments + 1)
       }
+      newReply.id = response.data.id;
     } catch (error) {
       console.error("Error posting comment:", error)
     }
@@ -316,8 +334,73 @@ const updateUnupvoted = (loadedReplies, comment) => {
       ...prev,
       [commentId]: true
     }))
+
+  }
+  const toggleEditComment = (id, status, newComment) => {
+    if (status == "SAVE") {
+      if (newComment === "") {
+        toast({
+          title: "Error",
+          description: "Please enter a comment",
+          variant: "destructive" // destructive
+        })
+      }
+      else {
+        editNewComment(id, newComment);
+        setIsEditOpen((prev) => ({
+          ...prev,
+          [id]: status == "EDIT" ? true : false
+        }))
+      }
+    }
+    else {
+      setIsEditOpen((prev) => ({
+        ...prev,
+        [id]: status == "EDIT" ? true : false
+      }))
+    }
   }
 
+  const editNewComment = async (id, comment) => {
+    try {
+      await editComment(apiCall, id, comment);
+      toast({
+        title: "Edit Comment",
+        description: "Edit comment successful",
+        variant: "default" // destructive
+      })
+      setComments((prevList) =>
+        prevList.map((item) =>
+          item.id === id ? { ...item, comment: comment } : item
+        )
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const setNewComment = (newComment, id) => {
+    setComments((prevList) =>
+      prevList.map((item) =>
+        item.id === id ? { ...item, comment: newComment } : item
+      )
+    );
+  }
+
+  const setNewReply = (newComment, reply) => {
+    setLoadedReplies(updateReply(loadedReplies, reply, newComment))
+  }
+
+  const updateReply = (loadedReplies, comment, newComment) => {
+    const replyId = comment.replyId;
+    if (loadedReplies[replyId]) {
+      loadedReplies[replyId] = loadedReplies[replyId].map(reply =>
+        reply.id === comment.id ? { ...reply, comment: newComment } : reply
+      );
+    }
+
+    return { ...loadedReplies }; // Trả về một object mới để React nhận diện thay đổi
+  };
 
   if (isAuthenticated) {
     return (
@@ -332,7 +415,7 @@ const updateUnupvoted = (loadedReplies, comment) => {
           </Button>}
         </div>
 
-        {totalComments > 0 && <motion.div
+        {<motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: !isCollapsed ? 1 : 0, height: !isCollapsed ? "auto" : 0 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -401,13 +484,23 @@ const updateUnupvoted = (loadedReplies, comment) => {
                           </div>
                         </div>
                         <div className="text-sm">
-                          <p>{comment.comment}</p>
+                          <p>
+                            {isEditOpen[comment.id]
+                              ? <Textarea required
+                                style={{ width: "95%" }}
+                                placeholder="Type comment here"
+                                className="min-h-[50px] resize-none border-0 bg-background ring-1"
+                                value={comment.comment}
+                                onChange={(e) => setNewComment(e.target.value, comment.id)}
+                              />
+                              : comment.comment}
+                          </p>
                         </div>
                         <div className="flex items-center gap-4 pt-2">
                           <div className="flex items-center gap-1">
                             <Button onClick={() => handleUpvoteUnupvoteComment(comment)} variant="ghost" size="icon" className="h-8 w-8">
                               {comment.voted ? <svg className="h-4 w-4 text-yellow-500" fill="currentColor" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>
-                              : <svg className="h-4 w-4 text-black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up"  role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>}
+                                : <svg className="h-4 w-4 text-black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>}
                             </Button>
                             <span className="text-sm">{comment.noUpvote}</span>
                           </div>
@@ -422,6 +515,25 @@ const updateUnupvoted = (loadedReplies, comment) => {
                               Reply
                             </Button>
                           }
+                          {comment.user && comment.canEdit && !isEditOpen[comment.id] && <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-sm"
+                            onClick={() => toggleEditComment(comment.id, "EDIT", comment.comment)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>}
+
+                          {comment.user && comment.canEdit && isEditOpen[comment.id] && <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-sm bg-green-500 text-white font-bold hover:bg-green-500 hover:text-white "
+                            onClick={() => toggleEditComment(comment.id, "SAVE", comment.comment)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Save
+                          </Button>}
                           {comment.noReply > 0 && (
                             <>
                               <Separator orientation="vertical" />
@@ -507,17 +619,47 @@ const updateUnupvoted = (loadedReplies, comment) => {
                                 <span className="text-xs text-muted-foreground">{reply.createdAt}</span>
                               </div>
                               <div className="text-sm">
-                                <p>{reply.comment}</p>
+                                <p>
+                                  {isEditOpen[reply.id]
+                                    ? <Textarea
+                                      style={{ width: "95%" }}
+                                      placeholder="Type comment here"
+                                      className="min-h-[50px] resize-none border-0 bg-background ring-1"
+                                      value={reply.comment}
+                                      onChange={(e) => setNewReply(e.target.value, reply)}
+                                    />
+                                    : reply.comment}
+                                </p>
                               </div>
                               <div className="flex items-center gap-4 pt-1">
                                 <div className="flex items-center gap-1">
                                   <Button onClick={() => handleUpvoteUnupvoteReply(reply)} variant="ghost" size="icon" className="h-6 w-6">
-                                  {reply.voted ? <svg className="h-4 w-4 text-yellow-500" fill="currentColor" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>
-                              : <svg className="h-4 w-4 text-black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up"  role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>}
+                                    {reply.voted ? <svg className="h-4 w-4 text-yellow-500" fill="currentColor" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>
+                                      : <svg className="h-4 w-4 text-black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>}
                                   </Button>
                                   <span className="text-xs">{reply.noUpvote}</span>
                                 </div>
+                                {reply.user && reply.canEdit && !isEditOpen[reply.id] && <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-sm"
+                                  onClick={() => toggleEditComment(reply.id, "EDIT", reply.comment)}
+                                >
+                                  <Edit className="h-4 w-4 mr-1" />
+                                  Edit
+                                </Button>}
+
+                                {reply.user && reply.canEdit && isEditOpen[reply.id] && <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-sm bg-green-500 text-white font-bold hover:bg-green-500 hover:text-white "
+                                  onClick={() => toggleEditComment(reply.id, "SAVE", reply.comment)}
+                                >
+                                  <Edit className="h-4 w-4 mr-1" />
+                                  Save
+                                </Button>}
                               </div>
+
 
                               {/* Nested reply box */}
                               {replyBoxes[reply.id] && (
@@ -569,7 +711,7 @@ const updateUnupvoted = (loadedReplies, comment) => {
                 ))}
             </div>
 
-            {totalPages > 2 &&
+            {totalPages >= 2 &&
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>

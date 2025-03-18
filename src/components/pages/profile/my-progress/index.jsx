@@ -38,7 +38,6 @@ export default function MyProgress() {
     const fetchMyProgress = async () => {
         try {
             const response = await getMyProgress(apiCall, requestData);
-            console.log(response.content);
             if (response == null) {
                 setNoContent(true)
                 setTotalElements(0)
@@ -201,7 +200,7 @@ export default function MyProgress() {
                 </Table>
             }
             {noContent &&
-                <div className="flex justify-center mt-6 gap-2">
+                <div className="flex justify-center mt-6 gap-2 text-primary-text">
                     <p>No progress found.</p>
                 </div>
             }

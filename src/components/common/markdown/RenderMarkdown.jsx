@@ -12,7 +12,12 @@ export default function RenderMarkdown({ content }) {
 
   const renderMarkdown = (content) => {
     const customRenderer = new marked.Renderer()
+    console.log(content);
+    const lockedCodeRegex = /LOCKED-CODE\s*([\s\S]*?)\s*LOCKED-CODE/g;
 
+    content = content.replace(lockedCodeRegex, (match, codeContent) => {
+      return `<div class="locked-code"><pre><code>${codeContent.trim()}</code></pre></div>`;
+    });
     customRenderer.image = (href) => {
       console.log(href)
       const title = href.title || ""
@@ -66,7 +71,12 @@ export default function RenderMarkdown({ content }) {
       return `<img src="${href.href}" alt="${text}" title="${title || ""}" />`
     }
 
-    marked.use({ renderer: customRenderer })
+    marked.use(
+      {
+        renderer: customRenderer
+
+      }
+    )
 
     return marked(content)
   }

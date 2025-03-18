@@ -30,7 +30,6 @@ export default function MyFavourite() {
     const fetchMyFavourite = async () => {
         try {
             const response = await getMyFavourite(apiCall, currentPage - 1, size);
-            console.log(response.content);
             if (response == null) {
                 setNoContent(true)
                 setTotalElements(0)
@@ -133,7 +132,7 @@ export default function MyFavourite() {
                 </Table>
             }
             {noContent &&
-                <div className="flex justify-center mt-6 gap-2">
+                <div className="flex justify-center mt-6 gap-2 text-primary-text">
                     <p>No favourite found.</p>
                 </div>
             }

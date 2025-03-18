@@ -185,7 +185,7 @@ export default function MySubmission() {
                     <TableBody>
                         {mySubmission != null && mySubmission.map((submission) => (
                             <TableRow key={submission.id}>
-                                <TableCell onClick={() => navigate("/problem/" + submission.problemLink)} className="text-primary-text font-bold cursor-pointer">{submission.problemTitle}</TableCell>
+                                <TableCell onClick={() => navigate("/problem-submission/" + submission.problemLink + "/" + submission.id)} className="text-primary-text font-bold cursor-pointer">{submission.problemTitle}</TableCell>
                                 <TableCell className="text-primary-text">{submission.languageName}</TableCell>
                                 <TableCell className="text-primary-text">
                                     <div className="flex items-center">
