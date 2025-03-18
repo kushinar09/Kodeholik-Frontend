@@ -189,7 +189,7 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
                               </Alert>
                             )}
 
-                            <div className="bg-muted rounded-md p-4 overflow-auto min-h-[200px] max-h-[300px]">
+                            <div className="bg-muted rounded-md overflow-auto min-h-[200px] max-h-[220px]">
                               <pre className="text-sm font-mono">
                                 <code className="language-java">{problem.submissionResponseDto.code}</code>
                               </pre>

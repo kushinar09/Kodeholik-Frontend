@@ -13,16 +13,16 @@ export default function HeaderSection({ currentActive = "Problems" }) {
           {/* <Link to="#" className="text-primary px-4 py-2 hover:text-white">
             Explore
           </Link> */}
-          <Link to="#" className={`rounded-md px-4 py-2 ${currentActive === "problem" ? "bg-primary text-black font-bold" : "hover:text-white text-primary"}`}>
+          <Link to="/" className={`rounded-md px-4 py-2 ${currentActive === "problem" ? "bg-primary text-black font-bold" : "hover:text-white text-primary"}`}>
             Problems
           </Link>
-          <Link to="#" className={`rounded-md px-4 py-2 ${currentActive === "exam" ? "bg-primary text-black font-bold" : "hover:text-white text-primary"}`}>
+          <Link to="/exam" className={`rounded-md px-4 py-2 ${currentActive === "exam" ? "bg-primary text-black font-bold" : "hover:text-white text-primary"}`}>
             Examination
           </Link>
           <Link to="#" className={`rounded-md px-4 py-2 ${currentActive === "discuss" ? "bg-primary text-black font-bold" : "hover:text-white text-primary"}`}>
             Discuss
           </Link>
-          <Link to="#" className={`rounded-md px-4 py-2 ${currentActive === "course" ? "bg-primary text-black font-bold" : "hover:text-white text-primary"}`}>
+          <Link to="/course" className={`rounded-md px-4 py-2 ${currentActive === "course" ? "bg-primary text-black font-bold" : "hover:text-white text-primary"}`}>
             Courses
           </Link>
         </div>

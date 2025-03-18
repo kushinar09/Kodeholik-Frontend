@@ -113,8 +113,10 @@ export function SocketExamProvider({ children }) {
         client.subscribe(`/topic/exam/${codeValue}`, (message) => {
           try {
             const examData = JSON.parse(message.body)
-            setExamData(examData)
-            setDuration(examData.details.duration)
+            if (examData && examData.details.duration) {
+              setExamData(examData)
+              setDuration(examData.details.duration)
+            }
             console.log("📩 Received exam data:", examData)
           } catch (err) {
             console.error("Error parsing exam data:", err)
@@ -225,7 +227,7 @@ export function SocketExamProvider({ children }) {
   // Format exam problems data
   const formatProblems = (examData) => {
 
-    if (!examData || !examData.details.problems) return []
+    if (!examData || !examData.details || !examData.details.problems) return []
 
     return examData.details.problems.map((problem, index) => ({
       id: index,
@@ -238,6 +240,7 @@ export function SocketExamProvider({ children }) {
 
   // Function to submit exam answers
   const submitExamAnswers = (idExam, problemAnswers) => {
+    console.log("Submit exam answers", idExam, problemAnswers)
     if (!stompClient || !isConnected) {
       toast.error("Not connected to exam server")
       return false

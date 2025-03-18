@@ -5,7 +5,7 @@ import { ListChecksIcon, Play, Clock, Loader } from "lucide-react"
 import { LOGO } from "@/lib/constants"
 import CountdownTimer from "@/components/common/shared/other/countdown-timer"
 
-export default function HeaderOption({ onRun, handleBack, timeLeft, isRunning }) {
+export default function HeaderOption({ onRun, handleBack, timeLeft, isRunning, handleChangeProblem }) {
   return (
     <div className="relative h-12 w-full bg-bg-primary/50">
       <nav className="h-full w-full bg-bg-card flex items-center justify-between px-4">
@@ -29,6 +29,26 @@ export default function HeaderOption({ onRun, handleBack, timeLeft, isRunning })
       </nav>
 
       {/* Centered Button List */}
+      <div className="absolute right-1/2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+        <Button
+          onClick={handleChangeProblem(-1)}
+          variant="ghost"
+          title="Previous"
+          className="h-8 bg-button-primary hover:bg-button-hover text-black transition"
+        >
+          Previous
+        </Button>
+        <Button
+          onClick={handleChangeProblem(1)}
+          variant="ghost"
+          title="Next"
+          className="h-8 bg-button-primary hover:bg-button-hover text-black transition"
+        >
+          Next
+        </Button>
+      </div>
+
+      {/* right Button List */}
       <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
         <Button
           onClick={onRun}

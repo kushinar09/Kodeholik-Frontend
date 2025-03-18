@@ -134,6 +134,17 @@ export default function ExamProblems() {
     setSelectedProblem(problem)
   }
 
+  const handleChangeProblem = (direction) => {
+    if (direction === -1) {
+      const index = problems.findIndex((problem) => problem.id === selectedProblem.id)
+      setSelectedProblem(problems[index - 1] || problems[problems.length - 1] || null)
+    }
+    if (direction === 1) {
+      const index = problems.findIndex((problem) => problem.id === selectedProblem.id)
+      setSelectedProblem(problems[index + 1] || problems[0] || null)
+    }
+  }
+
   // Handle back to problems list
   const handleBackToProblems = () => {
     setSelectedProblem(null)
@@ -306,6 +317,7 @@ export default function ExamProblems() {
           languageStore={storeCode.find((i) => i.problemLink === selectedProblem.link)?.languageName || ""}
           onRun={handleRunCode}
           onCodeChange={handleCodeChange}
+          handleChangeProblem={handleChangeProblem}
         />
       </div>
     )

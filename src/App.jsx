@@ -19,7 +19,6 @@ import WaitingRoom from "./components/pages/exam/waiting-room"
 import CreateCourse from "./components/pages/courses/CreateCourse"
 import UpdateCourse from "./components/pages/courses/UpdateCourse"
 import ExamList from "./components/pages/exam/list"
-import WebSocketComponent from "./components/pages/exam/take-exam/test"
 import Profile from "./components/pages/profile"
 import CourseDiscussion from "./components/pages/courses/CourseDiscussion"
 import ShareSolution from "./components/pages/problems/ShareSolution"
@@ -58,9 +57,7 @@ function App() {
                 <Route path="/problem-submission/:id/:submission" element={<ProblemDetail />} />
                 <Route path="/problem-solution/:id/:solution" element={<ProblemDetail />} />
                 {/* test */}
-       
                 <Route path="/share-solution/:link/:submission" element={<ShareSolution/>} />
-                <Route path="/socket" element={<WebSocketComponent />} />
                 {/* auth */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/forgot" element={<ForgotPassword />} />

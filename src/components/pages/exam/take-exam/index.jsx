@@ -29,7 +29,8 @@ export default function TakeExam({
   languageStore,
   onPenalty = null,
   onRun,
-  onCodeChange
+  onCodeChange,
+  handleChangeProblem
 }) {
   // Panel state
   const [leftSize, setLeftSize] = useState(50)
@@ -133,7 +134,6 @@ export default function TakeExam({
 
   // Code execution handlers
   const handleCodeChange = (newCode) => {
-    console.log(language)
     onCodeChange(newCode, language, problemLink)
     setCode(newCode)
   }
@@ -162,7 +162,13 @@ export default function TakeExam({
 
   return (
     <div className="h-screen flex flex-col">
-      <HeaderOption handleBack={handleBackToProblems} onRun={handleRunCode} timeLeft={timeLeft} isRunning={isRunning} />
+      <HeaderOption
+        handleBack={handleBackToProblems}
+        onRun={handleRunCode}
+        timeLeft={timeLeft}
+        isRunning={isRunning}
+        handleChangeProblem={handleChangeProblem}
+      />
 
       <div className="flex-1 p-2 bg-bg-primary/50">
         <PanelGroup direction="horizontal" onLayout={(sizes) => setLeftSize(sizes[0])}>

@@ -1,15 +1,8 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { FileText, Edit, Lightbulb, CheckCircle } from "lucide-react"
+import { FileText } from "lucide-react"
 
-/**
- * Navigation tabs for the left panel
- * @param {Object} props - Component props
- * @param {string} props.activeTab - Currently active tab
- * @param {Function} props.onTabChange - Tab change handler
- * @param {boolean} props.isCompact - Whether the panel is in compact mode
- */
 export default function TabNavigation({ isCompact }) {
   const tabs = [
     { id: "description", label: "Description", icon: FileText, lock: false }
