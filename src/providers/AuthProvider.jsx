@@ -382,10 +382,8 @@ export const AuthProvider = ({ children }) => {
       return <ForbiddenError />
     case "404":
       return <NotFoundError />
-    case "500":
-      return <GeneralError />
     default:
-      return null
+      return <GeneralError />
     }
   }
 

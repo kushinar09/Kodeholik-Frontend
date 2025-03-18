@@ -144,7 +144,7 @@ export default function ExamCard({
 
     setIsLoading(true)
     try {
-      const response = await apiCall(ENDPOINTS.GET_EXAM_RESULTS.replace(":id", id))
+      const response = await apiCall(ENDPOINTS.GET_EXAM_RESULT.replace(":id", id))
 
       if (response.ok) {
         const results = await response.json()
@@ -318,13 +318,13 @@ export default function ExamCard({
                     ? "join-waiting"
                     : exam.status === "NOT_STARTED"
                       ? "unenroll"
-                      : exam.status === "STARTED"
+                      : exam.status === "END"
                         ? "view-results"
                         : ""
                 )
               }
-              disabled={isLoading || exam.status !== "NOT_STARTED"}
-              className={`w-full py-2 px-4 rounded-md font-medium text-sm ${isLoading ? "opacity-70 cursor-not-allowed" : ""} ${exam.status !== "NOT_STARTED"
+              disabled={isLoading || exam.status === "IN_PROGRESS"}
+              className={`w-full py-2 px-4 rounded-md font-medium text-sm ${isLoading ? "opacity-70 cursor-not-allowed" : ""} ${exam.status === "IN_PROGRESS"
                   ? "cursor-default bg-primary/70 text-gray-700"
                   : "cursor-pointer bg-primary text-bg-card hover:bg-primary-button-hover"
                 }`}
@@ -335,7 +335,7 @@ export default function ExamCard({
                   ? "Join"
                   : exam.status === "NOT_STARTED"
                     ? "Unenroll"
-                    : exam.status === "STARTED"
+                    : exam.status === "END"
                       ? "View Results"
                       : "Do not participate"}
             </button>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { FileText, Loader2 } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
-import { useParams, useNavigate, useBlocker } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
 import TakeExam from "../take-exam"
 import { useSocketExam } from "@/providers/SocketExamProvider"
 import { toast } from "sonner"
@@ -18,7 +18,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialogTitle
 } from "@/components/ui/alert-dialog"
 
 export default function ExamProblems() {
@@ -44,25 +44,6 @@ export default function ExamProblems() {
   const isMountedRef = useRef(true)
   const lastConnectionAttemptRef = useRef(0)
   const timerIntervalRef = useRef(null)
-
-  // Block navigation when exam is in progress
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) => isTimerRunning && currentLocation.pathname !== nextLocation.pathname,
-  )
-
-  // Handle navigation blocking dialog
-  useEffect(() => {
-    if (blocker.state === "blocked") {
-      const confirmed = window.confirm(
-        "You have an exam in progress. Are you sure you want to leave? Your progress may be lost.",
-      )
-      if (confirmed) {
-        blocker.proceed()
-      } else {
-        blocker.reset()
-      }
-    }
-  }, [blocker])
 
   // Add beforeunload event listener to prevent accidental page refresh/close
   useEffect(() => {
@@ -144,7 +125,7 @@ export default function ExamProblems() {
     return [
       hours.toString().padStart(2, "0"),
       minutes.toString().padStart(2, "0"),
-      remainingSeconds.toString().padStart(2, "0"),
+      remainingSeconds.toString().padStart(2, "0")
     ].join(":")
   }
 
@@ -165,22 +146,13 @@ export default function ExamProblems() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code: code,
-          languageName: language,
-        }),
+          languageName: language
+        })
       })
-      const text = response.text()
-      if (response.ok) {
-        return { status: true, data: JSON.parse(text) }
-      } else {
-        try {
-          const data = JSON.parse(text)
-          return { status: false, message: data.message }
-        } catch (error) {
-          return { status: false, message: "Error in run code: " + error.message }
-        }
-      }
+      return response.json()
     } catch (e) {
       toast.error("Compile error: " + e.message)
+      return { status: false, message: e }
     }
   }
 
@@ -192,11 +164,11 @@ export default function ExamProblems() {
         return prevStoreCode.map((item) =>
           item.problemLink === problemLink
             ? {
-                ...item,
-                code: code,
-                languageName: language,
-              }
-            : item,
+              ...item,
+              code: code,
+              languageName: language
+            }
+            : item
         )
       } else {
         return [
@@ -204,8 +176,8 @@ export default function ExamProblems() {
           {
             problemLink: problemLink,
             code: code,
-            languageName: language,
-          },
+            languageName: language
+          }
         ]
       }
     })

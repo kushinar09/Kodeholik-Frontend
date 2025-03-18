@@ -234,6 +234,7 @@ export function SocketExamProvider({ children }) {
     return examData.problems.map((problem, index) => ({
       id: index,
       title: problem.problemTitle,
+      link: problem.problemLink,
       description: problem.problemDescription,
       compileInfo: problem.compileInformation
     }))

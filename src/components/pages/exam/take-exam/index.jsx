@@ -21,7 +21,7 @@ export default function TakeExam({
   idExam,
   timeLeft,
   handleBackToProblems,
-  problemLink = null,
+  problemLink,
   problemTitle,
   problemDescription,
   compileInformation,
@@ -149,11 +149,7 @@ export default function TakeExam({
     setIsRunning(true)
     try {
       const result = await onRun(code, language, problemLink)
-      if (!result.status) {
-        toast.error("Execution failed: " + result.message)
-        return
-      }
-      setResults(result.data)
+      setResults(result)
       setShowResult(true)
       setIsResultActive(true)
       setActiveResult("0")
