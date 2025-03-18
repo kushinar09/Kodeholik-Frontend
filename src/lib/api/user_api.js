@@ -1,4 +1,4 @@
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { ENDPOINTS } from "../constants"
 import { MESSAGES } from "../messages"
 
@@ -29,20 +29,16 @@ export async function editProfile(apiCall, body) {
     if (response.status == 400) {
       try {
         const errorData = await response.json();
-        toast({
-          title: "Error",
-          description: errorData.message,
-          variant: "destructive" // destructive
+        toast.error("Error", {
+          description: errorData.message
         })
       } catch (error) {
         console.error("Error parsing error response:", error);
       }
     }
     else if (response.status == 500) {
-      toast({
-        title: "Error",
-        description: MESSAGES.MSG01,
-        variant: "destructive" // destructive
+      toast.error("Error", {
+        description: MESSAGES.MSG01
       })
     }
     throw new Error("Failed to edit profile");
@@ -67,20 +63,16 @@ export async function changePassword(apiCall, body) {
     if (response.status == 400) {
       try {
         const errorData = await response.json();
-        toast({
-          title: "Error",
-          description: errorData.message,
-          variant: "destructive" // destructive
+        toast.error("Error", {
+          description: errorData.message
         })
       } catch (error) {
         console.error("Error parsing error response:", error);
       }
     }
     else if (response.status == 500) {
-      toast({
-        title: "Error",
-        description: MESSAGES.MSG01,
-        variant: "destructive" // destructive
+      toast.error("Error", {
+        description: MESSAGES.MSG01
       })
     }
     throw new Error("Failed to edit profile");
@@ -225,20 +217,16 @@ export async function tagFavourite(apiCall, link) {
     if (response.status == 400) {
       try {
         const errorData = await response.json();
-        toast({
-          title: "Error",
-          description: errorData.message,
-          variant: "destructive" // destructive
+        toast.error("Error", {
+          description: errorData.message
         })
       } catch (error) {
         console.error("Error parsing error response:", error);
       }
     }
     else if (response.status == 500) {
-      toast({
-        title: "Error",
-        description: MESSAGES.MSG01,
-        variant: "destructive" // destructive
+      toast.error("Error", {
+        description: MESSAGES.MSG01
       })
     }
     throw new Error("Failed to tag favourite");
@@ -262,20 +250,16 @@ export async function untagFavourite(apiCall, link) {
     if (response.status == 400) {
       try {
         const errorData = await response.json();
-        toast({
-          title: "Error",
-          description: errorData.message,
-          variant: "destructive" // destructive
+        toast.error("Error", {
+          description: errorData.message
         })
       } catch (error) {
         console.error("Error parsing error response:", error);
       }
     }
     else if (response.status == 500) {
-      toast({
-        title: "Error",
-        description: MESSAGES.MSG01,
-        variant: "destructive" // destructive
+      toast.error("Error", {
+        description: MESSAGES.MSG01
       })
     }
     throw new Error("Failed to tag favourite");

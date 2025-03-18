@@ -8,7 +8,6 @@ import { useAuth } from "@/providers/AuthProvider"
 
 export default function ProblemHeader({ onRun, onSubmit, isRunning }) {
   const { isAuthenticated } = useAuth()
-  console.log(isRunning)
 
   return (
     <div className="relative h-12 w-full bg-bg-primary/50">

@@ -6,7 +6,6 @@ export default function GeneralError({
   className,
   minimal = false
 }) {
-  const navigate = useNavigate()
   return (
     <div className={cn("h-svh w-full", className)}>
       <div className='m-auto flex h-full w-full flex-col items-center justify-center gap-2'>
@@ -22,7 +21,7 @@ export default function GeneralError({
             <Button variant='outline' onClick={() => window.history.back()}>
               Go Back
             </Button>
-            <Button onClick={() => navigate({ to: "/" })}>Back to Home</Button>
+            <Button onClick={() => window.location.href = "/"}>Back to Home</Button>
           </div>
         )}
       </div>

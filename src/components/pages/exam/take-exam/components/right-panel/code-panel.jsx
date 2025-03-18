@@ -2,29 +2,33 @@
 
 import { cn } from "@/lib/utils"
 import CodeEditor from "@/components/common/editor-code/CodeEditor"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState } from "react"
 
-/**
- * Panel for code editing and submission view
- * @param {Object} props - Component props
- * @param {boolean} props.isSubmittedActive - Whether submission view is active
- * @param {Function} props.setIsSubmittedActive - Function to toggle submission view
- * @param {boolean} props.isCompact - Whether the panel is in compact mode
- * @param {string} props.code - Current code
- * @param {Function} props.onCodeChange - Code change handler
- * @param {Object} props.submitted - Submission results
- * @param {boolean} props.showSubmitted - Whether to show submission results
- */
 export default function CodePanel({
   isCompact,
   code,
-  onCodeChange
+  onCodeChange,
+  language,
+  onLanguageChange,
+  availableLanguages
 }) {
+
+  const [selectedLanguage, setSelectedLanguage] = useState(language)
+
+  const handleLanguageChange = (value) => {
+    setSelectedLanguage(value)
+    if (onLanguageChange) {
+      onLanguageChange(value)
+    }
+  }
+
   return (
     <div className="h-full bg-background flex flex-col">
       <div
         className={cn(
-          "bg-bg-card flex items-center p-1 relative h-[40px] overflow-auto no-scrollbar",
-          isCompact ? "flex-col h-full space-y-4" : "flex-row space-x-4"
+          "bg-bg-card flex items-center p-1 relative overflow-auto no-scrollbar",
+          isCompact ? "flex-col h-full space-y-4" : "flex-row space-x-4 h-[40px]"
         )}
       >
         <div
@@ -54,10 +58,29 @@ export default function CodePanel({
       </div>
       <div className={cn("overflow-auto flex-1", isCompact ? "justify-center hidden" : "")}>
         <div className="min-w-[420px] h-full">
-          <CodeEditor initialCode={code} onChange={onCodeChange} />
+          {code && (
+            <>
+              <div className={cn("m-1", isCompact ? "w-full mt-4" : "flex-shrink-0")}>
+                <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
+                  <SelectTrigger
+                    className={cn("h-8 w-full border-bg-card focus:ring-none", isCompact ? "w-full" : "w-[100px]")}
+                  >
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableLanguages.map((lang) => (
+                      <SelectItem key={lang} value={lang}>
+                        {lang}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <CodeEditor initialCode={code} onChange={onCodeChange} language={selectedLanguage} />
+            </>
+          )}
         </div>
       </div>
     </div>
   )
 }
-

@@ -25,10 +25,20 @@ const GLOBALS = {
   ]
 }
 
-const API_URL = import.meta.env.VITE_API_URL
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api/v1"
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080"
+const WEBSOCKET_URL = import.meta.env.VITE_WEBSOCKET_URL || "http://localhost:8080/ws"
 
 const ENDPOINTS = {
+  // Web socket
+  WEBSOCKET: WEBSOCKET_URL,
+  WEBSOCKET_NOTIFICATION: `${WEBSOCKET_URL}/notification?token=:token`,
+  WEBSOCKET_EXAM: `${WEBSOCKET_URL}?token=:token`,
+
+  // Notification
+  GET_NOTIFICATIONS: `${API_URL}/user/notifications`,
+  GET_NOTIFICATIONS_TOKEN: `${API_URL}/auth/get-token-noti`,
+
   // Auth
   POST_LOGIN: `${API_URL}/auth/login`,
   LOGIN_GOOGLE: `${BACKEND_URL}/oauth2/authorization/google`,
@@ -93,19 +103,19 @@ const ENDPOINTS = {
   GET_COMMENT_COURSE: `${API_URL}/course/rating/:id`,
   CHECK_ENROLL: `${API_URL}/course/enroll/check/:id`,
 
-   //Chapter
-   GET_CHAPTERS: `${API_URL}/chapter/list`,
-   GET_CHAPTER_BY_COURSE_ID: `${API_URL}/chapter/by-course/:id`,
-   GET_CHAPTER_DETAIL: `${API_URL}/chapter/detail/:id`,
-   CREATE_CHAPTER: `${API_URL}/chapter/add`,
-   UPDATE_CHAPTER: `${API_URL}/chapter/update/:id`, 
- 
-   //Lesson
-   GET_LESSONS: `${API_URL}/lesson/list`,
-   GET_LESSON_BY_CHAPTERID: `${API_URL}/lesson/by-chapter/:id`,
-   GET_LESSON_DETAIL: `${API_URL}/lesson/detail/:id`,
-   CREATE_LESSON: `${API_URL}/lesson/add`,
-   UPDATE_LESSON: `${API_URL}/lesson/update/:id`,
+  //Chapter
+  GET_CHAPTERS: `${API_URL}/chapter/list`,
+  GET_CHAPTER_BY_COURSE_ID: `${API_URL}/chapter/by-course/:id`,
+  GET_CHAPTER_DETAIL: `${API_URL}/chapter/detail/:id`,
+  CREATE_CHAPTER: `${API_URL}/chapter/add`,
+  UPDATE_CHAPTER: `${API_URL}/chapter/update/:id`,
+
+  //Lesson
+  GET_LESSONS: `${API_URL}/lesson/list`,
+  GET_LESSON_BY_CHAPTERID: `${API_URL}/lesson/by-chapter/:id`,
+  GET_LESSON_DETAIL: `${API_URL}/lesson/detail/:id`,
+  CREATE_LESSON: `${API_URL}/lesson/add`,
+  UPDATE_LESSON: `${API_URL}/lesson/update/:id`,
 
   //Topic
   GET_TOPIC_LIST: `${API_URL}/tag/all-topic`,
@@ -133,9 +143,16 @@ const ENDPOINTS = {
   DOWNLOAD_FILE_LESSON: (fileKey) => `${API_URL}/lesson/download-file?key=${encodeURIComponent(fileKey)}`,
 
   //image
-  GET_IMAGE: (imageKey) => `${API_URL}/s3/presigned-url?key=${encodeURIComponent(imageKey)}`
+  GET_IMAGE: (imageKey) => `${API_URL}/s3/presigned-url?key=${encodeURIComponent(imageKey)}`,
 
-
+  // Exam
+  GET_LIST_EXAM: `${API_URL}/exam/pending-list`,
+  GET_MY_LIST_EXAM: `${API_URL}/exam/list`,
+  GET_TOKEN_EXAM: `${API_URL}/exam/get-token/:id`,
+  POST_ENROLL_EXAM: `${API_URL}/exam/enroll/:id`,
+  POST_UNENROLL_EXAM: `${API_URL}/exam/unenroll/:id`,
+  POST_RUN_EXAM: `${API_URL}/exam/run/:id?link=:idProblem`,
+  GET_EXAM_RESULT: `${API_URL}/exam/result/:id`
 }
 
 const CONSTANTS = {

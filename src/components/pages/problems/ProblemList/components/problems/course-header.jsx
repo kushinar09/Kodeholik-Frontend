@@ -1,7 +1,11 @@
-import { RadialChart } from "@/components/common/shared/other/radial-chart"
-import { Card } from "@/components/ui/card"
+"use client"
 
-export function ProblemHeader({ stats }) {
+import { Card } from "@/components/ui/card"
+import { useState } from "react"
+import { Calendar } from "./calendar"
+
+export function CourseHeader() {
+  const [date, setDate] = useState(new Date())
   return (
     <section className="mb-4">
       <h2 className="text-xl font-semibold text-white mb-4">Study Plan</h2>
@@ -14,8 +18,8 @@ export function ProblemHeader({ stats }) {
           </div>
         </div>
         <div className="space-y-6">
-          <Card className="p-4 bg-bg-card border-0 aspect-video rounded-xl">
-            <RadialChart {...stats} />
+          <Card className="p-4 bg-primary-card border-0">
+            <Calendar date={date} setDate={setDate} />
           </Card>
         </div>
       </div>

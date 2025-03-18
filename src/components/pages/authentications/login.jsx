@@ -9,12 +9,12 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import LoadingScreen from "@/components/common/shared/other/loading"
 import { useLocation, useNavigate } from "react-router-dom"
-import { toast } from "@/hooks/use-toast"
 import { LOGO } from "@/lib/constants"
 import { MESSAGES } from "@/lib/messages"
 
-import { login, loginWithGithub, loginWithGoogle } from "@/lib/api/auth_api"
+import { loginWithGithub, loginWithGoogle } from "@/lib/api/auth_api"
 import { useAuth } from "@/providers/AuthProvider"
+import { toast } from "sonner"
 export default function LoginPage() {
   const [loading, setLoading] = useState(true)
   const [errors, setErrors] = useState({})
@@ -23,7 +23,7 @@ export default function LoginPage() {
     password: ""
   })
 
-  const { isAuthenticated, setIsAuthenticated, apiCall } = useAuth()
+  const { isAuthenticated, setIsAuthenticated, login } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -37,26 +37,20 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (location.state?.sendEmail) {
-      toast({
-        title: "Success",
-        description: "Password reset link has been sent to your email.",
-        variant: "default"
+      toast.success("Sent link", {
+        description: "Password reset link has been sent to your email."
       })
     }
 
     if (location.state?.resetSuccess) {
-      toast({
-        title: "Success",
-        description: "Your password has been reset successfully. You can now log in with your new password.",
-        variant: "default"
+      toast.success("Reset password", {
+        description: "Your password has been reset successfully. You can now log in with your new password."
       })
     }
 
     if (location.state?.loginRequire) {
-      toast({
-        title: "Login Required",
-        description: "You need to be logged in to continue.",
-        variant: "default"
+      toast.warning("Login Required", {
+        description: "You need to be logged in to continue."
       })
     }
   }, [location])
@@ -108,9 +102,7 @@ export default function LoginPage() {
         const result = await login(formData)
         if (!result.status) {
           if (result.error) {
-            newErrors.general = result.error
-          } else {
-            throw new Error("Login failed. Please check your credentials and try again.")
+            newErrors.general = result.error.message
           }
         } else {
           setIsAuthenticated(true)
