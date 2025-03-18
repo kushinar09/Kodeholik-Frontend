@@ -113,6 +113,7 @@ export function SocketExamProvider({ children }) {
         client.subscribe(`/topic/exam/${codeValue}`, (message) => {
           try {
             const examData = JSON.parse(message.body)
+            console.log(examData)
             setExamData(examData)
             setDuration(examData.problems.duration)
             console.log("📩 Received exam data:", examData)
