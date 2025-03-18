@@ -43,7 +43,6 @@ export function SocketExamProvider({ children }) {
     try {
       const response = await apiCall(ENDPOINTS.GET_TOKEN_EXAM.replace(":id", examId))
       const data = await response.json()
-      console.log(data);
       if (!response.ok) {
         let newError
         // Handle error cases
@@ -114,7 +113,6 @@ export function SocketExamProvider({ children }) {
         client.subscribe(`/topic/exam/${codeValue}`, (message) => {
           try {
             const examData = JSON.parse(message.body)
-            console.log(examData)
             setExamData(examData)
             setDuration(examData.details.duration)
             console.log("📩 Received exam data:", examData)
@@ -127,7 +125,7 @@ export function SocketExamProvider({ children }) {
         if (username) {
           client.subscribe(`/error/${username}`, (message) => {
             try {
-              console.log(message.body)
+              console.log("error", message.body)
               const errorData = JSON.parse(message.body)
               toast.error(errorData.message || "An error occurred")
               console.error("Received error:", errorData)
@@ -136,7 +134,7 @@ export function SocketExamProvider({ children }) {
             }
           })
         }
-       
+
       }
 
       client.onStompError = (frame) => {
@@ -266,6 +264,7 @@ export function SocketExamProvider({ children }) {
     token,
     username,
     examCode,
+    duration,
     startTime,
     error,
     problems: examData ? formatProblems(examData) : [],

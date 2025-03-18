@@ -25,11 +25,11 @@ export default function ExamProblems() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const { problems, examData, isConnected, token, examCode, username, connectSocket, submitExamAnswers } = useSocketExam()
+  const { problems, examData, duration, isConnected, token, examCode, username, connectSocket, submitExamAnswers } = useSocketExam()
   const { apiCall } = useAuth()
 
   const [isTimerRunning, setIsTimerRunning] = useState(true)
-  const [timeLeft, setTimeLeft] = useState(0)
+  const [timeLeft, setTimeLeft] = useState(duration || 0)
   const [selectedProblem, setSelectedProblem] = useState(null)
   const [loading, setLoading] = useState(true)
   const [connectionAttempts, setConnectionAttempts] = useState(0)

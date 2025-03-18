@@ -133,144 +133,154 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
                 <AnimatedTabsContent
                   key={problem.id}
                   value={problem.id.toString()}
-                  className={`border rounded-lg p-4 ${isTransitioning ? "opacity-0" : "opacity-100"}`}
+                  className={`border rounded-lg ${isTransitioning ? "opacity-0" : "opacity-100"}`}
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center">
-                      <h3 className="text-lg font-medium">{problem.title}</h3>
-                      <a
-                        href={`/problems/${problem.link}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-2 inline-flex items-center text-blue-600 hover:text-blue-800"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {problem.submissionResponseDto &&
-                        <Badge
-                          variant={problem.submissionResponseDto.status === "SUCCESS" ? "success" : "destructive"}
-                          className={`${problem.submissionResponseDto.status === "SUCCESS" ? "bg-green-500 text-white" : ""}`}
-                        >
-                          {problem.submissionResponseDto.status}
-                        </Badge>}
-                      <div className="text-sm font-medium">{problem.point.toFixed(1)} points</div>
-                    </div>
-                  </div>
-
-                  <AnimatedTabs defaultValue="code" className="w-full" onValueChange={handleSubTabChange}>
-                    <TabsList className="w-full max-w-[400px] grid grid-cols-2">
-                      <TabsTrigger value="code">Code Submission</TabsTrigger>
-                      <TabsTrigger value="results">Test Results</TabsTrigger>
-                    </TabsList>
-
-                    <div className="relative min-h-[300px]">
-                      <AnimatedTabsContent value="code" className="pt-4 absolute w-full">
-                        <div className="flex items-center justify-between mb-2 text-sm text-muted-foreground">
-                          <div>
-                            Language: <span className="font-medium">{problem.submissionResponseDto.languageName}</span>
-                          </div>
-                          <div>
-                            Submitted: <span className="font-medium">{problem.submissionResponseDto.createdAt}</span>
-                          </div>
+                  {problem.submissionResponseDto
+                    ?
+                    <div className="m-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center">
+                          <h3 className="text-lg font-medium">{problem.title}</h3>
+                          <a
+                            href={`/problems/${problem.link}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ml-2 inline-flex items-center text-blue-600 hover:text-blue-800"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
                         </div>
-
-                        {problem.submissionResponseDto.status === "FAILED" && problem.submissionResponseDto.message && (
-                          <Alert variant="destructive" className="mb-3 flex items-center">
-                            <span>
-                              <AlertCircle className="h-4 w-4" />
-                            </span>
-                            <AlertDescription className="ml-2 text-xs">
-                              {problem.submissionResponseDto.message}
-                            </AlertDescription>
-                          </Alert>
-                        )}
-
-                        <div className="bg-muted rounded-md p-4 overflow-auto min-h-[200px] max-h-[300px]">
-                          <pre className="text-sm font-mono">
-                            <code className="language-java">{problem.submissionResponseDto.code}</code>
-                          </pre>
+                        <div className="flex items-center gap-3">
+                          <Badge
+                            variant={problem.submissionResponseDto.status === "SUCCESS" ? "success" : "destructive"}
+                            className={`${problem.submissionResponseDto.status === "SUCCESS" ? "bg-green-500 text-white" : ""}`}
+                          >
+                            {problem.submissionResponseDto.status}
+                          </Badge>
+                          <div className="text-sm font-medium">{problem.point.toFixed(1)} points</div>
                         </div>
+                      </div>
 
-                        {problem.submissionResponseDto.executionTime && (
-                          <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
-                            <div className="flex items-center">
-                              <Clock className="h-4 w-4 mr-1" />
-                              <span>Execution time: {problem.submissionResponseDto.executionTime} ms</span>
+                      <AnimatedTabs defaultValue="code" className="w-full" onValueChange={handleSubTabChange}>
+                        <TabsList className="w-full max-w-[400px] grid grid-cols-2">
+                          <TabsTrigger value="code">Code Submission</TabsTrigger>
+                          <TabsTrigger value="results">Test Results</TabsTrigger>
+                        </TabsList>
+
+                        <div className="relative min-h-[300px]">
+                          <AnimatedTabsContent value="code" className="pt-4 absolute w-full">
+                            <div className="flex items-center justify-between mb-2 text-sm text-muted-foreground">
+                              <div>
+                                Language: <span className="font-medium">{problem.submissionResponseDto.languageName}</span>
+                              </div>
+                              <div>
+                                Submitted: <span className="font-medium">{problem.submissionResponseDto.createdAt}</span>
+                              </div>
                             </div>
-                            {problem.submissionResponseDto.memoryUsage && (
-                              <div className="flex items-center">
-                                <HardDrive className="h-4 w-4 mr-1" />
-                                <span>Memory usage: {problem.submissionResponseDto.memoryUsage} MB</span>
+
+                            {problem.submissionResponseDto.status === "FAILED" && problem.submissionResponseDto.message && (
+                              <Alert variant="destructive" className="mb-3 flex items-center">
+                                <span>
+                                  <AlertCircle className="h-4 w-4" />
+                                </span>
+                                <AlertDescription className="ml-2 text-xs">
+                                  {problem.submissionResponseDto.message}
+                                </AlertDescription>
+                              </Alert>
+                            )}
+
+                            <div className="bg-muted rounded-md p-4 overflow-auto min-h-[200px] max-h-[300px]">
+                              <pre className="text-sm font-mono">
+                                <code className="language-java">{problem.submissionResponseDto.code}</code>
+                              </pre>
+                            </div>
+
+                            {problem.submissionResponseDto.executionTime && (
+                              <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+                                <div className="flex items-center">
+                                  <Clock className="h-4 w-4 mr-1" />
+                                  <span>Execution time: {problem.submissionResponseDto.executionTime} ms</span>
+                                </div>
+                                {problem.submissionResponseDto.memoryUsage && (
+                                  <div className="flex items-center">
+                                    <HardDrive className="h-4 w-4 mr-1" />
+                                    <span>Memory usage: {problem.submissionResponseDto.memoryUsage} MB</span>
+                                  </div>
+                                )}
                               </div>
                             )}
-                          </div>
-                        )}
-                      </AnimatedTabsContent>
+                          </AnimatedTabsContent>
 
-                      <AnimatedTabsContent value="results" className="pt-4 absolute w-full">
-                        <div className="space-y-4 min-h-[200px]">
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center">
-                                {problem.percentPassed === "100%" ? (
-                                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                                ) : problem.percentPassed === "0%" ? (
-                                  <XCircle className="h-5 w-5 text-red-500 mr-2" />
-                                ) : (
-                                  <div className="h-5 w-5 rounded-full border-2 border-yellow-500 flex items-center justify-center mr-2">
-                                    <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-                                  </div>
-                                )}
-                                <span className="font-medium">Test Cases: {problem.noTestCasePassed} passed</span>
-                                {problem.submissionResponseDto.noTestcase && (
-                                  <span className="text-muted-foreground ml-1">
-                                    of {problem.submissionResponseDto.noTestcase}
-                                  </span>
-                                )}
-                              </div>
-                              <span className="font-medium">{problem.percentPassed}</span>
-                            </div>
-                            <Progress value={Number.parseInt(problem.percentPassed)} className="h-2 bg-gray-200" />
-                          </div>
-
-                          {problem.submissionResponseDto.inputWrong && (
-                            <div className="mt-4">
-                              <h5 className="font-medium mb-2">Failed Test Case</h5>
-                              <div className="bg-muted rounded-md p-3 text-sm">
-                                <div className="mb-2">
-                                  <span className="font-medium">Input:</span>
-                                  <div className="ml-2 mt-1">
-                                    {problem.submissionResponseDto.inputWrong.inputs.map((input, i) => (
-                                      <div key={i}>
-                                        {input.name}: {input.value}
+                          <AnimatedTabsContent value="results" className="pt-4 absolute w-full">
+                            <div className="space-y-4 min-h-[200px]">
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center">
+                                    {problem.percentPassed === "100%" ? (
+                                      <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                                    ) : problem.percentPassed === "0%" ? (
+                                      <XCircle className="h-5 w-5 text-red-500 mr-2" />
+                                    ) : (
+                                      <div className="h-5 w-5 rounded-full border-2 border-yellow-500 flex items-center justify-center mr-2">
+                                        <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
                                       </div>
-                                    ))}
+                                    )}
+                                    <span className="font-medium">Test Cases: {problem.noTestCasePassed} passed</span>
+                                    {problem.submissionResponseDto.noTestcase && (
+                                      <span className="text-muted-foreground ml-1">
+                                        of {problem.submissionResponseDto.noTestcase}
+                                      </span>
+                                    )}
                                   </div>
+                                  <span className="font-medium">{problem.percentPassed}</span>
                                 </div>
-                                <Separator className="my-2" />
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <span className="font-medium">Expected:</span>
-                                    <div className="ml-2 mt-1 font-mono">
-                                      {problem.submissionResponseDto.inputWrong.expectedOutput}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Actual:</span>
-                                    <div className="ml-2 mt-1 font-mono">
-                                      {problem.submissionResponseDto.inputWrong.actualOutput}
-                                    </div>
-                                  </div>
-                                </div>
+                                <Progress value={Number.parseInt(problem.percentPassed)} className="h-2 bg-gray-200" />
                               </div>
+
+                              {problem.submissionResponseDto.inputWrong && (
+                                <div className="mt-4">
+                                  <h5 className="font-medium mb-2">Failed Test Case</h5>
+                                  <div className="bg-muted rounded-md p-3 text-sm">
+                                    <div className="mb-2">
+                                      <span className="font-medium">Input:</span>
+                                      <div className="ml-2 mt-1">
+                                        {problem.submissionResponseDto.inputWrong.inputs.map((input, i) => (
+                                          <div key={i}>
+                                            {input.name}: {input.value}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    <Separator className="my-2" />
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <span className="font-medium">Expected:</span>
+                                        <div className="ml-2 mt-1 font-mono">
+                                          {problem.submissionResponseDto.inputWrong.expectedOutput}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Actual:</span>
+                                        <div className="ml-2 mt-1 font-mono">
+                                          {problem.submissionResponseDto.inputWrong.actualOutput}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                          )}
+                          </AnimatedTabsContent>
                         </div>
-                      </AnimatedTabsContent>
+                      </AnimatedTabs>
                     </div>
-                  </AnimatedTabs>
+                    :
+                    <div className="flex justify-center items-center min-h-[400px] text-sm bg-muted">
+                      <div>
+                        Not submmited record
+                      </div>
+                    </div>
+                  }
                 </AnimatedTabsContent>
               ))}
             </div>
