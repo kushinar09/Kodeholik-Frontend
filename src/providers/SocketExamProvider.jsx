@@ -30,6 +30,7 @@ export function SocketExamProvider({ children }) {
   const [username, setUsername] = useState(null)
   const [examCode, setExamCode] = useState(null)
   const [startTime, setStartTime] = useState("")
+  const [duration, setDuration] = useState(0)
   const [error, setError] = useState(null)
   const [connectionAttempts, setConnectionAttempts] = useState(0)
   const navigate = useNavigate()
@@ -82,7 +83,7 @@ export function SocketExamProvider({ children }) {
   }
 
   // Connect to socket with retry mechanism
-  const connectSocket = (tokenValue, codeValue) => {
+  const connectSocket = (tokenValue, codeValue, username) => {
     if (!tokenValue) {
       console.error("Cannot connect: No token provided")
       return
@@ -114,6 +115,7 @@ export function SocketExamProvider({ children }) {
           try {
             const examData = JSON.parse(message.body)
             setExamData(examData)
+            setDuration(examData.problems.duration)
             console.log("📩 Received exam data:", examData)
           } catch (err) {
             console.error("Error parsing exam data:", err)
@@ -124,6 +126,7 @@ export function SocketExamProvider({ children }) {
         if (username) {
           client.subscribe(`/error/${username}`, (message) => {
             try {
+              console.log(message.body)
               const errorData = JSON.parse(message.body)
               toast.error(errorData.message || "An error occurred")
               console.error("Received error:", errorData)
@@ -164,14 +167,14 @@ export function SocketExamProvider({ children }) {
   }
 
   // Handle reconnection with exponential backoff
-  const handleReconnect = (tokenValue, codeValue) => {
+  const handleReconnect = (tokenValue, codeValue, username) => {
     if (connectionAttempts < 5) {
       const delay = Math.min(1000 * Math.pow(2, connectionAttempts), 30000)
       console.log(`Attempting to reconnect in ${delay / 1000} seconds...`)
 
       setTimeout(() => {
         setConnectionAttempts((prev) => prev + 1)
-        connectSocket(tokenValue, codeValue)
+        connectSocket(tokenValue, codeValue, username)
       }, delay)
     } else {
       console.error("Max reconnection attempts reached")
