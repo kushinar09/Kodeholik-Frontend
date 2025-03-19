@@ -18,18 +18,19 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
 export default function ExamProblems() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const { problems, examData, duration, isConnected, token, examCode, username, connectSocket, submitExamAnswers } = useSocketExam()
+  const { problems, examData, isConnected, token, examCode, username, connectSocket, submitExamAnswers } =
+    useSocketExam()
   const { apiCall } = useAuth()
 
   const [isTimerRunning, setIsTimerRunning] = useState(true)
-  const [timeLeft, setTimeLeft] = useState(duration || 0)
+  const [timeLeft, setTimeLeft] = useState(0)
   const [selectedProblem, setSelectedProblem] = useState(null)
   const [loading, setLoading] = useState(true)
   const [connectionAttempts, setConnectionAttempts] = useState(0)
@@ -125,7 +126,7 @@ export default function ExamProblems() {
     return [
       hours.toString().padStart(2, "0"),
       minutes.toString().padStart(2, "0"),
-      remainingSeconds.toString().padStart(2, "0")
+      remainingSeconds.toString().padStart(2, "0"),
     ].join(":")
   }
 
@@ -157,8 +158,8 @@ export default function ExamProblems() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code: code,
-          languageName: language
-        })
+          languageName: language,
+        }),
       })
       return response.json()
     } catch (e) {
@@ -177,9 +178,9 @@ export default function ExamProblems() {
             ? {
               ...item,
               code: code,
-              languageName: language
+              languageName: language,
             }
-            : item
+            : item,
         )
       } else {
         return [
@@ -187,8 +188,8 @@ export default function ExamProblems() {
           {
             problemLink: problemLink,
             code: code,
-            languageName: language
-          }
+            languageName: language,
+          },
         ]
       }
     })
@@ -199,13 +200,13 @@ export default function ExamProblems() {
     if (!examData || !isMountedRef.current) return
 
     // Only update if the value would actually change
-    const newDuration = examData.duration || 3600
+    const newDuration = examData.details.duration || 3600
 
     if (newDuration !== timeLeft) {
       setTimeLeft(newDuration)
       setIsTimerRunning(true)
     }
-  }, [examData, timeLeft])
+  }, [])
 
   // Timer countdown effect
   useEffect(() => {
@@ -236,7 +237,7 @@ export default function ExamProblems() {
         clearInterval(timerIntervalRef.current)
       }
     }
-  }, [isTimerRunning])
+  }, [isTimerRunning, timeLeft])
 
   // Show confirmation dialog before submitting
   const handleSubmitExam = () => {
@@ -306,6 +307,7 @@ export default function ExamProblems() {
     return (
       <div className="flex flex-col h-screen">
         <TakeExam
+          key={selectedProblem.id}
           idExam={id}
           timeLeft={timeLeft}
           handleBackToProblems={handleBackToProblems}
@@ -349,7 +351,7 @@ export default function ExamProblems() {
               <h1 className="text-2xl font-bold">Exam Problems</h1>
             </div>
             <div className="font-semibold text-lg">
-              Time Left: <span className="font-bold text-xl">{formatTime(timeLeft)}</span>
+              Time Left: <span className="font-bold text-xl text-primary">{formatTime(timeLeft)}</span>
             </div>
           </div>
         </CardHeader>
@@ -391,9 +393,7 @@ export default function ExamProblems() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Submit Exam</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to submit your exam?.
-            </AlertDialogDescription>
+            <AlertDialogDescription>Are you sure you want to submit your exam?.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>

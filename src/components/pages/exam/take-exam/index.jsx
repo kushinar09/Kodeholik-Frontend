@@ -13,8 +13,6 @@ import LeftPanelContent from "./components/left-panel/left-panel-content"
 import CodePanel from "./components/right-panel/code-panel"
 import TestCasePanel from "./components/right-panel/test-case-panel"
 import HeaderOption from "./components/header-option"
-import { useAuth } from "@/providers/AuthProvider"
-import { ENDPOINTS } from "@/lib/constants"
 import { toast } from "sonner"
 
 export default function TakeExam({
@@ -30,11 +28,11 @@ export default function TakeExam({
   onPenalty = null,
   onRun,
   onCodeChange,
-  handleChangeProblem
+  handleChangeProblem,
 }) {
   // Panel state
   const [leftSize, setLeftSize] = useState(50)
-  const [leftWidth, setLeftWidth] = useState(0)
+  const [leftWidth, setLeftWidth] = useState(50)
   const leftPanelRef = useRef(null)
   const [isCompactRight, setIsCompactRight] = useState(false)
 
@@ -110,8 +108,15 @@ export default function TakeExam({
   }, [leftWidth])
 
   useEffect(() => {
-    const languages = [...new Set(compileInformation.map(item => item.language))]
+    const languages = [...new Set(compileInformation.map((item) => item.language))]
+    setCode(codeStore || compileInformation[0]?.template || "")
+    setLanguage(languageStore || compileInformation[0]?.language || "")
     setAvailableLanguages(languages)
+    setTestCases(compileInformation[0]?.testCases || [])
+    setActiveCase("0")
+    setActiveResult("0")
+    setShowResult(false)
+    setIsResultActive(false)
   }, [compileInformation])
 
   useEffect(() => {
@@ -178,11 +183,7 @@ export default function TakeExam({
               <div className={cn("h-full flex flex-col transition-all duration-200", isCompactLeft ? "w-[40px]" : "")}>
                 <TabNavigation isCompact={isCompactLeft} />
 
-                <LeftPanelContent
-                  isCompact={isCompactLeft}
-                  title={problemTitle}
-                  description={problemDescription}
-                />
+                <LeftPanelContent isCompact={isCompactLeft} title={problemTitle} description={problemDescription} />
               </div>
             </div>
           </Panel>
@@ -228,5 +229,4 @@ export default function TakeExam({
     </div>
   )
 }
-
 

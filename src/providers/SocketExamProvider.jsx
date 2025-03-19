@@ -30,7 +30,6 @@ export function SocketExamProvider({ children }) {
   const [username, setUsername] = useState(null)
   const [examCode, setExamCode] = useState(null)
   const [startTime, setStartTime] = useState("")
-  const [duration, setDuration] = useState(0)
   const [error, setError] = useState(null)
   const [connectionAttempts, setConnectionAttempts] = useState(0)
   const navigate = useNavigate()
@@ -115,7 +114,6 @@ export function SocketExamProvider({ children }) {
             const examData = JSON.parse(message.body)
             if (examData && examData.details.duration) {
               setExamData(examData)
-              setDuration(examData.details.duration)
             }
             console.log("📩 Received exam data:", examData)
           } catch (err) {
@@ -267,7 +265,6 @@ export function SocketExamProvider({ children }) {
     token,
     username,
     examCode,
-    duration,
     startTime,
     error,
     problems: examData ? formatProblems(examData) : [],

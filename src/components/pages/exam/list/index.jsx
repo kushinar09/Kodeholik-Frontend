@@ -209,7 +209,7 @@ export default function ExamList() {
     })
   }
 
-  const isHappeningNow = (startTime, endTime) => {
+  const isComingSoon = (startTime, marginSeconds) => {
     const now = new Date()
 
     const parseDate = (dateString) => {
@@ -223,15 +223,13 @@ export default function ExamList() {
     }
 
     const start = parseDate(startTime)
-    const end = parseDate(endTime)
-
-    if (!start || !end || isNaN(start) || isNaN(end)) return false // Handle invalid dates
-
-    return now >= start && now <= end
+    const diffInSeconds = (start - now) / 1000
+    if (!start || isNaN(start)) return false
+    return diffInSeconds <= marginSeconds && diffInSeconds >= 0
   }
 
   // Filter exams that are happening now
-  const happeningExams = allExams.filter((exam) => isHappeningNow(exam.startTime, exam.endTime))
+  const happeningExams = myExams ? myExams.content.filter((exam) => isComingSoon(exam.startTime, 300)) : []
 
   // Function to clear search filters
   const clearFilters = () => {
@@ -307,7 +305,7 @@ export default function ExamList() {
                     <div className="absolute -left-1 -top-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
                     <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                   </div>
-                  <h2 className="text-2xl font-bold text-white ml-3">Happening Now</h2>
+                  <h2 className="text-2xl font-bold text-white ml-3">Coming Soon</h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

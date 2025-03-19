@@ -1,3 +1,4 @@
+import CountdownTimer from "@/components/common/shared/other/countdown-timer"
 import { Calendar, Clock } from "lucide-react"
 
 export default function LiveExamCard({
@@ -5,6 +6,26 @@ export default function LiveExamCard({
   formatDate,
   formatTime
 }) {
+  const getSecondsUntilStart = (dateTimeString) => {
+    if (!dateTimeString) return 0
+
+    try {
+      const [datePart, timePart] = dateTimeString.split(", ")
+      if (!datePart || !timePart) return 0
+
+      const [day, month, year] = datePart.split("/").map(Number)
+      const [hour, minute] = timePart.split(":").map(Number)
+
+      const startDate = new Date(year, month - 1, day, hour, minute)
+      const now = new Date()
+
+      return Math.floor((startDate - now) / 1000) // Difference in seconds
+    } catch (error) {
+      console.error("Error calculating seconds until start:", error)
+      return 0
+    }
+  }
+
   return (
     <div className="bg-bg-card backdrop-blur-sm rounded-lg overflow-hidden transition-all hover:shadow-lg border border-primary">
       <div className="p-4 border-b border-white/20">
@@ -15,7 +36,7 @@ export default function LiveExamCard({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
             </span>
-            <span className="px-2 py-1 text-xs font-medium rounded-full bg-primary text-bg-card">Live Now</span>
+            <CountdownTimer initialSeconds={getSecondsUntilStart(exam.startTime)} />
           </div>
         </div>
       </div>
@@ -33,11 +54,14 @@ export default function LiveExamCard({
           </span>
         </div>
       </div>
-      {/* <div className="p-4 pt-2 border-t border-white/20">
-        <button className="w-full py-2 px-4 rounded-md font-medium text-sm bg-white text-blue-600 hover:bg-white/90 transition-colors">
-          Enter Exam Now
+      <div className="p-4 pt-2 border-t border-white/20">
+        <button
+          onClick={() => window.location.href = `/exam/${exam.code}/wait`}
+          className="w-full py-2 px-4 rounded-md font-medium text-sm bg-primary text-bg-card hover:bg-primary-button-hover"
+        >
+          Join
         </button>
-      </div> */}
+      </div>
     </div>
   )
 }

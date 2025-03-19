@@ -1,23 +1,32 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Card, CardHeader } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ExternalLink, CheckCircle, XCircle, Clock, HardDrive, AlertCircle } from "lucide-react"
+import { ExternalLink, CheckCircle, XCircle, Clock, HardDrive, AlertCircle, Check, Copy, RotateCcw } from "lucide-react"
 import hljs from "highlight.js"
 import LoadingScreen from "@/components/common/shared/other/loading"
 import { AnimatedTabs, AnimatedTabsContent } from "@/components/common/shared/other/animated-tabs"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog-custom"
+import { copyToClipboard } from "@/lib/utils/format-utils"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
   const [activeTab, setActiveTab] = useState("")
   const [activeSubTab, setActiveSubTab] = useState("code")
   const [isTransitioning, setIsTransitioning] = useState(false)
   const highlightTimeoutRef = useRef(null)
+  const [copied, setCopied] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const handleCopyClipBoard = async (code) => {
+    const success = await copyToClipboard(code)
+    setCopied(success)
+  }
 
   // Set the first problem as active tab when results load
   useEffect(() => {
@@ -94,21 +103,17 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] min-h-[70vh] overflow-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] min-h-[90vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Exam Results</DialogTitle>
+          <DialogTitle>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium">Exam Results</h3>
+              <div className="text-md">Overall Grade: <span className="text-2xl font-semibold">{examResults.grade.toFixed(1)}</span></div>
+            </div>
+          </DialogTitle>
         </DialogHeader>
 
         <div className="mt-4">
-          <Card className="mb-6">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">Overall Grade</h3>
-                <div className="text-3xl font-bold">{examResults.grade.toFixed(1)}</div>
-              </div>
-            </CardHeader>
-          </Card>
-
           <AnimatedTabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="mb-4 flex h-auto flex-wrap gap-2 bg-transparent p-0 justify-start">
               {examResults.problemResults.map((problem) => (
@@ -167,12 +172,9 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
                           <TabsTrigger value="results">Test Results</TabsTrigger>
                         </TabsList>
 
-                        <div className="relative min-h-[300px]">
+                        <div className="relative min-h-[390px]">
                           <AnimatedTabsContent value="code" className="pt-4 absolute w-full">
-                            <div className="flex items-center justify-between mb-2 text-sm text-muted-foreground">
-                              <div>
-                                Language: <span className="font-medium">{problem.submissionResponseDto.languageName}</span>
-                              </div>
+                            <div className="absolute -top-9 right-0 mb-2 text-sm text-muted-foreground">
                               <div>
                                 Submitted: <span className="font-medium">{problem.submissionResponseDto.createdAt}</span>
                               </div>
@@ -189,11 +191,44 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
                               </Alert>
                             )}
 
-                            <div className="bg-muted rounded-md overflow-auto min-h-[200px] max-h-[220px]">
+                            {/* <div className="bg-muted rounded-md overflow-auto min-h-[200px] max-h-[350px] no-scrollbar">
                               <pre className="text-sm font-mono">
                                 <code className="language-java">{problem.submissionResponseDto.code}</code>
                               </pre>
-                            </div>
+                            </div> */}
+
+                            <Card>
+                              <CardContent className="p-0">
+                                <div className="border-b border-border p-4 py-1 flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm text-muted-foreground">Code</span>
+                                    <span className="text-sm text-muted-foreground">|</span>
+                                    <span className="text-sm">{problem.submissionResponseDto.languageName}</span>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button variant="ghost" size="icon" onClick={() => handleCopyClipBoard(problem.submissionResponseDto.code)}>
+                                      {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                                    </Button>
+                                  </div>
+                                </div>
+                                <div className={cn("overflow-hidden transition-all duration-300", isExpanded ? "h-auto" : "max-h-[230px]")}>
+                                  <pre className="text-sm">
+                                    <code>{problem.submissionResponseDto.code}</code>
+                                  </pre>
+                                </div>
+                                {problem.submissionResponseDto.code && problem.submissionResponseDto.code.split("\n").length > 10 && (
+                                  <div className="border-t border-border p-2 text-center">
+                                    <Button
+                                      variant="ghost"
+                                      className="text-sm text-muted-foreground"
+                                      onClick={() => setIsExpanded(!isExpanded)}
+                                    >
+                                      {isExpanded ? "View less" : "View more"}
+                                    </Button>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
 
                             {problem.submissionResponseDto.executionTime && (
                               <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">

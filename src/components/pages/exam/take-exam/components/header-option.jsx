@@ -29,9 +29,9 @@ export default function HeaderOption({ onRun, handleBack, timeLeft, isRunning, h
       </nav>
 
       {/* Centered Button List */}
-      <div className="absolute right-1/2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2">
         <Button
-          onClick={handleChangeProblem(-1)}
+          onClick={() => handleChangeProblem(-1)}
           variant="ghost"
           title="Previous"
           className="h-8 bg-button-primary hover:bg-button-hover text-black transition"
@@ -39,7 +39,7 @@ export default function HeaderOption({ onRun, handleBack, timeLeft, isRunning, h
           Previous
         </Button>
         <Button
-          onClick={handleChangeProblem(1)}
+          onClick={() => handleChangeProblem(1)}
           variant="ghost"
           title="Next"
           className="h-8 bg-button-primary hover:bg-button-hover text-black transition"
