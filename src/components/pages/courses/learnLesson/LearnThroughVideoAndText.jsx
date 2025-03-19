@@ -15,8 +15,9 @@ import {
   CheckCircle2,
   AlertCircle,
   BookOpen,
+  MessageSquare,
 } from "lucide-react"
-import { getCourse } from "@/lib/api/course_api"
+import { getCourse, courseRegisterIn, courseRegisterOUT } from "@/lib/api/course_api"
 import { getLessonById, completedLesson, downloadFileLesson } from "@/lib/api/lesson_api"
 import VideoLesson from "./components/videoLesson"
 import DocumentLesson from "./components/documentLesson"
@@ -24,6 +25,8 @@ import CourseOutline from "./components/courseOutline"
 import LessonProblemButton from "./components/lessonProblemButton"
 import Header from "@/components/common/shared/header"
 import FooterSection from "@/components/common/shared/footer"
+import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
+import CourseDiscussion from "@/components/pages/courses/CourseDetail/components/CourseDiscussion"
 
 export default function LearnThroughVideoAndText() {
   const { id } = useParams()
@@ -37,8 +40,56 @@ export default function LearnThroughVideoAndText() {
   const [resourceError, setResourceError] = useState(null)
   const [progress, setProgress] = useState(0)
   const [activeAccordion, setActiveAccordion] = useState("")
+  const [showChat, setShowChat] = useState(false)
   const navigate = useNavigate()
 
+  // useEffect for course registration IN/OUT with debugging logs
+  useEffect(() => {
+    console.log(`[Registration] Component mounted for course ID: ${id}`);
+    
+    const registerIn = async () => {
+      console.log(`[Registration] Triggering courseRegisterIn for course ID: ${id}`);
+      try {
+        const result = await courseRegisterIn(id)
+        console.log(`[Registration] courseRegisterIn completed successfully:`, result);
+      } catch (err) {
+        console.error(`[Registration] courseRegisterIn failed:`, err);
+      }
+    }
+
+    if (id) {
+      registerIn()
+    } else {
+      console.warn("[Registration] No course ID provided, skipping registerIn");
+    }
+
+    const registerOut = async () => {
+      console.log(`[Registration] Triggering courseRegisterOUT for course ID: ${id}`);
+      try {
+        const result = await courseRegisterOUT(id)
+        console.log(`[Registration] courseRegisterOUT completed successfully:`, result);
+      } catch (err) {
+        console.error(`[Registration] courseRegisterOUT failed:`, err);
+      }
+    }
+
+    // Add event listener for page unload
+    console.log("[Registration] Adding beforeunload event listener");
+    window.addEventListener("beforeunload", () => {
+      console.log("[Registration] beforeunload event triggered");
+      registerOut();
+    });
+
+    // Cleanup function for navigation or unmount
+    return () => {
+      console.log(`[Registration] Component unmounting or navigating away for course ID: ${id}`);
+      registerOut();
+      console.log("[Registration] Removing beforeunload event listener");
+      window.removeEventListener("beforeunload", registerOut);
+    }
+  }, [id])
+
+  // Existing useEffect for fetching course data (unchanged, but keeping for completeness)
   useEffect(() => {
     const fetchCourseData = async () => {
       if (!id) {
@@ -50,7 +101,7 @@ export default function LearnThroughVideoAndText() {
       try {
         setLoading(true)
         const courseData = await getCourse(id)
-        console.log("Course Data:", courseData) // Debug course data
+        console.log("Course Data:", courseData)
         setCourse(courseData)
         setChapters(courseData.chapters || [])
 
@@ -60,7 +111,7 @@ export default function LearnThroughVideoAndText() {
           setActiveAccordion(`chapter-${firstChapter.id}`)
 
           if (firstChapter.lessons && firstChapter.lessons.length > 0) {
-            console.log("First Lesson:", firstChapter.lessons[0]) // Debug first lesson
+            console.log("First Lesson:", firstChapter.lessons[0])
             await handleLessonSelect(firstChapter.lessons[0], firstChapter)
           }
         }
@@ -95,7 +146,6 @@ export default function LearnThroughVideoAndText() {
   
     try {
       console.log("Selected Lesson Before Fetch:", lesson)
-      // Always fetch the latest lesson details to ensure correct videoUrl
       const lessonDetails = await getLessonById(lesson.id)
       console.log("Lesson Details After Fetch:", lessonDetails)
       console.log("Video URL:", lessonDetails.videoUrl)
@@ -103,17 +153,16 @@ export default function LearnThroughVideoAndText() {
       if (lessonDetails.type === "VIDEO" && lessonDetails.videoUrl) {
         if (lessonDetails.videoUrl.match(/^[a-zA-Z0-9_-]{11}$/)) {
           console.log("Setting YouTube ID:", lessonDetails.videoUrl)
-          setVideoUrl(lessonDetails.videoUrl) // YouTube ID
+          setVideoUrl(lessonDetails.videoUrl)
         } else if (lessonDetails.videoUrl.startsWith("http")) {
           console.log("Setting Direct URL:", lessonDetails.videoUrl)
-          setVideoUrl(lessonDetails.videoUrl) // Direct MP4 URL
+          setVideoUrl(lessonDetails.videoUrl)
         } else {
           console.log("Invalid video URL (relative path):", lessonDetails.videoUrl)
           setResourceError("Invalid video URL provided for this lesson")
         }
       } else if (lessonDetails.type === "DOCUMENT" && lessonDetails.attachedFile) {
         console.log("Document Lesson Detected")
-        // Document handling
       } else if (lessonDetails.type === "VIDEO" && !lessonDetails.videoUrl) {
         setResourceError("No video URL provided for this lesson")
       }
@@ -123,12 +172,13 @@ export default function LearnThroughVideoAndText() {
       if (lesson.type === "VIDEO") setVideoUrl(null)
     }
   }
+
   const handleDownload = async () => {
     if (!selectedLesson || !selectedLesson.attachedFile) return
 
     try {
       const fileUrl = await downloadFileLesson(selectedLesson.attachedFile)
-      console.log("Download URL:", fileUrl) // Debug download URL
+      console.log("Download URL:", fileUrl)
       const link = document.createElement("a")
       link.href = fileUrl
       link.download = selectedLesson.attachedFile.replace("lessons/", "") || "document"
@@ -251,7 +301,7 @@ export default function LearnThroughVideoAndText() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 text-white p-6">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 p-6">
         <div className="container mx-auto">
           <Skeleton className="h-12 w-3/4 bg-gray-800 mb-8" />
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -388,7 +438,9 @@ export default function LearnThroughVideoAndText() {
                   </div>
 
                   {selectedLesson.description && (
-                    <div className="prose prose-invert max-w-none mt-4 text-gray-300">{selectedLesson.description}</div>
+                    <div className="prose prose-invert max-w-none mt-4 text-gray-300">
+                      <RenderMarkdown content={selectedLesson.description} />
+                    </div>
                   )}
 
                   {selectedLesson.problems && selectedLesson.problems.length > 0 && (
@@ -430,6 +482,22 @@ export default function LearnThroughVideoAndText() {
           />
         </div>
       </div>
+
+      {/* Floating Chat Icon */}
+      <button
+        onClick={() => setShowChat(!showChat)}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-black rounded-full flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors z-50"
+      >
+        <MessageSquare className="w-6 h-6" />
+      </button>
+
+      {/* Chat Window */}
+      {showChat && (
+        <div className="text-black fixed bottom-24 right-6 w-[400px] h-[600px] bg-bg-card rounded-lg shadow-lg z-50 flex flex-col">
+          <CourseDiscussion courseId={id} title="Discussion" onClose={() => setShowChat(false)} />
+        </div>
+      )}
+
       <FooterSection />
     </div>
   )

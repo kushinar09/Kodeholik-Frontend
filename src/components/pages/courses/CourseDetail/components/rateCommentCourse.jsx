@@ -1,125 +1,124 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { Star, Loader2, ChevronLeft, ChevronRight } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TabsContent } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { rateCommentCourse, getRateCommentCourse, getCourse } from "@/lib/api/course_api"
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react";
+import { useAuth } from "@/providers/AuthProvider"; // Import useAuth
+import { Star, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { rateCommentCourse, getRateCommentCourse, getCourse } from "@/lib/api/course_api";
+import { cn } from "@/lib/utils";
 
 export default function RateCommentCourse({ courseId, setCourse }) {
-  const [rating, setRating] = useState(0)
-  const [comment, setComment] = useState("")
-  const [submitLoading, setSubmitLoading] = useState(false)
-  const [comments, setComments] = useState([])
-  const [loadingComments, setLoadingComments] = useState(true)
-  const [ratingError, setRatingError] = useState("")
-  const [commentError, setCommentError] = useState("")
-  const [submitError, setSubmitError] = useState("")
-  const [submitSuccess, setSubmitSuccess] = useState("")
-  const [hoverRating, setHoverRating] = useState(0)
-  const [currentPage, setCurrentPage] = useState(1)
+  const { isAuthenticated } = useAuth(); // Access authentication status
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [loadingComments, setLoadingComments] = useState(true);
+  const [ratingError, setRatingError] = useState("");
+  const [commentError, setCommentError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [submitSuccess, setSubmitSuccess] = useState("");
+  const [hoverRating, setHoverRating] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const ITEMS_PER_PAGE = 3
+  const ITEMS_PER_PAGE = 3;
 
   useEffect(() => {
     async function fetchComments() {
       try {
-        setLoadingComments(true)
-        console.log("Fetching comments for courseId:", courseId)
+        setLoadingComments(true);
+        console.log("Fetching comments for courseId:", courseId);
         if (!courseId || isNaN(courseId)) {
-          throw new Error("Invalid courseId provided to fetchComments")
+          throw new Error("Invalid courseId provided to fetchComments");
         }
-        const fetchedComments = await getRateCommentCourse(courseId)
-        console.log("Successfully fetched comments:", fetchedComments)
-        setComments(Array.isArray(fetchedComments) ? fetchedComments : [])
-        setCurrentPage(1)
+        const fetchedComments = await getRateCommentCourse(courseId);
+        console.log("Successfully fetched comments:", fetchedComments);
+        setComments(Array.isArray(fetchedComments) ? fetchedComments : []);
+        setCurrentPage(1);
       } catch (error) {
-        console.error("Failed to fetch comments:", error.message)
-        setComments([])
+        console.error("Failed to fetch comments:", error.message);
+        setComments([]);
       } finally {
-        setLoadingComments(false)
+        setLoadingComments(false);
       }
     }
-    fetchComments()
-  }, [courseId])
+    fetchComments();
+  }, [courseId]);
 
   const handleRating = (value) => {
-    setRating(value)
-    setSubmitError("")
-    setSubmitSuccess("")
+    setRating(value);
+    setSubmitError("");
+    setSubmitSuccess("");
     if (!value || value < 1 || value > 5) {
-      setRatingError("Please select a valid rating (1 to 5 stars).")
+      setRatingError("Please select a valid rating (1 to 5 stars).");
     } else {
-      setRatingError("")
+      setRatingError("");
     }
-  }
+  };
 
   const handleCommentChange = (e) => {
-    const newComment = e.target.value
-    setComment(newComment)
-    setSubmitError("")
-    setSubmitSuccess("")
+    const newComment = e.target.value;
+    setComment(newComment);
+    setSubmitError("");
+    setSubmitSuccess("");
 
-    const commentLength = newComment.trim().length
+    const commentLength = newComment.trim().length;
     if (commentLength > 0 && commentLength < 10) {
-      setCommentError("Your comment must be at least 10 characters long.")
+      setCommentError("Your comment must be at least 10 characters long.");
     } else if (commentLength > 5000) {
-      setCommentError("Your comment must not exceed 5000 characters.")
+      setCommentError("Your comment must not exceed 5000 characters.");
     } else {
-      setCommentError("")
+      setCommentError("");
     }
-  }
+  };
 
   const handleSubmitRatingComment = async () => {
-    setSubmitError("")
-    setSubmitSuccess("")
+    setSubmitError("");
+    setSubmitSuccess("");
 
     if (!rating || rating < 1 || rating > 5) {
-      setRatingError("Please select a rating by choosing 1 to 5 stars.")
-      return
+      setRatingError("Please select a rating by choosing 1 to 5 stars.");
+      return;
     }
 
-    const commentLength = comment.trim().length
+    const commentLength = comment.trim().length;
     if (commentLength < 10) {
-      setCommentError("Your comment must be at least 10 characters long.")
-      return
+      setCommentError("Your comment must be at least 10 characters long.");
+      return;
     }
     if (commentLength > 5000) {
-      setCommentError("Your comment must not exceed 5000 characters.")
-      return
+      setCommentError("Your comment must not exceed 5000 characters.");
+      return;
     }
 
-    setSubmitLoading(true)
+    setSubmitLoading(true);
     try {
       const data = {
         courseId: Number.parseInt(courseId),
         rating: rating,
         comment: comment.trim(),
-      }
-      console.log("Submitting payload:", JSON.stringify(data))
+      };
+      console.log("Submitting payload:", JSON.stringify(data));
 
       const apiCall = async (url, options) => {
-        console.log("Request URL:", url)
-        console.log("Request Options:", options)
-        const response = await fetch(url, options)
-        console.log("Raw Response Status:", response.status)
+        console.log("Request URL:", url);
+        console.log("Request Options:", options);
+        const response = await fetch(url, options);
+        console.log("Raw Response Status:", response.status);
         if (!response.ok) {
-          const errorText = await response.text()
-          console.error("Server error response:", errorText)
-          throw new Error(`Failed to submit rating and comment: ${response.status} - ${errorText}`)
+          const errorText = await response.text();
+          console.error("Server error response:", errorText);
+          throw new Error(`Failed to submit rating and comment: ${response.status} - ${errorText}`);
         }
-        const responseData = await response.json().catch(() => ({}))
-        console.log("Server success response:", responseData)
-        return responseData
-      }
+        const responseData = await response.json().catch(() => ({}));
+        console.log("Server success response:", responseData);
+        return responseData;
+      };
 
-      const submittedData = await rateCommentCourse(data, apiCall)
-      setSubmitSuccess("Rating and comment submitted successfully!")
+      const submittedData = await rateCommentCourse(data, apiCall);
+      setSubmitSuccess("Rating and comment submitted successfully!");
 
-      // Add comment locally
       const newComment =
         submittedData && submittedData.id
           ? submittedData
@@ -130,120 +129,123 @@ export default function RateCommentCourse({ courseId, setCourse }) {
               comment: comment.trim(),
               createdAt: new Date().toLocaleString(),
               user: { username: "You" },
-            }
-      setComments((prev) => [newComment, ...prev])
-      setCurrentPage(1)
+            };
+      setComments((prev) => [newComment, ...prev]);
+      setCurrentPage(1);
 
-      // Refetch course data to update course.rate
-      const updatedCourse = await getCourse(courseId)
-      setCourse(updatedCourse)
+      const updatedCourse = await getCourse(courseId);
+      setCourse(updatedCourse);
 
-      setRating(0)
-      setComment("")
-      setRatingError("")
-      setCommentError("")
+      setRating(0);
+      setComment("");
+      setRatingError("");
+      setCommentError("");
 
-      // Refetch comments for server sync
-      const fetchedComments = await getRateCommentCourse(courseId)
-      console.log("Refetched comments after submission:", fetchedComments)
-      setComments(Array.isArray(fetchedComments) ? fetchedComments : [newComment])
+      const fetchedComments = await getRateCommentCourse(courseId);
+      console.log("Refetched comments after submission:", fetchedComments);
+      setComments(Array.isArray(fetchedComments) ? fetchedComments : [newComment]);
     } catch (error) {
-      setSubmitError(error.message)
-      console.error("Submission error:", error)
+      setSubmitError(error.message);
+      console.error("Submission error:", error);
     } finally {
-      setSubmitLoading(false)
+      setSubmitLoading(false);
     }
-  }
+  };
 
-  const totalPages = Math.ceil(comments.length / ITEMS_PER_PAGE)
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
-  const endIndex = startIndex + ITEMS_PER_PAGE
-  const paginatedComments = comments.slice(startIndex, endIndex)
+  const totalPages = Math.ceil(comments.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedComments = comments.slice(startIndex, endIndex);
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1)
+      setCurrentPage((prev) => prev - 1);
     }
-  }
+  };
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1)
+      setCurrentPage((prev) => prev + 1);
     }
-  }
+  };
 
   return (
     <TabsContent value="overview" className="mt-0">
       <Card className="bg-gray-800/50 border-gray-700 shadow-xl">
         <CardContent className="p-6 sm:p-8">
           <div className="space-y-8">
-            <Card className="bg-gray-900 border-gray-700">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-xl font-mono text-white">Rate & Comment</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Button
-                          key={star}
-                          variant="ghost"
-                          size="sm"
-                          className="h-9 w-9 p-0 rounded-full"
-                          onMouseEnter={() => setHoverRating(star)}
-                          onMouseLeave={() => setHoverRating(0)}
-                          onClick={() => handleRating(star)}
-                        >
-                          <Star
-                            className={cn(
-                              "h-6 w-6 transition-all",
-                              hoverRating >= star || rating >= star ? "text-yellow-400 scale-110" : "text-gray-500",
-                            )}
-                            fill={hoverRating >= star || rating >= star ? "currentColor" : "none"}
-                          />
-                          <span className="sr-only">Rate {star} stars</span>
-                        </Button>
-                      ))}
-                      <span className="ml-2 text-sm text-gray-400">
-                        {rating > 0 ? `${rating} star${rating !== 1 ? "s" : ""}` : "Select rating"}
-                      </span>
+            {/* Show rating/comment input only if authenticated */}
+            {isAuthenticated ? (
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl font-mono text-white">Rate & Comment</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Button
+                            key={star}
+                            variant="ghost"
+                            size="sm"
+                            className="h-9 w-9 p-0 rounded-full"
+                            onMouseEnter={() => setHoverRating(star)}
+                            onMouseLeave={() => setHoverRating(0)}
+                            onClick={() => handleRating(star)}
+                          >
+                            <Star
+                              className={cn(
+                                "h-6 w-6 transition-all",
+                                hoverRating >= star || rating >= star ? "text-yellow-400 scale-110" : "text-gray-500",
+                              )}
+                              fill={hoverRating >= star || rating >= star ? "currentColor" : "none"}
+                            />
+                            <span className="sr-only">Rate {star} stars</span>
+                          </Button>
+                        ))}
+                        <span className="ml-2 text-sm text-gray-400">
+                          {rating > 0 ? `${rating} star${rating !== 1 ? "s" : ""}` : "Select rating"}
+                        </span>
+                      </div>
+                      {ratingError && <p className="text-red-400 text-sm">{ratingError}</p>}
                     </div>
-                    {ratingError && <p className="text-red-400 text-sm">{ratingError}</p>}
-                  </div>
 
-                  <div className="space-y-2">
-                    <Textarea
-                      placeholder="Share your experience with this course (10-5000 characters)..."
-                      value={comment}
-                      onChange={handleCommentChange}
-                      className="min-h-[120px] bg-gray-800 border-gray-700 text-gray-200 focus:border-gray-500 resize-y"
-                      disabled={submitLoading}
-                    />
-                    {commentError && <p className="text-red-400 text-sm">{commentError}</p>}
-                  </div>
+                    <div className="space-y-2">
+                      <Textarea
+                        placeholder="Share your experience with this course (10-5000 characters)..."
+                        value={comment}
+                        onChange={handleCommentChange}
+                        className="min-h-[120px] bg-gray-800 border-gray-700 text-gray-200 focus:border-gray-500 resize-y"
+                        disabled={submitLoading}
+                      />
+                      {commentError && <p className="text-red-400 text-sm">{commentError}</p>}
+                    </div>
 
-                  <div className="space-y-2">
-                    <Button
-                      onClick={handleSubmitRatingComment}
-                      disabled={submitLoading || !!ratingError || !!commentError}
-                      className="w-full sm:w-auto bg-primary hover:bg-primary-button-hover text-bg-card"
-                    >
-                      {submitLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Submitting...
-                        </>
-                      ) : (
-                        "Submit Review"
-                      )}
-                    </Button>
-                    {submitError && <p className="text-red-400 text-sm">{submitError}</p>}
-                    {submitSuccess && <p className="text-green-400 text-sm">{submitSuccess}</p>}
+                    <div className="space-y-2">
+                      <Button
+                        onClick={handleSubmitRatingComment}
+                        disabled={submitLoading || !!ratingError || !!commentError}
+                        className="w-full sm:w-auto bg-primary hover:bg-primary-button-hover text-bg-card"
+                      >
+                        {submitLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Submitting...
+                          </>
+                        ) : (
+                          "Submit Review"
+                        )}
+                      </Button>
+                      {submitError && <p className="text-red-400 text-sm">{submitError}</p>}
+                      {submitSuccess && <p className="text-green-400 text-sm">{submitSuccess}</p>}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            ) : (
+              <p className="text-gray-300 text-center">Please log in to rate and comment on this course.</p>
+            )}
 
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-white">Course Reviews</h3>
@@ -321,5 +323,5 @@ export default function RateCommentCourse({ courseId, setCourse }) {
         </CardContent>
       </Card>
     </TabsContent>
-  )
+  );
 }
