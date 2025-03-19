@@ -77,7 +77,10 @@ export async function getCourseList() {
   }
 
   export async function getCourse(id) {
-    const response = await fetch(ENDPOINTS.GET_COURSE.replace(":id", id))
+    const response = await fetch(ENDPOINTS.GET_COURSE.replace(":id", id), {
+      method: "GET",
+      credentials: "include",
+    })
     if (!response.ok) {
       throw new Error("Failed to fetch course")
     }
@@ -322,3 +325,209 @@ export async function updateCourse(id, courseData, imageFile, apiCall) {
       throw error // Propagate the error from apiCall
     }
   }
+
+  export async function getCourseDiscussion(id, { page = 0, size = 6, sortBy = "noUpvote", sortDirection = "desc" } = {}) {
+    const url = `${ENDPOINTS.GET_COURSE_DISCUSSION.replace(":id", id)}?page=${page}&size=${size}&sortBy=${sortBy}&sortDirection=${sortDirection}`;
+    console.log("Fetching discussion from URL:", url);
+  
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+      });
+      console.log("Response Status:", response.status);
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server Response:", errorText);
+        throw new Error(`Failed to fetch discussion: ${response.status} - ${errorText}`);
+      }
+  
+      const data = await response.json();
+      console.log("Fetched discussion:", data);
+      return data;
+    } catch (error) {
+      console.error("Error fetching discussion:", error.message);
+      throw error;
+    }
+  }
+
+  export async function getDiscussionReply(id) {
+    const url = `${ENDPOINTS.GET_DISCUSSION_REPLY.replace(":id", id)}`;
+    console.log("Fetching REPLY from URL:", url);
+  
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+      });
+      console.log("Response Status:", response.status);
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server Response:", errorText);
+        throw new Error(`Failed to fetch REPLY: ${response.status} - ${errorText}`);
+      }
+  
+      const data = await response.json();
+      console.log("Fetched REPLY:", data);
+      return data;
+    } catch (error) {
+      console.error("Error fetching REPLY:", error.message);
+      throw error;
+    }
+  }
+
+  export async function discussionCourse(data, apiCall) {
+    try {
+      const response = await apiCall(ENDPOINTS.POST_COURSE_DISCUSSION, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      
+      // Check if response is ok, otherwise throw an error with response text
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server error: ${response.status} - ${errorText}`);
+      }
+  
+      // If response has content, parse it; otherwise return success
+      const contentLength = response.headers.get("content-length");
+      const responseData = contentLength && contentLength !== "0" ? await response.json() : { success: true };
+      console.log("discussionCourse Response:", response.status, responseData);
+      return responseData;
+    } catch (error) {
+      console.error("discussionCourse Error:", error.message);
+      throw error; // Propagate the error to be caught in handleSendMessage
+    }
+  }
+
+
+export async function upvoteDiscussion(id) {
+  const url = ENDPOINTS.UPVOTE_COURSE_DISCUSSION.replace(":id", id);
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      credentials: "include",
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to upvote discussion: ${response.status} - ${errorText}`);
+    }
+
+    // For 204 status, there won't be a response body to parse
+    if (response.status === 204) {
+      console.log("upvoteDiscussion: Successfully upvoted comment", id);
+      return { success: true }; // Return a simple success object
+    }
+
+    // If the API returns content (not expected in this case, but keeping for completeness)
+    const responseData = await response.json();
+    console.log("upvoteDiscussion Response Data:", responseData);
+    return responseData;
+  } catch (error) {
+    console.error("upvoteDiscussion Error:", error.message);
+    throw error;
+  }
+}
+
+export async function unUpvoteDiscussion(id) {
+  const url = ENDPOINTS.UN_UPVOTE_COURSE_DISCUSSION.replace(":id", id);
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      credentials: "include",
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to unupvote discussion: ${response.status} - ${errorText}`);
+    }
+
+    // For 204 status, there won't be a response body to parse
+    if (response.status === 204) {
+      console.log("unUpvoteDiscussion: Successfully un-upvoted comment", id);
+      return { success: true }; // Return a simple success object
+    }
+
+    // If the API returns content (not expected in this case, but keeping for completeness)
+    const responseData = await response.json();
+    console.log("unUpvoteDiscussion Response Data:", responseData);
+    return responseData;
+  } catch (error) {
+    console.error("unUpvoteDiscussion Error:", error.message);
+    throw error;
+  }
+}
+
+// Updated courseRegisterIn with detailed logging
+export async function courseRegisterIn(id) {
+  const url = ENDPOINTS.COURSE_REGISTER_IN.replace(":id", id);
+  console.log(`[courseRegisterIn] Starting for course ID: ${id}, URL: ${url}`);
+  
+  try {
+    console.log(`[courseRegisterIn] Sending PUT request to ${url}`);
+    const response = await fetch(url, {
+      method: "PUT",
+      credentials: "include",
+    });
+    
+    console.log(`[courseRegisterIn] Response status: ${response.status}`);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[courseRegisterIn] Failed with status: ${response.status}, Error: ${errorText}`);
+      throw new Error(`Failed to register-in: ${response.status} - ${errorText}`);
+    }
+
+    if (response.status === 204) {
+      console.log(`[courseRegisterIn] Success - No content (204) for course ID: ${id}`);
+      return { success: true };
+    }
+
+    const responseData = await response.json();
+    console.log(`[courseRegisterIn] Success - Response data:`, responseData);
+    return responseData;
+  } catch (error) {
+    console.error(`[courseRegisterIn] Error for course ID: ${id}:`, error.message);
+    throw error;
+  }
+}
+
+export async function courseRegisterOUT(id) {
+  const url = ENDPOINTS.COURSE_REGISTER_OUT.replace(":id", id);
+  console.log(`[courseRegisterOUT] Starting for course ID: ${id}, URL: ${url}`);
+  
+  try {
+    console.log(`[courseRegisterOUT] Sending PUT request to ${url}`);
+    const response = await fetch(url, {
+      method: "PUT",
+      credentials: "include",
+    });
+    
+    console.log(`[courseRegisterOUT] Response status: ${response.status}`);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[courseRegisterOUT] Failed with status: ${response.status}, Error: ${errorText}`);
+      throw new Error(`Failed to register-out: ${response.status} - ${errorText}`);
+    }
+
+    if (response.status === 204) {
+      console.log(`[courseRegisterOUT] Success - No content (204) for course ID: ${id}`);
+      return { success: true };
+    }
+
+    const responseData = await response.json();
+    console.log(`[courseRegisterOUT] Success - Response data:`, responseData);
+    return responseData;
+  } catch (error) {
+    console.error(`[courseRegisterOUT] Error for course ID: ${id}:`, error.message);
+    throw error;
+  }
+}

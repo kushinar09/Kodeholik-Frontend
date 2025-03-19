@@ -1,10 +1,37 @@
-import { ArrowLeft, Star, BookOpen, Clock, Award, Calendar, Bookmark, BookmarkCheck, CheckCircle, Users, FileText, AlertCircle, Eye } from "lucide-react"
+"use client"
+
+import { useAuth } from "@/providers/AuthProvider"
+import {
+  ArrowLeft,
+  Star,
+  BookOpen,
+  Clock,
+  CheckCircle,
+  Calendar,
+  Bookmark,
+  BookmarkCheck,
+  Users,
+  FileText,
+  AlertCircle,
+  ChevronLeft,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+} from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 
 export default function CourseDetail({
   course,
@@ -20,11 +47,13 @@ export default function CourseDetail({
   totalLessons,
   completedLessons,
   completionPercentage,
-  isEnrolled, // New prop
+  isEnrolled,
 }) {
+  const { isAuthenticated } = useAuth()
+
   if (loading) {
     return (
-      <div>
+      <div className="container mx-auto px-4 py-8">
         <div className="flex items-center mb-8">
           <Skeleton className="h-10 w-32 bg-gray-700 rounded-md" />
         </div>
@@ -57,29 +86,33 @@ export default function CourseDetail({
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh]">
-        <div className="bg-red-500/10 p-6 rounded-full mb-6">
-          <AlertCircle className="h-16 w-16 text-red-500" />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col items-center justify-center h-[60vh]">
+          <div className="bg-red-500/10 p-6 rounded-full mb-6">
+            <AlertCircle className="h-16 w-16 text-red-500" />
+          </div>
+          <h2 className="text-3xl font-bold text-white mb-4">Error Loading Course</h2>
+          <p className="text-red-400 mb-8 text-center max-w-md">{error}</p>
+          <Button onClick={() => navigate(-1)} size="lg" className="gap-2">
+            <ArrowLeft className="h-5 w-5" /> Go Back
+          </Button>
         </div>
-        <h2 className="text-3xl font-bold text-white mb-4">Error Loading Course</h2>
-        <p className="text-red-400 mb-8 text-center max-w-md">{error}</p>
-        <Button onClick={() => navigate(-1)} size="lg" className="gap-2">
-          <ArrowLeft className="h-5 w-5" /> Go Back
-        </Button>
       </div>
     )
   }
 
   if (!course) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh]">
-        <div className="bg-yellow-500/10 p-6 rounded-full mb-6">
-          <AlertCircle className="h-16 w-16 text-yellow-500" />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col items-center justify-center h-[60vh]">
+          <div className="bg-yellow-500/10 p-6 rounded-full mb-6">
+            <AlertCircle className="h-16 w-16 text-yellow-500" />
+          </div>
+          <h2 className="text-3xl font-bold text-white mb-8">Course Not Found</h2>
+          <Button onClick={() => navigate(-1)} size="lg" className="gap-2">
+            <ArrowLeft className="h-5 w-5" /> Go Back
+          </Button>
         </div>
-        <h2 className="text-3xl font-bold text-white mb-8">Course Not Found</h2>
-        <Button onClick={() => navigate(-1)} size="lg" className="gap-2">
-          <ArrowLeft className="h-5 w-5" /> Go Back
-        </Button>
       </div>
     )
   }
@@ -88,14 +121,31 @@ export default function CourseDetail({
     navigate(`/learn/${course.id}`)
   }
 
+  const formatLastUpdated = (updatedAt) => {
+    if (!updatedAt) return "Unknown"
+    const [datePart, timePart] = updatedAt.split(", ")
+    const [day, month, year] = datePart.split("/").map(Number)
+    const [hours, minutes] = timePart.split(":").map(Number)
+    const updatedDate = new Date(year, month - 1, day, hours, minutes)
+    const currentDate = new Date()
+    const diffMs = currentDate - updatedDate
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 0) return "Today"
+    if (diffDays === 1) return "Yesterday"
+    if (diffDays < 7) return `${diffDays} days ago`
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
+    return updatedDate.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })
+  }
+
   return (
-    <>
+    <div className="container mx-auto px-4 py-8 animate-in fade-in duration-500">
       <Button
         variant="ghost"
-        className="mb-8 text-primary hover:bg-primary/10 transition group"
+        className="mb-8 text-primary hover:bg-primary/10 transition group flex items-center"
         onClick={() => navigate(-1)}
       >
-        <ArrowLeft className="mr-2 h-5 w-5 transition-transform group-hover:-translate-x-1" />
+        <ChevronLeft className="mr-1 h-5 w-5 transition-transform group-hover:-translate-x-1" />
         <span className="font-medium">Back to Courses</span>
       </Button>
 
@@ -103,127 +153,180 @@ export default function CourseDetail({
         <CardContent className="p-0">
           <div className="flex flex-col md:flex-row">
             <div className="w-full md:w-2/3 p-8">
-              <div className="flex flex-wrap items-center gap-3 mb-3">
-                <div className="flex items-center text-yellow-400 bg-yellow-400/10 px-3 py-1 rounded-full">
-                  <Star className="fill-yellow-400 h-4 w-4 mr-1" />
-                  <span className="font-medium">{course.rate || "N/A"}</span>
-                </div>
-                <Badge variant="outline" className="border-gray-600 text-gray-300 px-3 py-1">
-                  <Users className="h-3 w-3 mr-1" /> {course.numberOfParticipant} Students
-                </Badge>
+              <div className="flex flex-wrap items-center gap-3 mb-4">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center text-yellow-400 bg-yellow-400/10 px-3 py-1 rounded-full">
+                        <Star className="fill-yellow-400 h-4 w-4 mr-1" />
+                        <span className="font-medium">{course.rate || "N/A"}</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Course Rating</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge variant="outline" className="border-gray-600 text-gray-300 px-3 py-1">
+                        <Users className="h-3 w-3 mr-1" /> {course.numberOfParticipant} Students
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Enrolled Students</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
 
               <h1 className="text-3xl md:text-4xl font-bold text-white mb-6 leading-tight">{course.title}</h1>
 
-              <div className="bg-gray-900/50 p-5 rounded-xl mb-6 border border-gray-700/50">
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center">
-                  <FileText className="h-5 w-5 mr-2 text-primary" /> Description
-                </h3>
-                <p className="text-gray-300 leading-relaxed">{course.description}</p>
-              </div>
+              <Card className="bg-gray-900/50 border-gray-700/50 mb-6">
+                <CardHeader className="pb-2">
+                  <h3 className="text-lg font-semibold text-white flex items-center">
+                    <FileText className="h-5 w-5 mr-2 text-primary" /> Course Description
+                  </h3>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-48 pr-4">
+                    <RenderMarkdown className="text-text-primary leading-relaxed" content={course.description} />
+                  </ScrollArea>
+                </CardContent>
+              </Card>
 
-              {isEnrolled && (
-                <div className="mb-6">
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm text-gray-300">Course Progress</span>
-                    <span className="text-sm font-medium text-primary">{completionPercentage.toFixed(0)}%</span>
-                  </div>
-                  <Progress value={completionPercentage} className="h-2" />
-                  <div className="flex justify-between mt-2 text-xs text-gray-400">
-                    <span>
-                      {completedLessons} of {totalLessons} lessons completed
-                    </span>
-                    {completionPercentage === 100 && <span className="text-green-400">Completed!</span>}
-                  </div>
-                </div>
+              {/* Show progress only if authenticated and enrolled */}
+              {isAuthenticated && isEnrolled && (
+                <Card className="bg-gray-900/50 border-gray-700/50 mb-6">
+                  <CardHeader className="pb-2">
+                    <h3 className="text-lg font-semibold text-white flex items-center">
+                      <CheckCircle className="h-5 w-5 mr-2 text-primary" /> Your Progress
+                    </h3>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-gray-300">Course Completion</span>
+                      <span className="text-sm font-medium text-primary">{completionPercentage.toFixed(0)}%</span>
+                    </div>
+                    <Progress value={completionPercentage} className="h-2" />
+                    <div className="flex justify-between mt-2 text-xs text-gray-400">
+                      <span>
+                        {completedLessons} of {totalLessons} lessons completed
+                      </span>
+                      {completionPercentage === 100 && (
+                        <span className="text-green-400 font-medium">Course Completed!</span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
-              <div className="flex flex-wrap gap-3 mt-6">
-                {isEnrolled ? (
-                  <>
-                  <Button
-                    size="lg"
-                    className="gap-2 bg-primary text-black hover:bg-bg-primary hover:text-primary"
-                    onClick={handleLearn}
-                  >
-                    <BookOpen className="h-5 w-5" /> Continue Learning
-                  </Button>
+              {/* Show buttons only if authenticated */}
+              {isAuthenticated && (
+                <div className="flex flex-wrap gap-3 mt-6">
+                  {isEnrolled ? (
+                    <>
+                      <Button
+                        size="lg"
+                        className="gap-2 bg-primary text-black hover:bg-primary/90 hover:text-black transition-all duration-300 shadow-md shadow-primary/20"
+                        onClick={handleLearn}
+                      >
+                        <BookOpen className="h-5 w-5" /> Continue Learning
+                      </Button>
+                      {completionPercentage !== 100 && (
+                        <Dialog open={open} onOpenChange={setOpen}>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="lg"
+                              disabled={processing}
+                              className="gap-2 border-gray-600 hover:bg-gray-700 hover:text-primary transition-all duration-300"
+                            >
+                              {processing ? (
+                                "Processing..."
+                              ) : (
+                                <>
+                                  <Bookmark className="h-5 w-5" /> Unenroll
+                                </>
+                              )}
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="bg-gray-800 border-gray-700 text-white">
+                            <DialogHeader>
+                              <DialogTitle className="text-xl">Confirm Unenrollment</DialogTitle>
+                              <DialogDescription className="text-gray-300 mt-2">
+                                Are you sure you want to unenroll from this course? You may lose your progress.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter className="flex justify-end gap-2 mt-6">
+                              <Button
+                                variant="outline"
+                                onClick={() => setOpen(false)}
+                                disabled={processing}
+                                className="border-gray-600 hover:bg-gray-700 hover:text-primary"
+                              >
+                                Cancel
+                              </Button>
+                              <Button variant="destructive" onClick={handleUnenroll} disabled={processing}>
+                                {processing ? "Unenrolling..." : "Yes, Unenroll"}
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </>
+                  ) : (
                     <Dialog open={open} onOpenChange={setOpen}>
                       <DialogTrigger asChild>
                         <Button
-                          variant="outline"
-                          size="lg"
                           disabled={processing}
-                          className="gap-2 bg-primary text-black hover:bg-gray-700 hover:text-primary"
+                          size="lg"
+                          className="gap-2 bg-primary text-black hover:bg-primary/90 hover:text-black transition-all duration-300 shadow-md shadow-primary/20"
                         >
                           {processing ? (
                             "Processing..."
                           ) : (
                             <>
-                              <Bookmark className="h-5 w-5" /> Unenroll
+                              <BookmarkCheck className="h-5 w-5" /> Enroll in Course
                             </>
                           )}
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="bg-gray-800 border-gray-700 text-white">
-                        <DialogTitle className="text-xl">Confirm Unenrollment</DialogTitle>
-                        <DialogDescription className="text-gray-300 mt-2">
-                          Are you sure you want to unenroll from this course? You may lose your progress.
-                        </DialogDescription>
+                        <DialogHeader>
+                          <DialogTitle className="text-xl">Confirm Enrollment</DialogTitle>
+                          <DialogDescription className="text-gray-300 mt-2">
+                            Do you want to enroll in this course? You'll get immediate access to all available
+                            materials.
+                          </DialogDescription>
+                        </DialogHeader>
                         <DialogFooter className="flex justify-end gap-2 mt-6">
                           <Button
                             variant="outline"
                             onClick={() => setOpen(false)}
                             disabled={processing}
-                            className="border-gray-600 text-black hover:bg-gray-700 hover:text-primary"
+                            className="border-gray-600 hover:bg-gray-700 hover:text-primary"
                           >
                             Cancel
                           </Button>
-                          <Button variant="destructive" className="border-gray-600 text-black hover:bg-gray-700 hover:text-primary" onClick={handleUnenroll} disabled={processing}>
-                            {processing ? "Unenrolling..." : "Yes, Unenroll"}
+                          <Button
+                            onClick={handleEnroll}
+                            disabled={processing}
+                            className="bg-primary text-black hover:bg-primary/90"
+                          >
+                            {processing ? "Enrolling..." : "Yes, Enroll"}
                           </Button>
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
-                  </>
-                ) : (
-                  <Dialog open={open} onOpenChange={setOpen}>
-                    <DialogTrigger asChild>
-                      <Button disabled={processing} size="lg" className="gap-2">
-                        {processing ? (
-                          "Processing..."
-                        ) : (
-                          <>
-                            <BookmarkCheck className="h-5 w-5" /> Enroll in Course
-                          </>
-                        )}
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-gray-800 border-gray-700 text-white">
-                      <DialogTitle className="text-xl">Confirm Enrollment</DialogTitle>
-                      <DialogDescription className="text-gray-300 mt-2">
-                        Do you want to enroll in this course? You'll get immediate access to all available materials.
-                      </DialogDescription>
-                      <DialogFooter className="flex justify-end gap-2 mt-6">
-                        <Button
-                          variant="outline"
-                          onClick={() => setOpen(false)}
-                          disabled={processing}
-                          className="border-gray-600 text-black hover:bg-gray-700 hover:text-primary"
-                        >
-                          Cancel
-                        </Button>
-                        <Button onClick={handleEnroll} className="border-gray-600 text-black hover:bg-gray-700 hover:text-primary" disabled={processing}>
-                          {processing ? "Enrolling..." : "Yes, Enroll"}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            <div className="w-full md:w-1/3 bg-gray-900/80 p-8 flex flex-col items-center justify-center">
+            <div className="w-full md:w-1/3 bg-gray-900/80 p-8 flex flex-col items-center">
               <div className="relative mb-6 group">
                 {imageUrl ? (
                   <div className="relative">
@@ -250,34 +353,49 @@ export default function CourseDetail({
               </div>
 
               <div className="w-full space-y-4 mt-2">
-                <div className="flex items-center justify-between p-4 bg-gray-800/80 rounded-xl border border-gray-700/50">
-                  <div className="flex items-center">
-                    <Clock className="h-5 w-5 mr-2 text-primary" />
-                    <span className="text-gray-300">Duration</span>
-                  </div>
-                  <span className="text-white font-medium">4 weeks</span>
-                </div>
+                <Card className="bg-gray-800/80 border-gray-700/50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <Clock className="h-5 w-5 mr-2 text-primary" />
+                        <span className="text-gray-300">Duration</span>
+                      </div>
+                      <span className="text-white font-medium">4 weeks</span>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                <div className="flex items-center justify-between p-4 bg-gray-800/80 rounded-xl border border-gray-700/50">
-                  <div className="flex items-center">
-                    <Award className="h-5 w-5 mr-2 text-primary" />
-                    <span className="text-gray-300">Certificate</span>
-                  </div>
-                  <span className="text-white font-medium">Yes</span>
-                </div>
+                {completionPercentage === 100 && (
+                  <Card className="bg-gray-800/80 border-gray-700/50">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <CheckCircle className="h-5 w-5 mr-2 text-green-400" />
+                          <span className="text-gray-300">Status</span>
+                        </div>
+                        <span className="text-green-400 font-medium">Completed</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
-                <div className="flex items-center justify-between p-4 bg-gray-800/80 rounded-xl border border-gray-700/50">
-                  <div className="flex items-center">
-                    <Calendar className="h-5 w-5 mr-2 text-primary" />
-                    <span className="text-gray-300">Last Updated</span>
-                  </div>
-                  <span className="text-white font-medium">2 weeks ago</span>
-                </div>
+                <Card className="bg-gray-800/80 border-gray-700/50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <Calendar className="h-5 w-5 mr-2 text-primary" />
+                        <span className="text-gray-300">Last Updated</span>
+                      </div>
+                      <span className="text-white font-medium">{formatLastUpdated(course.updatedAt)}</span>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
-    </>
+    </div>
   )
 }
+
