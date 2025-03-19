@@ -239,10 +239,9 @@ export default function CourseDetail({
                         <Dialog open={open} onOpenChange={setOpen}>
                           <DialogTrigger asChild>
                             <Button
-                              variant="outline"
                               size="lg"
                               disabled={processing}
-                              className="gap-2 border-gray-600 hover:bg-gray-700 hover:text-primary transition-all duration-300"
+                              className="gap-2 bg-bg-error text-white hover:bg-primary hover:text-black transition-all duration-300"
                             >
                               {processing ? (
                                 "Processing..."

@@ -6,7 +6,7 @@ import { getCourse, getCourseDiscussion, discussionCourse, getDiscussionReply, u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { GLOBALS } from "@/lib/constants";
-import { Send, X, ThumbsUp, ChevronDown, ChevronUp, MessageSquare, Clock } from 'lucide-react';
+import { Send, X, ArrowBigUp, ChevronDown, ChevronUp, MessageSquare, Clock } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -247,7 +247,7 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
         className={`h-7 px-2 rounded-full ${message.liked ? "text-primary-button bg-primary-button/10" : "text-text-muted hover:bg-bg-muted hover:text-primary"}`}
         onClick={() => toggleLike(message.id, isReply, parentId)}
       >
-        <ThumbsUp className={`h-3.5 w-3.5 mr-1 ${message.liked ? "fill-primary-button" : ""}`} />
+        <ArrowBigUp className={`h-3.5 w-3.5 mr-1 ${message.liked ? "fill-primary-button" : ""}`} />
         <span className="text-xs">{message.likes > 0 ? message.likes : ""}</span>
       </Button>
       
