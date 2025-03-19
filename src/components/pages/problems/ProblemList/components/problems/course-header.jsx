@@ -9,13 +9,12 @@ import placeholder from "@/assets/images/placeholder_square.jpg"
 
 export function CourseHeader() {
   const [date, setDate] = useState(new Date())
-  const [courses, setCourses] = useState([])
+  const [courses, setCourses] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        // Replace with your actual API endpoint
         const response = await fetch(ENDPOINTS.GET_TOP_COURSES)
         const data = await response.json()
         setCourses(data)
@@ -34,10 +33,10 @@ export function CourseHeader() {
       <div className="grid grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {loading
+            {loading || !courses
               ? // Skeleton loading state
-              [...Array(6)].map((_, i) => <Card key={i} className="h-48 bg-bg-card border-0 animate-pulse" />)
-              : // Actual course cards
+              [...Array(6)].map((_, i) => <Card key={i} className="h-32 bg-bg-card border-0 animate-pulse" />)
+              :
               courses
                 .slice(0, 6)
                 .map((course) => <CourseCard key={course.id} course={course} />)}

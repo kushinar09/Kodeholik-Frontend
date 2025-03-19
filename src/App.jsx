@@ -19,12 +19,12 @@ import CreateCourse from "./components/pages/courses/CreateCourse"
 import UpdateCourse from "./components/pages/courses/UpdateCourse"
 import ExamList from "./components/pages/exam/list"
 import Profile from "./components/pages/profile"
-import CourseDiscussion from "./components/pages/courses/CourseDiscussion"
 import ShareSolution from "./components/pages/problems/ShareSolution"
 import { Toaster } from "sonner"
 import { SocketProvider } from "./providers/SocketNotificationProvider"
 import ExamProblems from "./components/pages/exam/exam-problem"
 import { SocketExamProvider } from "./providers/SocketExamProvider"
+import CourseDiscussion from "./components/pages/courses/CourseDetail/components/CourseDiscussion"
 
 function App() {
   return (
@@ -55,8 +55,8 @@ function App() {
                 <Route path="/problem/:id" element={<ProblemDetail />} />
                 <Route path="/problem-submission/:id/:submission" element={<ProblemDetail />} />
                 <Route path="/problem-solution/:id/:solution" element={<ProblemDetail />} />
-                {/* test */}
-                <Route path="/share-solution/:link/:submission" element={<ShareSolution/>} />
+                <Route path="/share-solution/:link/:submission" element={<ShareSolution />} />
+
                 {/* auth */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/forgot" element={<ForgotPassword />} />
@@ -68,6 +68,7 @@ function App() {
                 <Route path="/courses/add" element={<CreateCourse />} />
                 <Route path="/courses/update/:id" element={<UpdateCourse />} />
                 <Route path="/learn" element={<LearnThroughVideoAndText />} />
+
                 {/* profile */}
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/learn/:id" element={<LearnThroughVideoAndText />} />
