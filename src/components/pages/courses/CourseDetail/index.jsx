@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { BookOpen, FileText, MessageSquare } from "lucide-react";
 import Header from "@/components/common/shared/header";
 import FooterSection from "@/components/common/shared/footer";
-import { getCourse, enrollCourse, unEnrollCourse, getImage, checkEnrollCourse } from "@/lib/api/course_api";
+import { getCourse, enrollCourse, unEnrollCourse, checkEnrollCourse } from "@/lib/api/course_api";
 import { useAuth } from "@/providers/AuthProvider"; // Import useAuth
 import CourseDetail from "./components/courseDetail";
 import CourseModule from "./components/courseModule";
@@ -27,7 +27,6 @@ export default function CourseDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [processing, setProcessing] = useState(false);
-  const [imageUrl, setImageUrl] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [messageDialog, setMessageDialog] = useState({
@@ -49,15 +48,6 @@ export default function CourseDetailPage() {
         }
         setCourse(courseData);
         setChapters(courseData.chapters || []);
-
-        // Fetch image (optional, handle failure gracefully)
-        try {
-          const url = await getImage(courseData.image);
-          setImageUrl(url);
-        } catch (imgError) {
-          console.warn("Failed to fetch course image:", imgError.message);
-          setImageUrl(null); // Fallback to no image
-        }
 
         // Only check enrollment if authenticated
         if (isAuthenticated) {
@@ -159,7 +149,6 @@ export default function CourseDetailPage() {
           loading={loading}
           error={error}
           navigate={navigate}
-          imageUrl={imageUrl}
           open={open}
           setOpen={setOpen}
           processing={processing}
