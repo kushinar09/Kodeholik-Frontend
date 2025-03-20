@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { getCourse, getCourseDiscussion, discussionCourse, getDiscussionReply, upvoteDiscussion, unUpvoteDiscussion, getImage } from "@/lib/api/course_api";
+import { getCourse, getCourseDiscussion, discussionCourse, getDiscussionReply, upvoteDiscussion, unUpvoteDiscussion } from "@/lib/api/course_api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { GLOBALS } from "@/lib/constants";
@@ -62,42 +62,35 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
   };
 
   const transformDiscussionData = async (discussionData, replyData) => {
-    const messagesWithAvatars = await Promise.all(
-      discussionData.map(async (comment) => {
-        const commentReplies = replyData.filter((reply) => reply.replyId === comment.id);
-        // Fetch avatar for main comment
-        const avatarUrl = comment.createdBy.avatar 
-          ? await getImage(comment.createdBy.avatar).catch(() => "/placeholder.svg?height=40&width=40")
-          : "/placeholder.svg?height=40&width=40";
-
-        // Fetch avatars for replies
-        const repliesWithAvatars = await Promise.all(
-          commentReplies.map(async (reply) => ({
-            id: reply.id,
-            user: reply.createdBy.username,
-            text: reply.comment,
-            time: reply.createdAt,
-            avatar: reply.createdBy.avatar 
-              ? await getImage(reply.createdBy.avatar).catch(() => "/placeholder.svg?height=40&width=40")
-              : "/placeholder.svg?height=40&width=40",
-            likes: reply.noUpvote,
-            liked: reply.voted,
-          }))
-        );
-
-        return {
-          id: comment.id,
-          user: comment.createdBy.username,
-          text: comment.comment,
-          time: comment.createdAt,
-          avatar: avatarUrl,
-          likes: comment.noUpvote,
-          liked: comment.voted,
-          replies: repliesWithAvatars,
-          showReplies: false,
-        };
-      })
-    );
+    const messagesWithAvatars = discussionData.map((comment) => {
+      const commentReplies = replyData.filter((reply) => reply.replyId === comment.id);
+      
+      // Use the avatar URL directly if it exists, otherwise use placeholder
+      const avatarUrl = comment.createdBy.avatar || "/placeholder.svg?height=40&width=40";
+  
+      const repliesWithAvatars = commentReplies.map((reply) => ({
+        id: reply.id,
+        user: reply.createdBy.username,
+        text: reply.comment,
+        time: reply.createdAt,
+        avatar: reply.createdBy.avatar || "/placeholder.svg?height=40&width=40",
+        likes: reply.noUpvote,
+        liked: reply.voted,
+      }));
+  
+      return {
+        id: comment.id,
+        user: comment.createdBy.username,
+        text: comment.comment,
+        time: comment.createdAt,
+        avatar: avatarUrl,
+        likes: comment.noUpvote,
+        liked: comment.voted,
+        replies: repliesWithAvatars,
+        showReplies: false,
+      };
+    });
+    
     return messagesWithAvatars;
   };
 
