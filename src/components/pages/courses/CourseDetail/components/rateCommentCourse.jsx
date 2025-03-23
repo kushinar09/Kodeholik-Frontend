@@ -259,7 +259,7 @@ export default function RateCommentCourse({ courseId, setCourse }) {
                   <CardContent className="p-6 text-center">
                     <p className="text-gray-300 mb-4">You must enroll in this course to rate and comment.</p>
                     <Button
-                      onClick={() => navigate(`/course/${courseId}`)}
+                      onClick={() => navigate(`/courses/${courseId}`)}
                       className="bg-primary hover:bg-primary-button-hover text-bg-card"
                     >
                       Enroll Now

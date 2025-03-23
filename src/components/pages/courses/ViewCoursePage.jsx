@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card"
-import Header from "@/components/common/shared/header"
 import FooterSection from "@/components/common/shared/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,6 +7,7 @@ import { getCourseSearch, getTopicList } from "@/lib/api/course_api"
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { GLOBALS } from "@/lib/constants"
+import HeaderSection from "@/components/common/shared/header"
 
 // Sync with desired page size
 const ITEMS_PER_PAGE = 8
@@ -30,7 +30,7 @@ export default function CoursePage() {
   // Fetch courses based on currentPage, searchQuery, and selectedTopic
   useEffect(() => {
     const fetchCourses = async () => {
-      setIsLoading(true);
+      setIsLoading(true)
       try {
         const data = await getCourseSearch({
           page: currentPage - 1,
@@ -38,71 +38,71 @@ export default function CoursePage() {
           sortBy: "numberOfParticipant",
           ascending: true,
           query: searchQuery || undefined,
-          topic: selectedTopic === "All" ? undefined : selectedTopic,
-        });
+          topic: selectedTopic === "All" ? undefined : selectedTopic
+        })
         // Filter by title manually if backend doesn't support it
         const filteredCourses = searchQuery
           ? (data.content || []).filter(course =>
-              course.title.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-          : data.content || [];
-        setCourses(filteredCourses);
-        setTotalPages(data.totalPages || 1);
+            course.title.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+          : data.content || []
+        setCourses(filteredCourses)
+        setTotalPages(data.totalPages || 1)
       } catch (error) {
-        console.error("Error fetching courses:", error);
-        setCourses([]);
-        setTotalPages(1);
+        console.error("Error fetching courses:", error)
+        setCourses([])
+        setTotalPages(1)
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
-    fetchCourses();
-  }, [currentPage, searchQuery, selectedTopic]);
+    }
+    fetchCourses()
+  }, [currentPage, searchQuery, selectedTopic])
 
   // Fetch topics on mount
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const data = await getTopicList();
-        setTopics(data || []);
+        const data = await getTopicList()
+        setTopics(data || [])
       } catch (error) {
-        console.error("Error fetching topics:", error);
-        setTopics([]);
+        console.error("Error fetching topics:", error)
+        setTopics([])
       }
-    };
-    fetchTopics();
-  }, []);
+    }
+    fetchTopics()
+  }, [])
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
+      setCurrentPage(page)
     }
-  };
+  }
 
   const handleFilterClick = () => {
-    setIsFilterExpanded(!isFilterExpanded);
-  };
+    setIsFilterExpanded(!isFilterExpanded)
+  }
 
   const handleTopicClick = (topic) => {
-    setSelectedTopic(topic === "All" ? "All" : topic);
-    setCurrentPage(1); // Reset to first page when filter changes
-    setIsFilterExpanded(false);
-  };
+    setSelectedTopic(topic === "All" ? "All" : topic)
+    setCurrentPage(1) // Reset to first page when filter changes
+    setIsFilterExpanded(false)
+  }
 
   // Handle clearing all filters
   const handleClearFilters = () => {
-    setSearchQuery("");
-    setSelectedTopic("All");
-    setCurrentPage(1);
-  };
+    setSearchQuery("")
+    setSelectedTopic("All")
+    setCurrentPage(1)
+  }
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      <Header />
-      <div className=" mx-36 mt-2 ">
+      <HeaderSection currentActive="courses"/>
+      <div className="mx-36 mt-4">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Explore Courses</h1>
-          <p className="text-text-secondary">Discover and enroll in our wide range of courses</p>
+          <h1 className="text-xl font-bold text-white mb-2">Explore Courses</h1>
+          <p className="text-md text-text-secondary">Discover and enroll in our wide range of courses</p>
         </div>
 
         <div className="mb-8 bg-bg-card rounded-lg p-4 shadow-md border border-border-muted">
@@ -135,7 +135,7 @@ export default function CoursePage() {
               onClick={handleFilterClick}
               className={cn(
                 "text-primary font-medium hover:bg-primary transition hover:text-black px-4 min-w-[120px]",
-                isFilterExpanded && "bg-button-primary text-bg-primary hover:bg-button-hover",
+                isFilterExpanded && "bg-button-primary text-bg-primary hover:bg-button-hover"
               )}
             >
               Filter by Topic
@@ -159,7 +159,7 @@ export default function CoursePage() {
                 onClick={() => handleTopicClick("All")}
                 className={cn(
                   "text-primary font-medium hover:bg-primary transition hover:text-black rounded-full px-4 py-2 text-sm",
-                  selectedTopic === "All" && "bg-button-primary text-bg-primary hover:bg-button-hover",
+                  selectedTopic === "All" && "bg-button-primary text-bg-primary hover:bg-button-hover"
                 )}
               >
                 All Topics
@@ -172,7 +172,7 @@ export default function CoursePage() {
                   className={cn(
                     "text-primary font-medium hover:bg-primary transition hover:text-black rounded-full px-4 py-2 text-sm",
                     selectedTopic === (topic.name || topic) &&
-                      "bg-button-primary text-bg-primary hover:bg-button-hover",
+                      "bg-button-primary text-bg-primary hover:bg-button-hover"
                   )}
                 >
                   {topic.name || topic}
@@ -206,7 +206,7 @@ export default function CoursePage() {
             </svg>
             <h3 className="text-xl font-semibold text-text-primary mb-2">No courses found</h3>
             <p className="text-text-secondary max-w-md">
-              We couldn't find any courses matching your search criteria. Try adjusting your filters or search term.
+              We couldn&apos;t find any courses matching your search criteria. Try adjusting your filters or search term.
             </p>
             <Button
               className="mt-4 bg-button-primary text-bg-primary hover:bg-button-hover"
@@ -274,17 +274,15 @@ export default function CoursePage() {
             </Button>
             <div className="flex gap-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
-                let pageToShow;
+                let pageToShow
                 if (totalPages <= 5) {
-                  pageToShow = index + 1;
+                  pageToShow = index + 1
+                } else if (currentPage <= 3) {
+                  pageToShow = index + 1
+                } else if (currentPage >= totalPages - 2) {
+                  pageToShow = totalPages - 4 + index
                 } else {
-                  if (currentPage <= 3) {
-                    pageToShow = index + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageToShow = totalPages - 4 + index;
-                  } else {
-                    pageToShow = currentPage - 2 + index;
-                  }
+                  pageToShow = currentPage - 2 + index
                 }
 
                 return (
@@ -296,12 +294,12 @@ export default function CoursePage() {
                       "min-w-[40px] h-10 rounded-md",
                       currentPage === pageToShow
                         ? "bg-button-primary text-bg-primary hover:bg-button-hover"
-                        : "text-primary border border-primary hover:bg-primary hover:text-black",
+                        : "text-primary border border-primary hover:bg-primary hover:text-black"
                     )}
                   >
                     {pageToShow}
                   </Button>
-                );
+                )
               })}
 
               {totalPages > 5 && currentPage < totalPages - 2 && (
@@ -339,5 +337,5 @@ export default function CoursePage() {
       </div>
       <FooterSection />
     </div>
-  );
+  )
 }

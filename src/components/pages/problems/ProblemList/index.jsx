@@ -243,10 +243,10 @@ export default function ProblemPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-bg-primary">
-        <HeaderSection currentActive="problem"/>
+      <div className="min-h-screen bg-gradient-to-b from-bg-primary to-bg-primary/90">
+        <HeaderSection currentActive="problems"/>
         {/* Main Content */}
-        <main className="p-4 px-24">
+        <main className="p-4 px-36">
           {/* Study Plan Section */}
           <CourseHeader stats={stats} />
 

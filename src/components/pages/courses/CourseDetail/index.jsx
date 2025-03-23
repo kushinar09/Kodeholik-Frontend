@@ -1,149 +1,149 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { BookOpen, FileText, MessageSquare } from "lucide-react";
-import Header from "@/components/common/shared/header";
-import FooterSection from "@/components/common/shared/footer";
-import { getCourse, enrollCourse, unEnrollCourse, checkEnrollCourse } from "@/lib/api/course_api";
-import { useAuth } from "@/providers/AuthProvider"; // Import useAuth
-import CourseDetail from "./components/courseDetail";
-import CourseModule from "./components/courseModule";
-import RateCommentCourse from "./components/rateCommentCourse";
-import CourseDiscussion from "./components/CourseDiscussion";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react"
+import { useParams, useNavigate } from "react-router-dom"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { BookOpen, FileText, MessageSquare } from "lucide-react"
+import FooterSection from "@/components/common/shared/footer"
+import { getCourse, enrollCourse, unEnrollCourse, checkEnrollCourse } from "@/lib/api/course_api"
+import { useAuth } from "@/providers/AuthProvider"
+import CourseDetail from "./components/courseDetail"
+import CourseModule from "./components/courseModule"
+import RateCommentCourse from "./components/rateCommentCourse"
+import CourseDiscussion from "./components/CourseDiscussion"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import HeaderSection from "@/components/common/shared/header"
 
 export default function CourseDetailPage() {
-  const [open, setOpen] = useState(false);
-  const [showChat, setShowChat] = useState(false);
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuth(); // Get authentication status
-  const [course, setCourse] = useState(null);
-  const [chapters, setChapters] = useState([]);
-  const [expandedChapters, setExpandedChapters] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [processing, setProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [open, setOpen] = useState(false)
+  const [showChat, setShowChat] = useState(false)
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { isAuthenticated } = useAuth() // Get authentication status
+  const [course, setCourse] = useState(null)
+  const [chapters, setChapters] = useState([])
+  const [expandedChapters, setExpandedChapters] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [processing, setProcessing] = useState(false)
+  const [activeTab, setActiveTab] = useState("overview")
+  const [isEnrolled, setIsEnrolled] = useState(false)
   const [messageDialog, setMessageDialog] = useState({
     open: false,
     title: "",
     message: "",
-    isError: false,
-  });
+    isError: false
+  })
 
   useEffect(() => {
     async function fetchCourseData() {
       try {
-        setLoading(true);
+        setLoading(true)
 
         // Fetch course data (always needed, even if not logged in)
-        const courseData = await getCourse(id);
+        const courseData = await getCourse(id)
         if (!courseData) {
-          throw new Error("Course not found");
+          throw new Error("Course not found")
         }
-        setCourse(courseData);
-        setChapters(courseData.chapters || []);
+        setCourse(courseData)
+        setChapters(courseData.chapters || [])
 
         // Only check enrollment if authenticated
         if (isAuthenticated) {
           try {
-            const enrolled = await checkEnrollCourse(id);
-            setIsEnrolled(enrolled);
+            const enrolled = await checkEnrollCourse(id)
+            setIsEnrolled(enrolled)
           } catch (enrollError) {
-            console.warn("Failed to check enrollment:", enrollError.message);
-            setIsEnrolled(false); // Fallback to false if check fails
+            console.warn("Failed to check enrollment:", enrollError.message)
+            setIsEnrolled(false) // Fallback to false if check fails
           }
         } else {
-          setIsEnrolled(false); // Default to not enrolled if not logged in
-          console.log("User not authenticated, skipping enrollment check.");
+          setIsEnrolled(false) // Default to not enrolled if not logged in
+          console.log("User not authenticated, skipping enrollment check.")
         }
       } catch (error) {
-        console.error("Error fetching course data:", error.message);
-        setError(error.message); // Set error only for critical failures
+        console.error("Error fetching course data:", error.message)
+        setError(error.message) // Set error only for critical failures
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
     }
-    fetchCourseData();
-  }, [id, isAuthenticated]); // Add isAuthenticated as dependency
+    fetchCourseData()
+  }, [id, isAuthenticated]) // Add isAuthenticated as dependency
 
   const handleEnroll = async () => {
-    setProcessing(true);
+    setProcessing(true)
     try {
-      await enrollCourse(id);
-      const updatedCourse = await getCourse(id);
-      setCourse(updatedCourse);
-      setChapters(updatedCourse.chapters || []);
-      setIsEnrolled(true);
-      setOpen(false);
+      await enrollCourse(id)
+      const updatedCourse = await getCourse(id)
+      setCourse(updatedCourse)
+      setChapters(updatedCourse.chapters || [])
+      setIsEnrolled(true)
+      setOpen(false)
       setMessageDialog({
         open: true,
         title: "Enrollment Successful",
         message: "You have successfully enrolled!",
-        isError: false,
-      });
+        isError: false
+      })
     } catch (error) {
       setMessageDialog({
         open: true,
         title: "Enrollment Failed",
         message: `Enrollment failed: ${error.message}`,
-        isError: true,
-      });
+        isError: true
+      })
     } finally {
-      setProcessing(false);
+      setProcessing(false)
     }
-  };
+  }
 
   const handleUnenroll = async () => {
-    setProcessing(true);
+    setProcessing(true)
     try {
-      await unEnrollCourse(id);
-      const updatedCourse = await getCourse(id);
-      setCourse(updatedCourse);
-      setChapters(updatedCourse.chapters || []);
-      setIsEnrolled(false);
-      setOpen(false);
+      await unEnrollCourse(id)
+      const updatedCourse = await getCourse(id)
+      setCourse(updatedCourse)
+      setChapters(updatedCourse.chapters || [])
+      setIsEnrolled(false)
+      setOpen(false)
       setMessageDialog({
         open: true,
         title: "Unenrollment Successful",
         message: "You have successfully unenrolled!",
-        isError: false,
-      });
+        isError: false
+      })
     } catch (error) {
       setMessageDialog({
         open: true,
         title: "Unenrollment Failed",
         message: `Unenrollment failed: ${error.message}`,
-        isError: true,
-      });
+        isError: true
+      })
     } finally {
-      setProcessing(false);
+      setProcessing(false)
     }
-  };
+  }
 
   const toggleChapter = (chapterId) => {
     setExpandedChapters((prev) => ({
       ...prev,
-      [chapterId]: !prev[chapterId],
-    }));
-  };
+      [chapterId]: !prev[chapterId]
+    }))
+  }
 
-  const totalLessons = chapters.reduce((acc, chapter) => acc + (chapter.lessons?.length || 0), 0);
+  const totalLessons = chapters.reduce((acc, chapter) => acc + (chapter.lessons?.length || 0), 0)
   const completedLessons = chapters.reduce(
     (acc, chapter) => acc + (chapter.lessons?.filter((lesson) => lesson.completed).length || 0),
     0
-  );
-  const completionPercentage = course?.progress || 0;
+  )
+  const completionPercentage = course?.progress || 0
 
   return (
     <div className="min-h-screen bg-bg-primary from-gray-900 to-gray-800">
-      <Header />
-      <div className="mx-48">
+      <HeaderSection currentActive="courses"/>
+      <div className="mx-36">
         <CourseDetail
           course={course}
           loading={loading}
@@ -222,5 +222,5 @@ export default function CourseDetailPage() {
 
       <FooterSection />
     </div>
-  );
+  )
 }

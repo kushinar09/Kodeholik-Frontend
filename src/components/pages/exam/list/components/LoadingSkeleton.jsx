@@ -2,12 +2,10 @@ import ExamCardSkeleton from "./ExamCardSkeleton"
 
 export default function LoadingSkeleton() {
   return (
-    <div className="mx-auto py-8 px-24 bg-bg-primary">
-      <div className="h-16 w-full bg-gray-200 rounded-md mx-auto mb-8 animate-pulse bg-bg-card/70"></div>
-
+    <div className="mx-auto py-8 px-36 bg-bg-primary">
       {/* Happening Now Skeleton */}
       <div className="mb-10">
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-600/40 to-purple-600/40 shadow-lg p-6 md:p-8">
+        <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-bg-card to-[#1E282C] shadow-lg p-6 md:p-8">
           <div className="flex items-center mb-4">
             <div className="h-8 w-40 bg-white/30 rounded-md animate-pulse"></div>
           </div>

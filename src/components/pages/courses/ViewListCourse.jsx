@@ -114,7 +114,7 @@ function CourseList() {
         <Card className="border-border-muted bg-bg-card shadow-lg">
           <CardHeader className="pb-4 border-b border-border-muted">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <CardTitle className="text-3xl font-bold text-text-primary">Course List</CardTitle>
+              <CardTitle className="text-xl font-bold text-text-primary">Course List</CardTitle>
               <Link to="/createCourse">
                 <Button className="bg-primary text-black font-bold hover:bg-primary/90 transition-colors text-base py-2 px-4 w-full md:w-auto">
                   <Plus className="mr-2 h-4 w-4" />

@@ -13,11 +13,11 @@ function CreateCourse() {
   return (
     <div className="min-h-screen bg-bg-primary">
       <Header/>
-        <div className="container mx-auto p-6">
-            <h1 className="text-2xl text-text-primary font-bold mb-4">Create New Course</h1>
-            <CourseForm />
-        </div>
-        <FooterSection/>
+      <div className="container mx-auto p-6">
+        <h1 className="text-2xl text-text-primary font-bold mb-4">Create New Course</h1>
+        <CourseForm />
+      </div>
+      <FooterSection/>
     </div>
   )
 }

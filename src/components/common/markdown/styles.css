@@ -120,7 +120,7 @@
 
 .markdown code,
 .markdown pre {
-  @apply bg-red-100 rounded-lg text-xs leading-6;
+  @apply bg-gray-200 text-black rounded-lg text-xs leading-6;
 }
 
 .markdown pre {
@@ -132,7 +132,7 @@
 }
 
 .markdown code {
-  @apply mx-1 my-4 p-1;
+  @apply mx-1 my-4 p-1 px-2;
 }
 
 .markdown pre code {

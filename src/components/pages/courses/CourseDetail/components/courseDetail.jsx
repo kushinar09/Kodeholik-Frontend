@@ -52,7 +52,7 @@ export default function CourseDetail({
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="py-8">
         <div className="flex items-center mb-8">
           <Skeleton className="h-10 w-32 bg-gray-700 rounded-md" />
         </div>
@@ -85,7 +85,7 @@ export default function CourseDetail({
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="py-8">
         <div className="flex flex-col items-center justify-center h-[60vh]">
           <div className="bg-red-500/10 p-6 rounded-full mb-6">
             <AlertCircle className="h-16 w-16 text-red-500" />
@@ -138,10 +138,10 @@ export default function CourseDetail({
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 animate-in fade-in duration-500">
+    <div className="py-8 animate-in fade-in duration-500">
       <Button
         variant="ghost"
-        className="mb-8 text-primary hover:bg-primary/10 transition group flex items-center"
+        className="mb-8 text-primary hover:bg-primary hover:text-bg-card transition group flex items-center"
         onClick={() => navigate(-1)}
       >
         <ChevronLeft className="mr-1 h-5 w-5 transition-transform group-hover:-translate-x-1" />
@@ -181,16 +181,11 @@ export default function CourseDetail({
                 </TooltipProvider>
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-6 leading-tight">{course.title}</h1>
+              <h1 className="text-xl md:text-2xl font-bold text-white mb-6 leading-tight">{course.title}</h1>
 
-              <Card className="bg-gray-900/50 border-gray-700/50 mb-6">
-                <CardHeader className="pb-2">
-                  <h3 className="text-lg font-semibold text-white flex items-center">
-                    <FileText className="h-5 w-5 mr-2 text-primary" /> Course Description
-                  </h3>
-                </CardHeader>
+              <Card className="bg-gray-900/50 border-gray-700/50">
                 <CardContent>
-                  <ScrollArea className="h-48 pr-4">
+                  <ScrollArea className="pr-4 pt-4">
                     <RenderMarkdown className="text-text-primary leading-relaxed" content={course.description} />
                   </ScrollArea>
                 </CardContent>
@@ -221,41 +216,149 @@ export default function CourseDetail({
                   </CardContent>
                 </Card>
               )}
+            </div>
 
-              {/* Show buttons only if authenticated */}
-              {isAuthenticated && (
-                <div className="flex flex-wrap gap-3 mt-6">
-                  {isEnrolled ? (
-                    <>
-                      <Button
-                        size="lg"
-                        className="gap-2 bg-primary text-black hover:bg-primary/90 hover:text-black transition-all duration-300 shadow-md shadow-primary/20"
-                        onClick={handleLearn}
-                      >
-                        <BookOpen className="h-5 w-5" /> Continue Learning
-                      </Button>
-                      {completionPercentage !== 100 && (
+            <div className="w-full md:w-1/3 bg-gray-900/80 p-8">
+              <div className="sticky top-8 w-full flex flex-col items-center">
+                <div className="relative mb-6 group">
+                  {course.image ? (
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl opacity-70 group-hover:opacity-100 transition-opacity"></div>
+                      <img
+                        src={course.image || "/placeholder.svg"}
+                        alt={course.title}
+                        className="w-64 h-64 object-cover rounded-full border-4 border-primary/30 shadow-lg shadow-primary/20 relative transition-transform group-hover:scale-105 duration-300"
+                      />
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl opacity-70"></div>
+                      <div className="w-64 h-64 rounded-full bg-gray-800 flex items-center justify-center relative z-10 border-4 border-primary/30">
+                        <BookOpen className="h-24 w-24 text-gray-600" />
+                      </div>
+                    </div>
+                  )}
+                  {isEnrolled && (
+                    <Badge className="absolute bottom-2 right-2 z-20 bg-primary text-black px-3 py-1 text-sm">
+                      <CheckCircle className="h-4 w-4 mr-1" /> Enrolled
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="w-full space-y-4 mt-2">
+                  <Card className="bg-gray-800/80 border-gray-700/50">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Clock className="h-5 w-5 mr-2 text-primary" />
+                          <span className="text-gray-300">Duration</span>
+                        </div>
+                        <span className="text-white font-medium">4 weeks</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {completionPercentage === 100 && (
+                    <Card className="bg-gray-800/80 border-gray-700/50">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <CheckCircle className="h-5 w-5 mr-2 text-green-400" />
+                            <span className="text-gray-300">Status</span>
+                          </div>
+                          <span className="text-green-400 font-medium">Completed</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  <Card className="bg-gray-800/80 border-gray-700/50">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Calendar className="h-5 w-5 mr-2 text-primary" />
+                          <span className="text-gray-300">Last Updated</span>
+                        </div>
+                        <span className="text-white font-medium">{formatLastUpdated(course.updatedAt)}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  {/* Show buttons only if authenticated */}
+                  {isAuthenticated && (
+                    <div className="flex flex-wrap gap-3 mt-6">
+                      {isEnrolled ? (
+                        <>
+                          <Button
+                            size="lg"
+                            className="gap-2 bg-primary text-black hover:bg-primary/90 hover:text-black transition-all duration-300 shadow-md shadow-primary/20"
+                            onClick={handleLearn}
+                          >
+                            <BookOpen className="h-5 w-5" /> Continue Learning
+                          </Button>
+                          {completionPercentage !== 100 && (
+                            <Dialog open={open} onOpenChange={setOpen}>
+                              <DialogTrigger asChild>
+                                <Button
+                                  size="lg"
+                                  disabled={processing}
+                                  className="gap-2 bg-bg-error text-white hover:bg-primary hover:text-black transition-all duration-300"
+                                >
+                                  {processing ? (
+                                    "Processing..."
+                                  ) : (
+                                    <>
+                                      <Bookmark className="h-5 w-5" /> Unenroll
+                                    </>
+                                  )}
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="bg-gray-800 border-gray-700 text-white">
+                                <DialogHeader>
+                                  <DialogTitle className="text-xl">Confirm Unenrollment</DialogTitle>
+                                  <DialogDescription className="text-gray-300 mt-2">
+                                    Are you sure you want to unenroll from this course? You may lose your progress.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter className="flex justify-end gap-2 mt-6">
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => setOpen(false)}
+                                    disabled={processing}
+                                    className="border-gray-600 hover:bg-gray-700 hover:text-primary"
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button variant="destructive" onClick={handleUnenroll} disabled={processing}>
+                                    {processing ? "Unenrolling..." : "Yes, Unenroll"}
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          )}
+                        </>
+                      ) : (
                         <Dialog open={open} onOpenChange={setOpen}>
                           <DialogTrigger asChild>
                             <Button
-                              size="lg"
                               disabled={processing}
-                              className="gap-2 bg-bg-error text-white hover:bg-primary hover:text-black transition-all duration-300"
+                              size="lg"
+                              className="w-full gap-2 bg-primary text-black hover:bg-primary/90 hover:text-black transition-all duration-300 shadow-md shadow-primary/20"
                             >
                               {processing ? (
                                 "Processing..."
                               ) : (
                                 <>
-                                  <Bookmark className="h-5 w-5" /> Unenroll
+                                  <BookmarkCheck className="h-5 w-5" /> Enroll in Course
                                 </>
                               )}
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="bg-gray-800 border-gray-700 text-white">
                             <DialogHeader>
-                              <DialogTitle className="text-xl">Confirm Unenrollment</DialogTitle>
+                              <DialogTitle className="text-xl">Confirm Enrollment</DialogTitle>
                               <DialogDescription className="text-gray-300 mt-2">
-                                Are you sure you want to unenroll from this course? You may lose your progress.
+                                Do you want to enroll in this course? You&apos;ll get immediate access to all available
+                                materials.
                               </DialogDescription>
                             </DialogHeader>
                             <DialogFooter className="flex justify-end gap-2 mt-6">
@@ -267,127 +370,20 @@ export default function CourseDetail({
                               >
                                 Cancel
                               </Button>
-                              <Button variant="destructive" onClick={handleUnenroll} disabled={processing}>
-                                {processing ? "Unenrolling..." : "Yes, Unenroll"}
+                              <Button
+                                onClick={handleEnroll}
+                                disabled={processing}
+                                className="bg-primary text-black hover:bg-primary/90"
+                              >
+                                {processing ? "Enrolling..." : "Yes, Enroll"}
                               </Button>
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
                       )}
-                    </>
-                  ) : (
-                    <Dialog open={open} onOpenChange={setOpen}>
-                      <DialogTrigger asChild>
-                        <Button
-                          disabled={processing}
-                          size="lg"
-                          className="gap-2 bg-primary text-black hover:bg-primary/90 hover:text-black transition-all duration-300 shadow-md shadow-primary/20"
-                        >
-                          {processing ? (
-                            "Processing..."
-                          ) : (
-                            <>
-                              <BookmarkCheck className="h-5 w-5" /> Enroll in Course
-                            </>
-                          )}
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="bg-gray-800 border-gray-700 text-white">
-                        <DialogHeader>
-                          <DialogTitle className="text-xl">Confirm Enrollment</DialogTitle>
-                          <DialogDescription className="text-gray-300 mt-2">
-                            Do you want to enroll in this course? You'll get immediate access to all available
-                            materials.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter className="flex justify-end gap-2 mt-6">
-                          <Button
-                            variant="outline"
-                            onClick={() => setOpen(false)}
-                            disabled={processing}
-                            className="border-gray-600 hover:bg-gray-700 hover:text-primary"
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            onClick={handleEnroll}
-                            disabled={processing}
-                            className="bg-primary text-black hover:bg-primary/90"
-                          >
-                            {processing ? "Enrolling..." : "Yes, Enroll"}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
-
-            <div className="w-full md:w-1/3 bg-gray-900/80 p-8 flex flex-col items-center">
-              <div className="relative mb-6 group">
-                {course.image ? (
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl opacity-70 group-hover:opacity-100 transition-opacity"></div>
-                    <img
-                      src={course.image || "/placeholder.svg"}
-                      alt={course.title}
-                      className="w-64 h-64 object-cover rounded-full border-4 border-primary/30 shadow-lg shadow-primary/20 relative transition-transform group-hover:scale-105 duration-300"
-                    />
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl opacity-70"></div>
-                    <div className="w-64 h-64 rounded-full bg-gray-800 flex items-center justify-center relative z-10 border-4 border-primary/30">
-                      <BookOpen className="h-24 w-24 text-gray-600" />
-                    </div>
-                  </div>
-                )}
-                {isEnrolled && (
-                  <Badge className="absolute bottom-2 right-2 z-20 bg-primary text-black px-3 py-1 text-sm">
-                    <CheckCircle className="h-4 w-4 mr-1" /> Enrolled
-                  </Badge>
-                )}
-              </div>
-
-              <div className="w-full space-y-4 mt-2">
-                <Card className="bg-gray-800/80 border-gray-700/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <Clock className="h-5 w-5 mr-2 text-primary" />
-                        <span className="text-gray-300">Duration</span>
-                      </div>
-                      <span className="text-white font-medium">4 weeks</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {completionPercentage === 100 && (
-                  <Card className="bg-gray-800/80 border-gray-700/50">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <CheckCircle className="h-5 w-5 mr-2 text-green-400" />
-                          <span className="text-gray-300">Status</span>
-                        </div>
-                        <span className="text-green-400 font-medium">Completed</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                <Card className="bg-gray-800/80 border-gray-700/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <Calendar className="h-5 w-5 mr-2 text-primary" />
-                        <span className="text-gray-300">Last Updated</span>
-                      </div>
-                      <span className="text-white font-medium">{formatLastUpdated(course.updatedAt)}</span>
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             </div>
           </div>

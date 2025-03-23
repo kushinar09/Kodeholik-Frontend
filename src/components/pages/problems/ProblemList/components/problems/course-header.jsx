@@ -55,7 +55,7 @@ export function CourseHeader() {
 export function CourseCard({ course }) {
   return (
     <Card
-      onClick={() => (window.location.href = "/course/" + course.id)}
+      onClick={() => (window.location.href = "/courses/" + course.id)}
       className="h-32 bg-bg-card border-0 overflow-hidden flex flex-row cursor-pointer hover:scale-105 transition-all"
     >
       {/* Left side - Image */}
@@ -101,7 +101,7 @@ export function CourseCard({ course }) {
 
         <div className="mt-auto">
           <div className="flex flex-wrap gap-1">
-            {course.topics.map((topic, i) => (
+            {course.topics.slice(0, 3).map((topic, i) => (
               <span key={i} className="text-xs bg-primary text-bg-card font-semibold px-1.5 py-0.5 rounded">
                 {topic}
               </span>
