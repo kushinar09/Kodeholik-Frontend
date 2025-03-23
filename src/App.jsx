@@ -25,6 +25,7 @@ import { SocketProvider } from "./providers/SocketNotificationProvider"
 import ExamProblems from "./components/pages/exam/exam-problem"
 import { SocketExamProvider } from "./providers/SocketExamProvider"
 import CourseDiscussion from "./components/pages/courses/CourseDetail/components/CourseDiscussion"
+import NotificationsPage from "./components/pages/notification"
 
 function App() {
   return (
@@ -61,6 +62,9 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/forgot" element={<ForgotPassword />} />
                 <Route path="/reset" element={<ResetPassword />} />
+
+                {/* notification */}
+                <Route path="/notifications" element={<NotificationsPage />} />
 
                 {/* course */}
                 <Route path="/courses" element={<CoursePage />} />

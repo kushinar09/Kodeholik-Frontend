@@ -1,6 +1,4 @@
 "use client"
-
-import React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
 import { Client } from "@stomp/stompjs"
 import SockJS from "sockjs-client"
@@ -17,7 +15,9 @@ export const SocketProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([])
   const [connected, setConnected] = useState(false)
   const { apiCall, user, isAuthenticated } = useAuth()
-
+  const [currentPage, setCurrentPage] = useState(0)
+  const [hasMorePages, setHasMorePages] = useState(true)
+  const [totalPages, setTotalPages] = useState(1)
   const [notiToken, setNotiToken] = useState(null)
 
   // Fetch notification token
@@ -38,7 +38,6 @@ export const SocketProvider = ({ children }) => {
 
   // Initialize socket connection
   useEffect(() => {
-    // console.log("isAuthenticated", isAuthenticated)
     if (!isAuthenticated || !notiToken) return
 
     // Fetch initial notifications
@@ -51,11 +50,14 @@ export const SocketProvider = ({ children }) => {
         const text = await response.text()
         if (!text || text.trim() === "") {
           setNotifications([])
+          setHasMorePages(false)
           return
         }
 
-        const data = JSON.parse(text).content
-        setNotifications(data)
+        const data = JSON.parse(text)
+        setNotifications(data.content)
+        setTotalPages(data.totalPages)
+        setHasMorePages(data.totalPages > 1)
       } catch (error) {
         console.error("Error fetching notifications:", error)
       }
@@ -72,31 +74,28 @@ export const SocketProvider = ({ children }) => {
       },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000
+      heartbeatOutgoing: 4000,
     })
 
     // Handle connection
     client.onConnect = (frame) => {
-      // console.log("✅ Connection successful!")
       setConnected(true)
 
       client.subscribe("/notification/" + user.username, (message) => {
-        // console.log("📩 Received message:", message.body)
-
         try {
           const notification = JSON.parse(message.body)
-          // console.log("Received notification:", notification)
           // Add to notifications state
           setNotifications((prev) => [notification, ...prev])
           // Show toast notification
           toast(notification.content, {
             description: notification.date,
-            action: notification.link && notification.link !== ""
-              ? {
-                label: "View",
-                onClick: () => (window.location.href = notification.link)
-              }
-              : undefined
+            action:
+              notification.link && notification.link !== ""
+                ? {
+                    label: "View",
+                    onClick: () => (window.location.href = notification.link),
+                  }
+                : undefined,
           })
         } catch (error) {
           console.error("Error parsing notification:", error)
@@ -123,11 +122,54 @@ export const SocketProvider = ({ children }) => {
 
     // Clean up on unmount
     return () => {
-      if (client.active) {
+      if (client && client.active) {
         client.deactivate()
       }
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, notiToken])
+
+  // Fetch more notifications (for infinite scroll)
+  const fetchMoreNotifications = async () => {
+    if (!hasMorePages) return
+
+    const nextPage = currentPage + 1
+
+    try {
+      const response = await apiCall(ENDPOINTS.GET_NOTIFICATIONS + `?page=${nextPage}`)
+      if (!response.ok) throw new Error("Failed to fetch more notifications")
+
+      const text = await response.text()
+      if (!text || text.trim() === "") return
+
+      const data = JSON.parse(text)
+
+      // Append new notifications to existing ones
+      setNotifications((prev) => [...prev, ...data.content])
+      setCurrentPage(nextPage)
+      setHasMorePages(nextPage < data.totalPages - 1)
+    } catch (error) {
+      console.error("Error fetching more notifications:", error)
+    }
+  }
+
+  // Fetch notifications for a specific page (for pagination)
+  const fetchNotificationsPage = async (page) => {
+    try {
+      const response = await apiCall(ENDPOINTS.GET_NOTIFICATIONS + `?page=${page}`)
+      if (!response.ok) throw new Error("Failed to fetch notifications")
+
+      const text = await response.text()
+      if (!text || text.trim() === "") {
+        return { content: [], totalPages: 0 }
+      }
+
+      const data = JSON.parse(text)
+      return data
+    } catch (error) {
+      console.error("Error fetching notifications page:", error)
+      return { content: [], totalPages: 0 }
+    }
+  }
 
   // Mark notification as read
   const markAsRead = async (id) => {
@@ -135,8 +177,8 @@ export const SocketProvider = ({ children }) => {
       const response = await apiCall(`${ENDPOINTS.MARK_NOTIFICATION_READ}/${id}`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
-        }
+          "Content-Type": "application/json",
+        },
       })
 
       if (!response.ok) throw new Error("Failed to mark notification as read")
@@ -154,8 +196,8 @@ export const SocketProvider = ({ children }) => {
       const response = await apiCall(ENDPOINTS.MARK_ALL_NOTIFICATIONS_READ, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
-        }
+          "Content-Type": "application/json",
+        },
       })
 
       if (!response.ok) throw new Error("Failed to mark notifications as read")
@@ -173,7 +215,13 @@ export const SocketProvider = ({ children }) => {
         notifications,
         connected,
         markAsRead,
-        markAllAsRead
+        markAllAsRead,
+        fetchMoreNotifications,
+        fetchNotificationsPage,
+        hasMorePages,
+        totalPages,
+        currentPage,
+        setCurrentPage,
       }}
     >
       {children}
@@ -189,3 +237,4 @@ export const useSocket = () => {
   }
   return context
 }
+

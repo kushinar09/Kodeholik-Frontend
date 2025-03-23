@@ -1,184 +1,184 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "@/providers/AuthProvider";
-import { Star, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { rateCommentCourse, getRateCommentCourse, getCourse, checkEnrollCourse } from "@/lib/api/course_api";
-import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react"
+import { useAuth } from "@/providers/AuthProvider"
+import { Star, Loader2, ChevronLeft, ChevronRight } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { TabsContent } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { rateCommentCourse, getRateCommentCourse, getCourse, checkEnrollCourse } from "@/lib/api/course_api"
+import { cn } from "@/lib/utils"
+import { useNavigate } from "react-router-dom"
 
 export default function RateCommentCourse({ courseId, setCourse }) {
-  const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState("");
-  const [submitLoading, setSubmitLoading] = useState(false);
-  const [comments, setComments] = useState([]);
-  const [loadingComments, setLoadingComments] = useState(true);
-  const [ratingError, setRatingError] = useState("");
-  const [commentError, setCommentError] = useState("");
-  const [submitError, setSubmitError] = useState("");
-  const [submitSuccess, setSubmitSuccess] = useState("");
-  const [hoverRating, setHoverRating] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isEnrolled, setIsEnrolled] = useState(false);
+  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
+  const [rating, setRating] = useState(0)
+  const [comment, setComment] = useState("")
+  const [submitLoading, setSubmitLoading] = useState(false)
+  const [comments, setComments] = useState([])
+  const [loadingComments, setLoadingComments] = useState(true)
+  const [ratingError, setRatingError] = useState("")
+  const [commentError, setCommentError] = useState("")
+  const [submitError, setSubmitError] = useState("")
+  const [submitSuccess, setSubmitSuccess] = useState("")
+  const [hoverRating, setHoverRating] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [isEnrolled, setIsEnrolled] = useState(false)
 
-  const ITEMS_PER_PAGE = 3;
+  const ITEMS_PER_PAGE = 3
 
   useEffect(() => {
     async function fetchData() {
       try {
-        setLoadingComments(true);
+        setLoadingComments(true)
         if (!courseId || isNaN(courseId)) {
-          throw new Error("Invalid courseId provided");
+          throw new Error("Invalid courseId provided")
         }
 
-        const fetchedComments = await getRateCommentCourse(courseId);
-        console.log("Successfully fetched comments:", fetchedComments);
-        setComments(Array.isArray(fetchedComments) ? fetchedComments : []);
-        setCurrentPage(1);
+        const fetchedComments = await getRateCommentCourse(courseId)
+        console.log("Successfully fetched comments:", fetchedComments)
+        setComments(Array.isArray(fetchedComments) ? fetchedComments : [])
+        setCurrentPage(1)
 
         if (isAuthenticated) {
-          const enrolled = await checkEnrollCourse(courseId);
-          console.log("Enrollment status for course", courseId, ":", enrolled);
-          setIsEnrolled(enrolled);
+          const enrolled = await checkEnrollCourse(courseId)
+          console.log("Enrollment status for course", courseId, ":", enrolled)
+          setIsEnrolled(enrolled)
         } else {
-          setIsEnrolled(false);
+          setIsEnrolled(false)
         }
       } catch (error) {
-        console.error("Failed to fetch data:", error.message);
-        setComments([]);
-        setIsEnrolled(false);
+        console.error("Failed to fetch data:", error.message)
+        setComments([])
+        setIsEnrolled(false)
       } finally {
-        setLoadingComments(false);
+        setLoadingComments(false)
       }
     }
-    fetchData();
-  }, [courseId, isAuthenticated]);
+    fetchData()
+  }, [courseId, isAuthenticated])
 
   const handleRating = (value) => {
-    setRating(value);
-    setSubmitError("");
-    setSubmitSuccess("");
+    setRating(value)
+    setSubmitError("")
+    setSubmitSuccess("")
     if (!value || value < 1 || value > 5) {
-      setRatingError("Please select a valid rating (1 to 5 stars).");
+      setRatingError("Please select a valid rating (1 to 5 stars).")
     } else {
-      setRatingError("");
+      setRatingError("")
     }
-  };
+  }
 
   const handleCommentChange = (e) => {
-    const newComment = e.target.value;
-    setComment(newComment);
-    setSubmitError("");
-    setSubmitSuccess("");
+    const newComment = e.target.value
+    setComment(newComment)
+    setSubmitError("")
+    setSubmitSuccess("")
 
-    const commentLength = newComment.trim().length;
+    const commentLength = newComment.trim().length
     if (commentLength > 0 && commentLength < 10) {
-      setCommentError("Your comment must be at least 10 characters long.");
+      setCommentError("Your comment must be at least 10 characters long.")
     } else if (commentLength > 5000) {
-      setCommentError("Your comment must not exceed 5000 characters.");
+      setCommentError("Your comment must not exceed 5000 characters.")
     } else {
-      setCommentError("");
+      setCommentError("")
     }
-  };
+  }
 
   const handleSubmitRatingComment = async () => {
-    setSubmitError("");
-    setSubmitSuccess("");
+    setSubmitError("")
+    setSubmitSuccess("")
 
     if (!rating || rating < 1 || rating > 5) {
-      setRatingError("Please select a rating by choosing 1 to 5 stars.");
-      return;
+      setRatingError("Please select a rating by choosing 1 to 5 stars.")
+      return
     }
 
-    const commentLength = comment.trim().length;
+    const commentLength = comment.trim().length
     if (commentLength < 10) {
-      setCommentError("Your comment must be at least 10 characters long.");
-      return;
+      setCommentError("Your comment must be at least 10 characters long.")
+      return
     }
     if (commentLength > 5000) {
-      setCommentError("Your comment must not exceed 5000 characters.");
-      return;
+      setCommentError("Your comment must not exceed 5000 characters.")
+      return
     }
 
     if (!isAuthenticated) {
-      setSubmitError("You must be logged in to submit a rating.");
-      return;
+      setSubmitError("You must be logged in to submit a rating.")
+      return
     }
 
     if (!isEnrolled) {
-      setSubmitError("You must enroll in the course before rating.");
-      return;
+      setSubmitError("You must enroll in the course before rating.")
+      return
     }
 
-    setSubmitLoading(true);
+    setSubmitLoading(true)
     try {
       const data = {
         courseId: Number.parseInt(courseId),
         rating: rating,
-        comment: comment.trim(),
-      };
-      console.log("Submitting payload:", JSON.stringify(data));
+        comment: comment.trim()
+      }
+      console.log("Submitting payload:", JSON.stringify(data))
 
       const apiCall = async (url, options) => {
-        console.log("Request URL:", url);
-        console.log("Request Options:", options);
-        const response = await fetch(url, options);
-        console.log("Raw Response Status:", response.status);
+        console.log("Request URL:", url)
+        console.log("Request Options:", options)
+        const response = await fetch(url, options)
+        console.log("Raw Response Status:", response.status)
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Server error response:", errorText);
-          throw new Error(`Failed to submit rating and comment: ${response.status} - ${errorText}`);
+          const errorText = await response.text()
+          console.error("Server error response:", errorText)
+          throw new Error(`Failed to submit rating and comment: ${response.status} - ${errorText}`)
         }
-        const responseData = await response.json();
-        console.log("Server success response:", responseData);
-        return responseData;
-      };
+        const responseData = await response.json()
+        console.log("Server success response:", responseData)
+        return responseData
+      }
 
-      const submittedData = await rateCommentCourse(data, apiCall);
-      setSubmitSuccess("Rating and comment submitted successfully!");
+      const submittedData = await rateCommentCourse(data, apiCall)
+      setSubmitSuccess("Rating and comment submitted successfully!")
 
-      setComments((prev) => [submittedData, ...prev]);
-      setCurrentPage(1);
+      setComments((prev) => [submittedData, ...prev])
+      setCurrentPage(1)
 
-      const updatedCourse = await getCourse(courseId);
-      setCourse(updatedCourse);
+      const updatedCourse = await getCourse(courseId)
+      setCourse(updatedCourse)
 
-      setRating(0);
-      setComment("");
-      setRatingError("");
-      setCommentError("");
+      setRating(0)
+      setComment("")
+      setRatingError("")
+      setCommentError("")
 
-      const fetchedComments = await getRateCommentCourse(courseId);
-      console.log("Refetched comments after submission:", fetchedComments);
-      setComments(Array.isArray(fetchedComments) ? fetchedComments : [submittedData]);
+      const fetchedComments = await getRateCommentCourse(courseId)
+      console.log("Refetched comments after submission:", fetchedComments)
+      setComments(Array.isArray(fetchedComments) ? fetchedComments : [submittedData])
     } catch (error) {
-      setSubmitError(error.message);
-      console.error("Submission error:", error);
+      setSubmitError(error.message)
+      console.error("Submission error:", error)
     } finally {
-      setSubmitLoading(false);
+      setSubmitLoading(false)
     }
-  };
+  }
 
-  const totalPages = Math.ceil(comments.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedComments = comments.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(comments.length / ITEMS_PER_PAGE)
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const endIndex = startIndex + ITEMS_PER_PAGE
+  const paginatedComments = comments.slice(startIndex, endIndex)
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
+      setCurrentPage((prev) => prev - 1)
     }
-  };
+  }
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1);
+      setCurrentPage((prev) => prev + 1)
     }
-  };
+  }
 
   return (
     <TabsContent value="overview" className="mt-0">
@@ -200,7 +200,7 @@ export default function RateCommentCourse({ courseId, setCourse }) {
                               key={star}
                               variant="ghost"
                               size="sm"
-                              className="h-9 w-9 p-0 rounded-full"
+                              className="h-9 w-9 p-0 rounded-full hover:bg-transparent"
                               onMouseEnter={() => setHoverRating(star)}
                               onMouseLeave={() => setHoverRating(0)}
                               onClick={() => handleRating(star)}
@@ -208,7 +208,7 @@ export default function RateCommentCourse({ courseId, setCourse }) {
                               <Star
                                 className={cn(
                                   "h-6 w-6 transition-all",
-                                  hoverRating >= star || rating >= star ? "text-yellow-400 scale-110" : "text-gray-500",
+                                  hoverRating >= star || rating >= star ? "text-yellow-400 scale-110" : "text-gray-500"
                                 )}
                                 fill={hoverRating >= star || rating >= star ? "currentColor" : "none"}
                               />
@@ -347,5 +347,5 @@ export default function RateCommentCourse({ courseId, setCourse }) {
         </CardContent>
       </Card>
     </TabsContent>
-  );
+  )
 }

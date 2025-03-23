@@ -139,26 +139,26 @@ export default function CourseDetail({
 
   return (
     <div className="py-8 animate-in fade-in duration-500">
-      <Button
-        variant="ghost"
-        className="mb-8 text-primary hover:bg-primary hover:text-bg-card transition group flex items-center"
-        onClick={() => navigate(-1)}
-      >
-        <ChevronLeft className="mr-1 h-5 w-5 transition-transform group-hover:-translate-x-1" />
-        <span className="font-medium">Back to Courses</span>
-      </Button>
-
       <Card className="bg-gray-800/50 border-gray-700 shadow-xl mb-8 overflow-hidden">
         <CardContent className="p-0">
           <div className="flex flex-col md:flex-row">
-            <div className="w-full md:w-2/3 p-8">
-              <div className="flex flex-wrap items-center gap-3 mb-4">
+            <div className="w-full md:w-2/3 p-8 pt-4">
+              <Button
+                variant="ghost"
+                className="mb-4 text-primary hover:bg-primary hover:text-bg-card transition group flex items-center"
+                onClick={() => navigate("/courses")}
+              >
+                <ChevronLeft className="mr-1 h-5 w-5 transition-transform group-hover:-translate-x-1" />
+                <span className="font-medium">Back to Courses</span>
+              </Button>
+              <h1 className="text-xl md:text-2xl font-bold text-white mb-2 leading-tight">{course.title}</h1>
+              <div className="flex flex-wrap items-center gap-3 mb-6">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className="flex items-center text-yellow-400 bg-yellow-400/10 px-3 py-1 rounded-full">
                         <Star className="fill-yellow-400 h-4 w-4 mr-1" />
-                        <span className="font-medium">{course.rate || "N/A"}</span>
+                        <span className="text-xs font-medium">{course.rate || "N/A"}</span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -180,9 +180,6 @@ export default function CourseDetail({
                   </Tooltip>
                 </TooltipProvider>
               </div>
-
-              <h1 className="text-xl md:text-2xl font-bold text-white mb-6 leading-tight">{course.title}</h1>
-
               <Card className="bg-gray-900/50 border-gray-700/50">
                 <CardContent>
                   <ScrollArea className="pr-4 pt-4">
@@ -290,7 +287,7 @@ export default function CourseDetail({
                         <>
                           <Button
                             size="lg"
-                            className="gap-2 bg-primary text-black hover:bg-primary/90 hover:text-black transition-all duration-300 shadow-md shadow-primary/20"
+                            className="w-full gap-2 bg-primary text-black hover:bg-primary/90 hover:text-black transition-all duration-300 shadow-md shadow-primary/20"
                             onClick={handleLearn}
                           >
                             <BookOpen className="h-5 w-5" /> Continue Learning
@@ -301,7 +298,7 @@ export default function CourseDetail({
                                 <Button
                                   size="lg"
                                   disabled={processing}
-                                  className="gap-2 bg-bg-error text-white hover:bg-primary hover:text-black transition-all duration-300"
+                                  className="w-full gap-2 bg-red-800 text-white hover:bg-red-900 transition-all duration-300"
                                 >
                                   {processing ? (
                                     "Processing..."
@@ -363,10 +360,9 @@ export default function CourseDetail({
                             </DialogHeader>
                             <DialogFooter className="flex justify-end gap-2 mt-6">
                               <Button
-                                variant="outline"
                                 onClick={() => setOpen(false)}
                                 disabled={processing}
-                                className="border-gray-600 hover:bg-gray-700 hover:text-primary"
+                                className="bg-primary text-black hover:bg-primary/90"
                               >
                                 Cancel
                               </Button>

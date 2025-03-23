@@ -15,7 +15,7 @@ import {
   CheckCircle2,
   AlertCircle,
   BookOpen,
-  MessageSquare,
+  MessageSquare
 } from "lucide-react"
 import { getCourse, courseRegisterIn, courseRegisterOUT } from "@/lib/api/course_api"
 import { getLessonById, completedLesson, downloadFileLesson } from "@/lib/api/lesson_api"
@@ -23,10 +23,10 @@ import VideoLesson from "./components/videoLesson"
 import DocumentLesson from "./components/documentLesson"
 import CourseOutline from "./components/courseOutline"
 import LessonProblemButton from "./components/lessonProblemButton"
-import Header from "@/components/common/shared/header"
 import FooterSection from "@/components/common/shared/footer"
 import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 import CourseDiscussion from "@/components/pages/courses/CourseDetail/components/CourseDiscussion"
+import HeaderSection from "@/components/common/shared/header"
 
 export default function LearnThroughVideoAndText() {
   const { id } = useParams()
@@ -45,47 +45,47 @@ export default function LearnThroughVideoAndText() {
 
   // useEffect for course registration IN/OUT with debugging logs
   useEffect(() => {
-    console.log(`[Registration] Component mounted for course ID: ${id}`);
-    
+    console.log(`[Registration] Component mounted for course ID: ${id}`)
+
     const registerIn = async () => {
-      console.log(`[Registration] Triggering courseRegisterIn for course ID: ${id}`);
+      console.log(`[Registration] Triggering courseRegisterIn for course ID: ${id}`)
       try {
         const result = await courseRegisterIn(id)
-        console.log(`[Registration] courseRegisterIn completed successfully:`, result);
+        console.log("[Registration] courseRegisterIn completed successfully:", result)
       } catch (err) {
-        console.error(`[Registration] courseRegisterIn failed:`, err);
+        console.error("[Registration] courseRegisterIn failed:", err)
       }
     }
 
     if (id) {
       registerIn()
     } else {
-      console.warn("[Registration] No course ID provided, skipping registerIn");
+      console.warn("[Registration] No course ID provided, skipping registerIn")
     }
 
     const registerOut = async () => {
-      console.log(`[Registration] Triggering courseRegisterOUT for course ID: ${id}`);
+      console.log(`[Registration] Triggering courseRegisterOUT for course ID: ${id}`)
       try {
         const result = await courseRegisterOUT(id)
-        console.log(`[Registration] courseRegisterOUT completed successfully:`, result);
+        console.log("[Registration] courseRegisterOUT completed successfully:", result)
       } catch (err) {
-        console.error(`[Registration] courseRegisterOUT failed:`, err);
+        console.error("[Registration] courseRegisterOUT failed:", err)
       }
     }
 
     // Add event listener for page unload
-    console.log("[Registration] Adding beforeunload event listener");
+    console.log("[Registration] Adding beforeunload event listener")
     window.addEventListener("beforeunload", () => {
-      console.log("[Registration] beforeunload event triggered");
-      registerOut();
-    });
+      console.log("[Registration] beforeunload event triggered")
+      registerOut()
+    })
 
     // Cleanup function for navigation or unmount
     return () => {
-      console.log(`[Registration] Component unmounting or navigating away for course ID: ${id}`);
-      registerOut();
-      console.log("[Registration] Removing beforeunload event listener");
-      window.removeEventListener("beforeunload", registerOut);
+      console.log(`[Registration] Component unmounting or navigating away for course ID: ${id}`)
+      registerOut()
+      console.log("[Registration] Removing beforeunload event listener")
+      window.removeEventListener("beforeunload", registerOut)
     }
   }, [id])
 
@@ -143,13 +143,13 @@ export default function LearnThroughVideoAndText() {
     if (chapter) setSelectedChapter(chapter)
     setVideoUrl(null)
     setResourceError(null)
-  
+
     try {
       console.log("Selected Lesson Before Fetch:", lesson)
       const lessonDetails = await getLessonById(lesson.id)
       console.log("Lesson Details After Fetch:", lessonDetails)
       console.log("Video URL:", lessonDetails.videoUrl)
-  
+
       if (lessonDetails.type === "VIDEO" && lessonDetails.videoUrl) {
         if (lessonDetails.videoUrl.match(/^[a-zA-Z0-9_-]{11}$/)) {
           console.log("Setting YouTube ID:", lessonDetails.videoUrl)
@@ -343,21 +343,21 @@ export default function LearnThroughVideoAndText() {
 
   return (
     <div className="min-h-screen bg-bg-primary from-gray-900 to-gray-950 text-white">
-      <Header />
+      <HeaderSection currentActive="courses"/>
       <div className="mx-36">
         <div className="mb-8 top-0 z-10 bg-bg-primary">
           <div className="absolute inset-x-0 -bottom-4 h-4 bg-gradient-to-b from-primary-bg to-transparent pointer-events-none" />
           <Button
             variant="ghost"
-            className="mb-3 text-primary hover:bg-primary transition group"
+            className="my-3 text-primary hover:bg-primary transition group"
             onClick={() => navigate(-1)}
           >
             <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
-            <span className="font-medium">Back to Courses</span>
+            <span className="font-medium">Back</span>
           </Button>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
+              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-bg-card/50">
                 {course?.title || "Course"}
               </h1>
               <div className="w-full md:w-96 mt-2">
