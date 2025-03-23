@@ -508,7 +508,7 @@ const MarkdownEditor = ({ canDelete = null, setCanDelete = null, value = "", onC
 
 
   return (
-    <div className="flex flex-col bg-background h-fit">
+    <div className="flex flex-col bg-background h-full w-full">
       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
 
       <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
@@ -687,13 +687,9 @@ const MarkdownEditor = ({ canDelete = null, setCanDelete = null, value = "", onC
       </div>
 
 
-      <div className="flex-1 grid grid-cols-2 divide-x h-full">
-        <div id="editor" ref={editorRef} className="h-full overflow-auto focus-within:ring-1 focus-within:ring-ring" />
-        <div className="min-h-0 overflow-auto">
-          {/* <div
-            className="markdown prose prose-sm dark:prose-invert max-w-none p-4"
-            dangerouslySetInnerHTML={{ __html: renderedMarkdown }}
-          /> */}
+      <div className="flex-1 grid grid-cols-2 divide-x min-h-0">
+        <div id="editor" ref={editorRef} className="h-full w-full overflow-auto focus-within:ring-1 focus-within:ring-ring" />
+        <div className="h-full overflow-auto">
           <RenderMarkdown content={markdownContent} className="p-4"/>
         </div>
       </div>

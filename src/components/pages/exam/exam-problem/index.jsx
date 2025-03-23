@@ -18,14 +18,14 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialogTitle
 } from "@/components/ui/alert-dialog"
 
 export default function ExamProblems() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const { problems, examData, isConnected, token, examCode, username, connectSocket, submitExamAnswers } =
+  const { problems, examData, isConnected, token, examCode, username, duration, connectSocket, submitExamAnswers } =
     useSocketExam()
   const { apiCall } = useAuth()
 
@@ -34,7 +34,6 @@ export default function ExamProblems() {
   const [selectedProblem, setSelectedProblem] = useState(null)
   const [loading, setLoading] = useState(true)
   const [connectionAttempts, setConnectionAttempts] = useState(0)
-
   const [storeCode, setStoreCode] = useState([])
 
   // Add state for confirmation dialogs
@@ -45,9 +44,25 @@ export default function ExamProblems() {
   const isMountedRef = useRef(true)
   const lastConnectionAttemptRef = useRef(0)
   const timerIntervalRef = useRef(null)
+  const examStartTimeRef = useRef(null)
 
-  // Add beforeunload event listener to prevent accidental page refresh/close
+  // Load stored code from localStorage
   useEffect(() => {
+    try {
+      const storedCode = localStorage.getItem("tempCode")
+      if (storedCode) {
+        const parsedCode = JSON.parse(storedCode)
+        setStoreCode(Array.isArray(parsedCode) ? parsedCode : [])
+      }
+    } catch (err) {
+      console.error("Error loading stored code:", err)
+      setStoreCode([])
+    }
+  }, [])
+
+  // Replace the existing beforeunload event handler with this improved version
+  useEffect(() => {
+    // Handle beforeunload (tab close, refresh, etc.)
     const handleBeforeUnload = (e) => {
       if (isTimerRunning) {
         e.preventDefault()
@@ -57,9 +72,37 @@ export default function ExamProblems() {
       }
     }
 
+    // Handle browser back button with the History API
+    const handlePopState = (e) => {
+      if (isTimerRunning) {
+        // Show a custom confirmation dialog
+        const confirmLeave = window.confirm(
+          "You have an exam in progress. Are you sure you want to leave? Your progress may be lost."
+        )
+
+        if (confirmLeave) {
+          // User confirmed leaving - clean up localStorage
+          localStorage.removeItem("tempData")
+          localStorage.removeItem("tempCode")
+        } else {
+          // User canceled - prevent navigation by pushing the current state again
+          // This effectively cancels the back button action
+          window.history.pushState(null, "", window.location.pathname)
+        }
+      }
+    }
+
+    // Add event listeners
     window.addEventListener("beforeunload", handleBeforeUnload)
+    window.addEventListener("popstate", handlePopState)
+
+    // Push an initial state to enable popstate handling
+    window.history.pushState(null, "", window.location.pathname)
+
+    // Clean up event listeners on unmount
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload)
+      window.removeEventListener("popstate", handlePopState)
     }
   }, [isTimerRunning])
 
@@ -115,7 +158,65 @@ export default function ExamProblems() {
       isMountedRef.current = false
       clearInterval(interval)
     }
-  }, [id, token, isConnected, connectionAttempts, navigate, connectSocket, examCode])
+  }, [id, token, isConnected, connectionAttempts, navigate, connectSocket, examCode, username])
+
+  // Calculate remaining time based on stored data or exam data
+  useEffect(() => {
+    if (!isMountedRef.current) return
+
+    try {
+      const storedData = localStorage.getItem("tempData")
+
+      if (storedData) {
+        const parsedData = JSON.parse(storedData)
+
+        if (parsedData.duration && parsedData.lastActiveTime) {
+          // Calculate elapsed time since last activity
+          const now = new Date().getTime()
+          const lastActive = parsedData.lastActiveTime
+          const elapsedSeconds = Math.floor((now - lastActive) / 1000)
+
+          // Calculate remaining time
+          const remainingTime = Math.max(0, parsedData.duration - elapsedSeconds)
+
+          // Set the time left
+          setTimeLeft(remainingTime)
+          examStartTimeRef.current = new Date(now - elapsedSeconds * 1000)
+          console.log(`Restored exam timer: ${remainingTime}s remaining`)
+        } else if (duration) {
+          // If we have duration from the provider but no lastActiveTime
+          setTimeLeft(duration)
+          examStartTimeRef.current = new Date()
+        }
+      } else if (duration) {
+        // Fresh exam start
+        setTimeLeft(duration)
+        examStartTimeRef.current = new Date()
+
+        // Initialize tempData with current time
+        if (token && examCode && username) {
+          localStorage.setItem(
+            "tempData",
+            JSON.stringify({
+              token,
+              code: examCode,
+              username,
+              problems,
+              duration,
+              lastActiveTime: new Date().getTime()
+            })
+          )
+        }
+      }
+
+      setIsTimerRunning(true)
+    } catch (err) {
+      console.error("Error calculating remaining time:", err)
+      if (duration) {
+        setTimeLeft(duration)
+      }
+    }
+  }, [duration, problems, token, examCode, username])
 
   // Format seconds to HH:MM:SS
   const formatTime = (seconds) => {
@@ -126,7 +227,7 @@ export default function ExamProblems() {
     return [
       hours.toString().padStart(2, "0"),
       minutes.toString().padStart(2, "0"),
-      remainingSeconds.toString().padStart(2, "0"),
+      remainingSeconds.toString().padStart(2, "0")
     ].join(":")
   }
 
@@ -158,8 +259,8 @@ export default function ExamProblems() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code: code,
-          languageName: language,
-        }),
+          languageName: language
+        })
       })
       return response.json()
     } catch (e) {
@@ -173,40 +274,35 @@ export default function ExamProblems() {
       const existingIndex = prevStoreCode.findIndex((item) => item.problemLink === problemLink)
 
       if (existingIndex !== -1) {
-        return prevStoreCode.map((item) =>
+        const updatedCode = prevStoreCode.map((item) =>
           item.problemLink === problemLink
             ? {
               ...item,
               code: code,
-              languageName: language,
+              languageName: language
             }
-            : item,
+            : item
         )
+
+        // Save to localStorage immediately
+        localStorage.setItem("tempCode", JSON.stringify(updatedCode))
+        return updatedCode
       } else {
-        return [
+        const newCode = [
           ...prevStoreCode,
           {
             problemLink: problemLink,
             code: code,
-            languageName: language,
-          },
+            languageName: language
+          }
         ]
+
+        // Save to localStorage immediately
+        localStorage.setItem("tempCode", JSON.stringify(newCode))
+        return newCode
       }
     })
   }
-
-  // Set exam duration from exam data - only when examData changes
-  useEffect(() => {
-    if (!examData || !isMountedRef.current) return
-
-    // Only update if the value would actually change
-    const newDuration = examData.details.duration || 3600
-
-    if (newDuration !== timeLeft) {
-      setTimeLeft(newDuration)
-      setIsTimerRunning(true)
-    }
-  }, [])
 
   // Timer countdown effect
   useEffect(() => {
@@ -222,6 +318,19 @@ export default function ExamProblems() {
 
       setTimeLeft((prevTime) => {
         const newTime = prevTime - 1
+
+        // Update lastActiveTime in localStorage
+        try {
+          const storedData = localStorage.getItem("tempData")
+          if (storedData) {
+            const parsedData = JSON.parse(storedData)
+            parsedData.lastActiveTime = new Date().getTime()
+            localStorage.setItem("tempData", JSON.stringify(parsedData))
+          }
+        } catch (err) {
+          console.error("Error updating lastActiveTime in timer:", err)
+        }
+
         if (newTime <= 0) {
           clearInterval(timerIntervalRef.current)
           // Auto-submit when time is up
@@ -260,6 +369,10 @@ export default function ExamProblems() {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current)
       }
+
+      // Clear localStorage
+      localStorage.removeItem("tempData")
+      localStorage.removeItem("tempCode")
 
       // Navigate after a short delay
       setTimeout(() => {
@@ -393,7 +506,7 @@ export default function ExamProblems() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Submit Exam</AlertDialogTitle>
-            <AlertDialogDescription>Are you sure you want to submit your exam?.</AlertDialogDescription>
+            <AlertDialogDescription>Are you sure you want to submit your exam?</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>

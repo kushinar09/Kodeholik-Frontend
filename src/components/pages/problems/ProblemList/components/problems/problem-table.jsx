@@ -60,7 +60,6 @@ export function ProblemTable({
         </thead>
         <tbody>
           {isLoading ? (
-            // Skeleton loading state
             Array(pageSize)
               .fill(0)
               .map((_, index) => {
