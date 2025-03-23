@@ -1,17 +1,11 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { useParams } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels"
-import { useAuth } from "@/providers/AuthProvider"
 import "highlight.js/styles/default.css"
 
 import "./styles.css"
-
-// API imports
-import { getProblemDescription, getProblemInitCode } from "@/lib/api/problem_api"
-import { runCode } from "@/lib/api/code_api"
 
 // Component imports
 import TabNavigation from "./components/left-panel/tab-navigation"
@@ -19,25 +13,35 @@ import LeftPanelContent from "./components/left-panel/left-panel-content"
 import CodePanel from "./components/right-panel/code-panel"
 import TestCasePanel from "./components/right-panel/test-case-panel"
 import HeaderOption from "./components/header-option"
+import { toast } from "sonner"
 
-export default function TakeExam() {
-  const { id } = useParams()
-  const { apiCall } = useAuth()
-
-  const [problemId, setProblemId] = useState(0)
-
+export default function TakeExam({
+  idExam,
+  timeLeft,
+  handleBackToProblems,
+  problemLink,
+  problemTitle,
+  problemDescription,
+  compileInformation,
+  codeStore,
+  languageStore,
+  onPenalty = null,
+  onRun,
+  onCodeChange,
+  handleChangeProblem,
+}) {
   // Panel state
   const [leftSize, setLeftSize] = useState(50)
-  const [leftWidth, setLeftWidth] = useState(0)
+  const [leftWidth, setLeftWidth] = useState(50)
   const leftPanelRef = useRef(null)
   const [isCompactRight, setIsCompactRight] = useState(false)
 
-  // Problem data state
-  const [description, setDescription] = useState(null)
-
+  const [isRunning, setIsRunning] = useState(false)
   // Code state
-  const [code, setCode] = useState("")
-  const [testCases, setTestCases] = useState([])
+  const [code, setCode] = useState(codeStore || compileInformation[0]?.template || "")
+  const [language, setLanguage] = useState(languageStore || compileInformation[0]?.language || "")
+  const [availableLanguages, setAvailableLanguages] = useState([])
+  const [testCases, setTestCases] = useState(compileInformation[0]?.testCases || [])
 
   // Test case state
   const [activeCase, setActiveCase] = useState("0")
@@ -48,31 +52,31 @@ export default function TakeExam() {
   const [showResult, setShowResult] = useState(false)
   const [isResultActive, setIsResultActive] = useState(false)
 
-  const [isVisible, setIsVisible] = useState(true)
-  const [warningCount, setWarningCount] = useState(0)
-  const maxWarnings = 0
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden && warningCount < maxWarnings) {
-        setWarningCount((prev) => prev + 1)
-        alert(`Warning: Do not switch tabs! Warnings left: ${maxWarnings - (warningCount + 1)}`)
-      } else if (!document.hidden) {
-        setIsVisible(true)
-      }
-    }
+  // const [isVisible, setIsVisible] = useState(true)
+  // const [warningCount, setWarningCount] = useState(0)
+  // const maxWarnings = 0
+  // useEffect(() => {
+  //   const handleVisibilityChange = () => {
+  //     if (document.hidden && warningCount < maxWarnings) {
+  //       setWarningCount((prev) => prev + 1)
+  //       alert(`Warning: Do not switch tabs! Warnings left: ${maxWarnings - (warningCount + 1)}`)
+  //     } else if (!document.hidden) {
+  //       setIsVisible(true)
+  //     }
+  //   }
 
-    document.addEventListener("visibilitychange", handleVisibilityChange)
+  //   document.addEventListener("visibilitychange", handleVisibilityChange)
 
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange)
-    }
-  }, [warningCount, maxWarnings])
+  //   return () => {
+  //     document.removeEventListener("visibilitychange", handleVisibilityChange)
+  //   }
+  // }, [warningCount, maxWarnings])
 
-  useEffect(() => {
-    if (warningCount >= maxWarnings) {
-      // onPenalty()
-    }
-  }, [warningCount, maxWarnings])
+  // useEffect(() => {
+  //   if (warningCount >= maxWarnings) {
+  //     onPenalty()
+  //   }
+  // }, [warningCount, maxWarnings])
 
   // useEffect(() => {
   //   const handleKeyDown = (event) => {
@@ -104,6 +108,18 @@ export default function TakeExam() {
   }, [leftWidth])
 
   useEffect(() => {
+    const languages = [...new Set(compileInformation.map((item) => item.language))]
+    setCode(codeStore || compileInformation[0]?.template || "")
+    setLanguage(languageStore || compileInformation[0]?.language || "")
+    setAvailableLanguages(languages)
+    setTestCases(compileInformation[0]?.testCases || [])
+    setActiveCase("0")
+    setActiveResult("0")
+    setShowResult(false)
+    setIsResultActive(false)
+  }, [compileInformation])
+
+  useEffect(() => {
     if (!leftPanelRef.current) return
 
     const resizeObserver = new ResizeObserver((entries) => {
@@ -121,53 +137,43 @@ export default function TakeExam() {
 
   const isCompactLeft = leftWidth <= 40
 
-  const fetchProblemDescription = async () => {
-    if (!id) return
-    if (!description) {
-      const result = await getProblemDescription(id)
-      if (result.status && result.data) {
-        setDescription(result.data)
-        setProblemId(result.data.id)
-      }
-    }
-  }
-
-  // Initial data loading
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      if (!id) return
-
-      // Fetch problem description
-      fetchProblemDescription()
-
-      // Fetch initial code template
-      const result = await getProblemInitCode(id, "Java")
-      if (result.status && result.data) {
-        setCode(result.data.template)
-        setTestCases(result.data.testCases)
-      }
-    }
-
-    fetchInitialData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id])
-
   // Code execution handlers
   const handleCodeChange = (newCode) => {
+    onCodeChange(newCode, language, problemLink)
     setCode(newCode)
   }
 
-  async function handleRunCode() {
-    const result = await runCode(apiCall, id, code, "Java")
-    setResults(result)
-    setShowResult(true)
-    setIsResultActive(true)
-    setActiveResult("0")
+  const handleLanguageChange = (newLanguage) => {
+    const template = compileInformation.find((lang) => lang.language === newLanguage)
+    setLanguage(newLanguage)
+    setCode(template?.template || "")
+    setTestCases(template?.testCases || [])
+  }
+
+  const handleRunCode = async () => {
+    setIsRunning(true)
+    try {
+      const result = await onRun(code, language, problemLink)
+      setResults(result)
+      setShowResult(true)
+      setIsResultActive(true)
+      setActiveResult("0")
+    } catch (e) {
+      toast.error("Compile error: " + e.message)
+    } finally {
+      setIsRunning(false)
+    }
   }
 
   return (
     <div className="h-screen flex flex-col">
-      <HeaderOption onRun={handleRunCode} />
+      <HeaderOption
+        handleBack={handleBackToProblems}
+        onRun={handleRunCode}
+        timeLeft={timeLeft}
+        isRunning={isRunning}
+        handleChangeProblem={handleChangeProblem}
+      />
 
       <div className="flex-1 p-2 bg-bg-primary/50">
         <PanelGroup direction="horizontal" onLayout={(sizes) => setLeftSize(sizes[0])}>
@@ -177,12 +183,7 @@ export default function TakeExam() {
               <div className={cn("h-full flex flex-col transition-all duration-200", isCompactLeft ? "w-[40px]" : "")}>
                 <TabNavigation isCompact={isCompactLeft} />
 
-                <LeftPanelContent
-                  id={id}
-                  problemId={problemId}
-                  isCompact={isCompactLeft}
-                  description={description}
-                />
+                <LeftPanelContent isCompact={isCompactLeft} title={problemTitle} description={problemDescription} />
               </div>
             </div>
           </Panel>
@@ -198,6 +199,9 @@ export default function TakeExam() {
                   isCompact={isCompactRight}
                   code={code}
                   onCodeChange={handleCodeChange}
+                  language={language || ""}
+                  onLanguageChange={handleLanguageChange}
+                  availableLanguages={availableLanguages}
                 />
               </Panel>
 

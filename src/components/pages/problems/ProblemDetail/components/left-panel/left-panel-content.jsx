@@ -23,33 +23,44 @@ export default function LeftPanelContent({
   id,
   problemId,
   activeTab,
+  setActiveTab,
   isCompact,
   description,
+  setDescription,
   editorial,
   solutions,
+  setSolutions,
   onchangeFilterSolutions,
-  submissions
+  submissions,
+  selectedSubmissionId,
+  setSelectedSubmissionId,
+  showSolution,
+  setShowSolution,
+  currentSolutionId,
+  setCurrentSolutionId,
+  setIsEditMode,
+  setCurrentSolution
+
 }) {
-
-  const [showSolution, setShowSolution] = useState(false)
-  const [currentSolutionId, setCurrentSolutionId] = useState(0)
-
   return (
     <div className={cn("p-4 overflow-auto no-scrollbar flex-1 max-h-[calc(100vh-104px)] ", isCompact ? "hidden" : "")}>
       <div className="prose dark:prose-invert min-w-[420px]">
-        {activeTab === leftTabEnum.description && <ProblemDescription description={description} id={id} problemId={problemId} />}
+        {activeTab === leftTabEnum.description && <ProblemDescription description={description} setDescription={setDescription} id={id} problemId={problemId} />}
         {activeTab === leftTabEnum.editorial && <ProblemEditorial editorial={editorial} />}
         {activeTab === leftTabEnum.solutions &&
           <ProblemSolutions
             solutions={solutions}
+            setSolutions={setSolutions}
             showSolution={showSolution}
             setShowSolution={setShowSolution}
             currentSolutionId={currentSolutionId}
             setCurrentSolutionId={setCurrentSolutionId}
             onchangeFilter={onchangeFilterSolutions}
+            setIsEditMode={setIsEditMode}
+            setCurrentSolution={setCurrentSolution}
           />
         }
-        {activeTab === leftTabEnum.submissions && <ProblemSubmissions submissionsData={submissions} />}
+        {activeTab === leftTabEnum.submissions && <ProblemSubmissions submissionsData={submissions} selectedSubmissionId={selectedSubmissionId} setSelectedSubmissionId={setSelectedSubmissionId}/>}
       </div>
     </div>
   )

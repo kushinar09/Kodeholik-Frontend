@@ -9,6 +9,7 @@ import { Check, Clock, Copy, Cpu, Info, RotateCcw, Sparkles, TrendingUp } from "
 import { formatValue, copyToClipboard } from "@/lib/utils/format-utils"
 import hljs from "highlight.js"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useNavigate } from "react-router-dom"
 
 /**
  * Component to display submitted code and results
@@ -16,9 +17,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
  * @param {Object} props.submitted - Submission results
  * @param {string} props.code - Submitted code
  */
-export default function SubmittedCodeView({ submitted, code }) {
+export default function SubmittedCodeView({ submitted, code, setActiveTab, problemLink, selectedSubmissionId}) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.querySelectorAll("pre code").forEach((block) => {
@@ -39,31 +41,81 @@ export default function SubmittedCodeView({ submitted, code }) {
   return (
     <div className="w-full max-w-4xl mx-auto p-4 space-y-4">
       {/* Status Bar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {submitted && submitted.status && submitted.status.toLowerCase() === "success" && (
-            <div>
-              <span className="text-lg text-text-success">ACCEPTED</span>
-            </div>
-          )}
+      <div className="flex justify-between">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {submitted && submitted.status && submitted.status.toLowerCase() === "success" && (
+              <div>
+                <span className="text-lg text-text-success font-bold">Accepted</span>
+              </div>
+            )}
+            {submitted && submitted.status && submitted.status.toLowerCase() === "failed" && (
+              <div>
+                <span className="text-lg text-text-error font-bold">Failed</span>
+              </div>
+            )}
+            {submitted.noTestcase != null && submitted.noSuccessTestcase != null && (
+              <span className="text-sm text-gray-500">
+                {submitted.noSuccessTestcase}/{submitted.noTestcase} testcases passed
+              </span>
+            )}
+            {submitted.noTestcase != null && submitted.noSuccessTestcase == null && (
+              <span className="text-sm text-gray-500">
+                {submitted.noTestcase}/{submitted.noTestcase} testcases passed
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex">
           {submitted && submitted.status && submitted.status.toLowerCase() === "failed" && (
             <div>
-              <span className="text-lg text-text-error">{submitted.status}</span>
+              <Button
+                onClick={() => setActiveTab("Editorial")}
+                className="h-12 font-bold bg-gray-200 hover:bg-gray-300"
+              >
+                <svg
+                  className="!h-6 !w-6 text-black mr-1"
+                  focusable="false"
+                  data-prefix="far"
+                  data-icon="book-open"
+                  role="img"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 576 512"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M156 32C100.6 32 48.8 46.6 27.1 53.6C10.3 59 0 74.5 0 91.1V403.5c0 26.1 24 44.2 48 40.2c19.8-3.3 54.8-7.7 100-7.7c54 0 97.5 25.5 112.5 35.6c7.5 5 16.8 8.4 27 8.4c11.5 0 21.6-4.2 29.3-9.9C330.2 460.3 369.1 436 428 436c47.7 0 80.5 4 99 7.2c23.9 4.1 49-13.8 49-40.6V91.1c0-16.5-10.3-32.1-27.1-37.5C527.2 46.6 475.4 32 420 32c-36.8 0-71.8 6.4-97.4 12.7c-12.8 3.2-23.5 6.3-30.9 8.7c-1.3 .4-2.6 .8-3.7 1.2c-1.1-.4-2.4-.8-3.7-1.2c-7.5-2.4-18.1-5.5-30.9-8.7C227.8 38.4 192.8 32 156 32zM264 97.3V417.9C238 404.2 196.8 388 148 388c-42.9 0-77.4 3.7-100 7.1V97.3C70.3 90.6 112.4 80 156 80c31.6 0 62.6 5.6 85.9 11.3c8.6 2.1 16.1 4.2 22.1 6zm48 319.2V97.3c6-1.8 13.5-3.9 22.1-6C357.4 85.6 388.4 80 420 80c43.6 0 85.7 10.6 108 17.3V394.7c-21.7-3.3-54.9-6.7-100-6.7c-51.4 0-90.8 15-116 28.6z"
+                  >
+                  </path>
+                </svg>
+                Editorial
+              </Button>
             </div>
           )}
-          {submitted.noTestcase != null && submitted.noSuccessTestcase != null && (
-            <span className="text-sm text-gray-500">
-              {submitted.noSuccessTestcase}/{submitted.noTestcase} testcases passed
-            </span>
-          )}
-          {submitted.noTestcase != null && submitted.noSuccessTestcase == null && (
-            <span className="text-sm text-gray-500">
-              {submitted.noTestcase}/{submitted.noTestcase} testcases passed
-            </span>
+          {submitted && submitted.status && submitted.status.toLowerCase() === "success" && (
+            <div>
+              <Button onClick={() => navigate("/share-solution/" + problemLink + "/" + selectedSubmissionId)} className="h-12 font-bold ml-4 hover:bg-green-400">
+                <svg
+                  className="!h-6 !w-6 text-black mr-1"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  {" "}
+                  <path stroke="none" d="M0 0h24v24H0z" />{" "}
+                  <path d="M9 7 h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" />{" "}
+                  <path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3" />{" "}
+                  <line x1="16" y1="5" x2="19" y2="8" />
+                </svg>
+                Solution
+              </Button>
+            </div>
           )}
         </div>
       </div>
-
       {submitted.status && submitted.status.toLowerCase() === "success" && (
         <TooltipProvider>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

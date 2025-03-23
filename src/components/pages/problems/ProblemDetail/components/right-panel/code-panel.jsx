@@ -5,6 +5,8 @@ import CodeEditor from "@/components/common/editor-code/CodeEditor"
 import SubmittedCodeView from "./submitted-code-view"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState, useEffect } from "react"
+import { getSubmissionDetail } from "@/lib/api/problem_api"
+import { useAuth } from "@/providers/AuthProvider"
 
 /**
  * Panel for code editing and submission view
@@ -27,7 +29,13 @@ export default function CodePanel({
   code,
   onCodeChange,
   submitted,
+  setSubmitted,
   showSubmitted,
+  setShowSubmitted,
+  activeTab,
+  setActiveTab,
+  selectedSubmissionId,
+  problemLink,
   language = "Java",
   onLanguageChange,
   availableLanguages = [
@@ -37,9 +45,36 @@ export default function CodePanel({
 }) {
   const [selectedLanguage, setSelectedLanguage] = useState(language)
 
+  const { apiCall } = useAuth();
+
   useEffect(() => {
     setSelectedLanguage(language)
   }, [language])
+
+  const fetchSubmissionDetail = async (submissionId) => {
+    try {
+      const response = await getSubmissionDetail(apiCall, submissionId);
+      setSubmitted(response.data);
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab == "Submissions") {
+      if (selectedSubmissionId != null) {
+        fetchSubmissionDetail(selectedSubmissionId);
+        setIsSubmittedActive(true);
+        setShowSubmitted(true);
+      }
+    }
+    else {
+      setIsSubmittedActive(false);
+      setShowSubmitted(false);
+    }
+    console.log(selectedSubmissionId)
+  }, [selectedSubmissionId, activeTab])
 
   const handleLanguageChange = (value) => {
     setSelectedLanguage(value)
@@ -141,7 +176,8 @@ export default function CodePanel({
               <CodeEditor initialCode={code} onChange={onCodeChange} language={selectedLanguage} />
             </>
           )}
-          {isSubmittedActive && submitted && <SubmittedCodeView submitted={submitted} code={code} />}
+          {isSubmittedActive && submitted && activeTab != "Submissions" && <SubmittedCodeView submitted={submitted} code={code} setActiveTab={setActiveTab} problemLink={problemLink} selectedSubmissionId={selectedSubmissionId}/>}
+          {isSubmittedActive && activeTab == "Submissions" && submitted && <SubmittedCodeView submitted={submitted} code={submitted.code} setActiveTab={setActiveTab} problemLink={problemLink} selectedSubmissionId={selectedSubmissionId}/>}
         </div>
       </div>
     </div>

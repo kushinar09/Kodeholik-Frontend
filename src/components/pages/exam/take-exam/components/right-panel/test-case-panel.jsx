@@ -6,20 +6,6 @@ import { Label } from "@/components/ui/label"
 import { Plus } from "lucide-react"
 import { formatValue } from "@/lib/utils/format-utils"
 
-/**
- * Panel for test cases and results
- * @param {Object} props - Component props
- * @param {boolean} props.isResultActive - Whether result view is active
- * @param {Function} props.setIsResultActive - Function to toggle result view
- * @param {boolean} props.isCompact - Whether the panel is in compact mode
- * @param {Array} props.testCases - Test cases
- * @param {string} props.activeCase - Active test case index
- * @param {Function} props.setActiveCase - Function to set active test case
- * @param {Object} props.results - Test results
- * @param {boolean} props.showResult - Whether to show test results
- * @param {string} props.activeResult - Active result index
- * @param {Function} props.setActiveResult - Function to set active result
- */
 export default function TestCasePanel({
   isResultActive,
   setIsResultActive,

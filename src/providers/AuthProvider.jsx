@@ -1,8 +1,7 @@
-/* eslint-disable indent */
 "use client"
 
 import { ENDPOINTS } from "@/lib/constants"
-import { createContext, useContext, useState, useEffect, useCallback } from "react"
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react"
 import UnauthorisedError from "@/components/pages/errors/unauthorized-error"
 import ForbiddenError from "@/components/pages/errors/forbidden"
 import NotFoundError from "@/components/pages/errors/not-found-error"
@@ -17,37 +16,37 @@ const guestEndpoints = [
   ENDPOINTS.LOGIN_GOOGLE,
   ENDPOINTS.POST_PROBLEMS_LIST,
   ENDPOINTS.GET_PROBLEM_DESCRIPTION,
-  ENDPOINTS.GET_PROBLEM_INIT_CODE
+  ENDPOINTS.GET_PROBLEM_INIT_CODE,
+  ENDPOINTS.POST_RUN_EXAM
 ]
 
 const notThrowErrorEndpoint = [
   ENDPOINTS.GET_PROBLEM_COMMENTS,
   ENDPOINTS.GET_PROBLEM_EDITORIAL,
   ENDPOINTS.GET_PROBLEM_SUBMISSIONS,
-  ENDPOINTS.GET_PROBLEM_SOLUTIONS
+  ENDPOINTS.GET_PROBLEM_SOLUTIONS,
+  ENDPOINTS.GET_STATS_PROBLEM,
+  ENDPOINTS.GET_NOTIFICATIONS,
+  ENDPOINTS.GET_NOTIFICATIONS_TOKEN,
+  ENDPOINTS.GET_INFOR,
+  ENDPOINTS.GET_TOKEN_EXAM,
+  ENDPOINTS.POST_RUN_EXAM,
+  ENDPOINTS.POST_ENROLL_EXAM,
+  ENDPOINTS.POST_UNENROLL_EXAM
 ]
 
 // List of endpoints that don't need token rotation
-const notCallRotateTokenEndpoints = [
-  ENDPOINTS.ROTATE_TOKEN,
-  ENDPOINTS.POST_LOGOUT,
-  ENDPOINTS.POST_LOGIN
-]
+const notCallRotateTokenEndpoints = [ENDPOINTS.ROTATE_TOKEN, ENDPOINTS.POST_LOGOUT, ENDPOINTS.POST_LOGIN]
 
 function convertToRegex(endpoint) {
-  return new RegExp(
-    `^${endpoint
-      .replace(/:[^/]+/g, "([^/]+)")
-      .replace(/\//g, "\\/")
-    }$`
-  )
+  return new RegExp(`^${endpoint.replace(/:[^/]+/g, "([^/]+)").replace(/\//g, "\\/")}$`)
 }
 
 function inEndpointList(endpointList, requestedUrl) {
   // Remove query parameters from requested URL
   const baseUrl = requestedUrl.split("?")[0]
 
-  return endpointList.some(endpoint => convertToRegex(endpoint).test(baseUrl))
+  return endpointList.some((endpoint) => convertToRegex(endpoint).test(baseUrl))
 }
 
 export const AuthProvider = ({ children }) => {
@@ -56,12 +55,34 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [refreshPromise, setRefreshPromise] = useState(null)
-  const [authError, setAuthError] = useState(null) // To store auth errors
+  const authCheckInProgress = useRef(false)
+  const lastAuthCheck = useRef(0)
+
+  // Track API errors without immediately showing them
+  const [apiErrors, setApiErrors] = useState({})
+  // Track active API requests to manage loading state
+  const [activeRequests, setActiveRequests] = useState(0)
+  // Track pending API calls to ensure they complete before showing error pages
+  const pendingApiCalls = useRef(new Map())
 
   // Check if the user is authenticated on mount
-  const checkAuthStatus = useCallback(async () => {
+  const checkAuthStatus = useCallback(async (force = false) => {
+    // Prevent multiple simultaneous auth checks
+    if (authCheckInProgress.current) {
+      return
+    }
+
+    // Add throttling to prevent excessive checks
+    const now = Date.now()
+    if (!force && now - lastAuthCheck.current < 2000) {
+      return
+    }
+
+    authCheckInProgress.current = true
+    lastAuthCheck.current = now
+
     try {
-      setLoading(true)
+      incrementActiveRequests()
       const response = await fetch(ENDPOINTS.GET_INFOR, {
         credentials: "include",
         headers: {
@@ -72,30 +93,88 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         const data = await response.json()
-        setIsAuthenticated(true)
-        setUser(data)
-        setAuthError(null)
+        // Only set isAuthenticated to true if we actually have user data
+        if (data) {
+          setUser(data)
+          setIsAuthenticated(true)
+          clearApiError("auth")
+        } else {
+          // If no user data despite OK response, treat as not authenticated
+          setUser(null)
+          setIsAuthenticated(false)
+        }
       } else {
-        setIsAuthenticated(false)
         setUser(null)
+        setIsAuthenticated(false)
       }
     } catch (error) {
       console.error("Auth check failed:", error)
-      setIsAuthenticated(false)
       setUser(null)
+      setIsAuthenticated(false)
     } finally {
-      setLoading(false)
+      decrementActiveRequests()
+      authCheckInProgress.current = false
     }
   }, [])
 
-  // Run auth check only once on mount
+  // Run auth check on mount and when location changes
   useEffect(() => {
-    checkAuthStatus()
-  }, [isAuthenticated])
+    checkAuthStatus(true)
 
-  const logout = async () => {
+    // Add listener for location changes to check auth after redirects
+    const handleLocationChange = () => {
+      // Force auth check after navigation
+      checkAuthStatus(true)
+    }
+
+    window.addEventListener("popstate", handleLocationChange)
+
+    return () => {
+      window.removeEventListener("popstate", handleLocationChange)
+    }
+  }, [checkAuthStatus])
+
+  const incrementActiveRequests = () => {
+    setActiveRequests((prev) => prev + 1)
+    setLoading(true)
+  }
+
+  const decrementActiveRequests = () => {
+    setActiveRequests((prev) => {
+      const newCount = prev - 1
+      if (newCount <= 0) {
+        setLoading(false)
+        return 0
+      }
+      return newCount
+    })
+  }
+
+  // Add an error to the errors state
+  const addApiError = useCallback((url, errorType, errorDetails) => {
+    if (inEndpointList(notThrowErrorEndpoint, url)) return
+
+    // Only add the error if there are no pending API calls for this URL
+    if (!pendingApiCalls.current.has(url)) {
+      setApiErrors((prev) => ({
+        ...prev,
+        [errorType]: errorDetails
+      }))
+    }
+  }, [])
+
+  // Clear a specific error
+  const clearApiError = useCallback((errorType) => {
+    setApiErrors((prev) => {
+      const newErrors = { ...prev }
+      delete newErrors[errorType]
+      return newErrors
+    })
+  }, [])
+
+  const logout = async (redirect = true) => {
     try {
-      setLoading(true)
+      incrementActiveRequests()
       await fetch(ENDPOINTS.POST_LOGOUT, {
         method: "POST",
         credentials: "include",
@@ -107,10 +186,16 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error("Logout failed:", error)
     } finally {
+      // Set authentication state to false first to ensure UI updates immediately
       setIsAuthenticated(false)
       setUser(null)
-      setLoading(false)
-      setAuthError(null)
+      decrementActiveRequests()
+      clearApiError("auth")
+
+      // If redirect is true, navigate to login page
+      if (redirect) {
+        window.location.href = "/login"
+      }
     }
   }
 
@@ -120,6 +205,8 @@ export const AuthProvider = ({ children }) => {
     }
 
     setIsRefreshing(true)
+    incrementActiveRequests()
+
     const promise = fetch(ENDPOINTS.ROTATE_TOKEN, {
       method: "POST",
       credentials: "include",
@@ -129,10 +216,15 @@ export const AuthProvider = ({ children }) => {
         "Access-Control-Allow-Credentials": "true"
       }
     })
-      .then((response) => {
+      .then(async (response) => {
         if (!response.ok) {
+          // If token rotation fails, user is no longer authenticated
+          setIsAuthenticated(false)
+          setUser(null)
           return response.status
         }
+        // After successful token rotation, update auth status
+        await checkAuthStatus(true)
         return 200
       })
       .catch((error) => {
@@ -144,6 +236,7 @@ export const AuthProvider = ({ children }) => {
       .finally(() => {
         setIsRefreshing(false)
         setRefreshPromise(null)
+        decrementActiveRequests()
       })
 
     setRefreshPromise(promise)
@@ -151,22 +244,35 @@ export const AuthProvider = ({ children }) => {
   }
 
   const apiCall = async (url, options = {}) => {
+    // Generate a unique request ID for tracking this API call
+    const requestId = `${url}-${Date.now()}`
+
+    // Register this API call as pending
+    pendingApiCalls.current.set(requestId, true)
+
     // Check if this endpoint requires authentication
     const requiresAuth = !inEndpointList(guestEndpoints, url) && !inEndpointList(notThrowErrorEndpoint, url)
 
-    // If endpoint requires auth but user is not authenticated, set error
-    if (requiresAuth && !isAuthenticated && url !== ENDPOINTS.GET_INFOR) {
-      // console.log(url)
-      setAuthError("401")
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 })
+    // If we're authenticated but have no user data, that's inconsistent - fix it
+    if (isAuthenticated && !user && url !== ENDPOINTS.GET_INFOR) {
+      await checkAuthStatus(true)
     }
 
-    setLoading(true)
+    // If auth is required but we're not sure about auth status, check it first
+    if (requiresAuth && !isAuthenticated && url !== ENDPOINTS.GET_INFOR) {
+      // Only check auth status if we're not already checking
+      if (!authCheckInProgress.current) {
+        await checkAuthStatus(true)
+      }
+    }
+
+    // Continue with the API call regardless of auth status
+
+    incrementActiveRequests()
 
     if (!options.headers) {
       options.headers = {}
     }
-
     options.headers = {
       ...(options.headers || {}),
       "Access-Control-Allow-Origin": "http://localhost:5174",
@@ -177,10 +283,12 @@ export const AuthProvider = ({ children }) => {
     try {
       let response = await fetch(url, options)
 
+      // For debugging purposes only
+      // const responseClone = response.clone()
+      // responseClone.text().then((text) => console.log(url, text))
+
       // Handle token refresh if needed
       if (response.status === 401 && !inEndpointList(notCallRotateTokenEndpoints, url)) {
-        // console.warn("Access token expired. Attempting refresh...")
-
         const refreshStatus = await refreshAccessToken()
 
         if (refreshStatus === 200) {
@@ -188,40 +296,139 @@ export const AuthProvider = ({ children }) => {
           response = await fetch(url, options)
         } else {
           // Handle different error statuses
-          setAuthError(refreshStatus.toString())
+          pendingApiCalls.current.delete(requestId)
+          addApiError(url, "auth", { status: refreshStatus })
           return new Response(JSON.stringify({ error: "Authentication failed" }), { status: refreshStatus })
         }
       }
 
       // Handle other error statuses
-      if (!response.ok && response.status !== 401) {
-        setAuthError(response.status.toString())
+      if (!response.ok) {
+        const errorKey = `${url.split("?")[0]}-${response.status}`
+
+        if (response.status === 401) {
+          setIsAuthenticated(false)
+          setUser(null)
+
+          // Only add the error if this endpoint should trigger errors
+          if (!inEndpointList(notThrowErrorEndpoint, url)) {
+            // Wait a small delay to ensure the response is fully processed
+            setTimeout(() => {
+              pendingApiCalls.current.delete(requestId)
+              addApiError(url, "auth", { status: 401 })
+            }, 100)
+          } else {
+            pendingApiCalls.current.delete(requestId)
+          }
+        } else if (!inEndpointList(notThrowErrorEndpoint, url)) {
+          // Wait a small delay to ensure the response is fully processed
+          setTimeout(() => {
+            pendingApiCalls.current.delete(requestId)
+            addApiError(url, errorKey, { status: response.status })
+          }, 100)
+        } else {
+          pendingApiCalls.current.delete(requestId)
+        }
+      } else {
+        // Clear errors for this URL on success
+        pendingApiCalls.current.delete(requestId)
+        const baseUrl = url.split("?")[0]
+        Object.keys(apiErrors).forEach((key) => {
+          if (key.startsWith(baseUrl)) {
+            clearApiError(key)
+          }
+        })
       }
 
       return response
     } catch (error) {
       console.error("API call error:", error)
-      setAuthError("500")
+      pendingApiCalls.current.delete(requestId)
+
+      if (!inEndpointList(notThrowErrorEndpoint, url)) {
+        addApiError(url, "network", { status: 500 })
+      }
       throw error
     } finally {
-      if (inEndpointList(notThrowErrorEndpoint, url)) setAuthError(null)
-      setLoading(false)
+      if (inEndpointList(notThrowErrorEndpoint, url)) {
+        // Clear any errors for this endpoint
+        const baseUrl = url.split("?")[0]
+        Object.keys(apiErrors).forEach((key) => {
+          if (key.startsWith(baseUrl)) {
+            clearApiError(key)
+          }
+        })
+      }
+      decrementActiveRequests()
     }
   }
 
-  // Render appropriate error page based on authError
+  // Get the most severe error to display
+  const getMostSevereError = useCallback(() => {
+    // Priority: 500 > 403 > 401 > 404
+    if (Object.values(apiErrors).some((err) => err.status === 500)) return "500"
+    if (Object.values(apiErrors).some((err) => err.status === 403)) return "403"
+    if (Object.values(apiErrors).some((err) => err.status === 401)) return "401"
+    if (Object.values(apiErrors).some((err) => err.status === 404)) return "404"
+    return null
+  }, [apiErrors])
+
+  // Render appropriate error page based on most severe error
   const renderErrorPage = () => {
-    switch (authError) {
-      case "401":
-        return <UnauthorisedError />
-      case "403":
-        return <ForbiddenError />
-      case "404":
-        return <NotFoundError />
-      case "500":
-        return <GeneralError />
-      default:
-        return null
+    const errorCode = getMostSevereError()
+
+    switch (errorCode) {
+    case "401":
+      return <UnauthorisedError />
+    case "403":
+      return <ForbiddenError />
+    case "404":
+      return <NotFoundError />
+    default:
+      return <GeneralError />
+    }
+  }
+
+  // Only show error page if there's an error, it's not from a notThrowErrorEndpoint,
+  // and there are no pending API calls
+  const shouldShowErrorPage = () => {
+    const hasError = Object.keys(apiErrors).length > 0
+    const isFromNoThrowEndpoint = Object.keys(apiErrors).some((key) => {
+      const baseUrl = key.split("-")[0]
+      return inEndpointList(notThrowErrorEndpoint, baseUrl)
+    })
+    const hasPendingCalls = pendingApiCalls.current.size > 0
+
+    return hasError && !isFromNoThrowEndpoint && !hasPendingCalls
+  }
+
+  // Add a login function to ensure both states are set properly:
+  const login = async (credentials) => {
+    try {
+      incrementActiveRequests()
+      const response = await fetch(ENDPOINTS.POST_LOGIN, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "http://localhost:5174",
+          "Access-Control-Allow-Credentials": "true"
+        },
+        body: JSON.stringify(credentials)
+      })
+
+      if (response.ok) {
+        // After successful login, immediately check auth status to get user data
+        await checkAuthStatus(true)
+        return { success: true }
+      } else {
+        return { success: false, error: await response.json() }
+      }
+    } catch (error) {
+      console.error("Login failed:", error)
+      return { success: false, error }
+    } finally {
+      decrementActiveRequests()
     }
   }
 
@@ -229,15 +436,18 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         apiCall,
+        login,
         logout,
         isAuthenticated,
         user,
-        loading,
+        loading: activeRequests > 0,
         setIsAuthenticated,
-        refreshAuth: checkAuthStatus
+        refreshAuth: () => checkAuthStatus(true),
+        errors: apiErrors,
+        clearError: clearApiError
       }}
     >
-      {authError ? renderErrorPage() : children}
+      {shouldShowErrorPage() ? renderErrorPage() : children}
     </AuthContext.Provider>
   )
 }

@@ -6,15 +6,18 @@ import { ENDPOINTS } from "@/lib/constants"
 
 const imageUrlCache = new Map()
 
-export default function RenderMarkdown({ content }) {
+export default function RenderMarkdown({ content, className = "" }) {
 
   const markdownContent = content || ""
 
   const renderMarkdown = (content) => {
     const customRenderer = new marked.Renderer()
+    const lockedCodeRegex = /LOCKED-CODE\s*([\s\S]*?)\s*LOCKED-CODE/g
 
+    content = content.replace(lockedCodeRegex, (match, codeContent) => {
+      return `<div class="locked-code"><pre><code>${codeContent.trim()}</code></pre></div>`
+    })
     customRenderer.image = (href) => {
-      console.log(href)
       const title = href.title || ""
       const text = href.text || ""
 
@@ -66,7 +69,12 @@ export default function RenderMarkdown({ content }) {
       return `<img src="${href.href}" alt="${text}" title="${title || ""}" />`
     }
 
-    marked.use({ renderer: customRenderer })
+    marked.use(
+      {
+        renderer: customRenderer
+
+      }
+    )
 
     return marked(content)
   }
@@ -78,7 +86,7 @@ export default function RenderMarkdown({ content }) {
     <>
       <div>
         <div
-          className="markdown prose prose-sm dark:prose-invert max-w-none"
+          className={`markdown prose prose-sm dark:prose-invert max-w-none ${className}`}
           dangerouslySetInnerHTML={{ __html: renderedMarkdown }}
         />
       </div>

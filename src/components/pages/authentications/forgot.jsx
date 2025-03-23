@@ -13,8 +13,8 @@ import { Input } from "@/components/ui/input"
 import LoadingScreen from "@/components/common/shared/other/loading"
 import { MESSAGES } from "@/lib/messages"
 import { cn } from "@/lib/utils"
-import { toast } from "@/hooks/use-toast"
 import { requestResetPassword } from "@/lib/api/auth_api"
+import { toast } from "sonner"
 
 // Form validation
 const forgotPasswordSchema = z.object({
@@ -29,10 +29,8 @@ export default function ForgotPassword() {
 
   useEffect(() => {
     if (location.state?.tokenExpired) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Your reset link has expired. Please try again.",
-        variant: "destructive"
       })
     }
   }, [location])

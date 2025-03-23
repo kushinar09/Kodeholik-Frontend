@@ -1,6 +1,6 @@
 "use client"
 
-import { MessageCircle, ChevronDown, ChevronUp, MessageSquare, Send } from "lucide-react"
+import { MessageCircle, ChevronDown, ChevronUp, MessageSquare, Send, Edit, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -17,8 +17,11 @@ import { ENDPOINTS } from "@/lib/constants"
 import { useAuth } from "@/providers/AuthProvider"
 import { Separator } from "@/components/ui/separator"
 import { postComment } from "@/lib/api/problem_api"
+import { motion } from "framer-motion";
+import { editComment, unupvoteComment, upvoteComment } from "@/lib/api/comment_api"
+import { toast } from "@/hooks/use-toast"
 
-export default function DiscussionSection({ id, problemId }) {
+export default function DiscussionSection({ id, locationId, type, activeTab}) {
   const [isCollapsed, setIsCollapsed] = useState(true)
   const [comment, setComment] = useState("")
   const [comments, setComments] = useState([])
@@ -34,29 +37,38 @@ export default function DiscussionSection({ id, problemId }) {
   const [replyBoxes, setReplyBoxes] = useState({})
   const [replyTexts, setReplyTexts] = useState({})
   const [loadedReplies, setLoadedReplies] = useState({})
-
+  const [isEditOpen, setIsEditOpen] = useState([])
   const { apiCall, isAuthenticated, user } = useAuth()
 
-  const fetchComments = useCallback(async () => {
-    if (!id) return
+  const fetchComments = async () => {
     try {
       const response = await apiCall(
-        `${ENDPOINTS.GET_PROBLEM_COMMENTS.replace(":id", id)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
+        type == "PROBLEM" 
+        ? `${ENDPOINTS.GET_PROBLEM_COMMENTS.replace(":id", id)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
+        : `${ENDPOINTS.GET_SOLUTION_COMMENTS.replace(":id", locationId)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
       )
       if (!response.ok) throw new Error("Failed to fetch comments")
       const data = await response.json()
-
+      for (let i = 0; i < data.content.length; i++) {
+        if (data.content[i].user) {
+          setIsEditOpen((prev) => ({
+            ...prev,
+            [data.content[i].id]: false
+          }))
+        }
+      }
+      console.log(page);
       setComments(data.content.filter(c => c.replyId === null))
       setTotalPages(data.totalPages)
       setTotalComments(data.totalElements)
     } catch (error) {
       console.error("Error fetching comments:", error)
     }
-  }, [id, page, sortBy, ascending])
+  }
 
   useEffect(() => {
-    fetchComments()
-  }, [fetchComments])
+    fetchComments();
+  }, [id, page, sortBy, ascending, activeTab])
 
   function toggleCollapsed() {
     setIsCollapsed(!isCollapsed)
@@ -64,13 +76,14 @@ export default function DiscussionSection({ id, problemId }) {
 
   async function UploadComment() {
     try {
-      const response = await postComment(apiCall, problemId, comment)
+      const response = await postComment(apiCall, locationId, comment, null, type)
+      console.log(response.data.id)
       if (response.status) {
         setComment("")
         setTotalComments(totalComments + 1)
         setComments((prev) => {
           const newComment = {
-            id: 0,
+            id: response.data.id,
             comment: comment,
             noUpvote: 0,
             createdBy: {
@@ -120,7 +133,7 @@ export default function DiscussionSection({ id, problemId }) {
       if (comment) {
         // const fakeReplies = generateFakeReplies(commentId, comment.noReply)
         const response = await apiCall(
-          `${ENDPOINTS.GET_PROBLEM_COMMENTS_REPLY.replace(":id", commentId)}`
+          `${ENDPOINTS.GET_COMMENTS_REPLY + commentId}`
         )
         if (!response.ok) throw new Error("Failed to fetch comments")
         const data = await response.json()
@@ -128,6 +141,15 @@ export default function DiscussionSection({ id, problemId }) {
           ...prev,
           [commentId]: data
         }))
+        for (let i = 0; i < data.length; i++) {
+          if (data[i].user) {
+            setIsEditOpen((prev) => ({
+              ...prev,
+              [data[i].id]: false
+            }))
+          }
+        }
+
       }
     }
   }
@@ -144,6 +166,100 @@ export default function DiscussionSection({ id, problemId }) {
         ...prev,
         [commentId]: ""
       }))
+    }
+  }
+
+  useEffect(() => {
+    console.log(isEditOpen)
+  }, [isEditOpen])
+
+  const handleUpvoteUnupvoteComment = (comment) => {
+    if (comment.voted) {
+      toggleUnupvoteComment(comment);
+    }
+    else {
+      toggleUpvoteComment(comment);
+    }
+  }
+
+  const toggleUpvoteComment = async (comment) => {
+    try {
+      upvoteComment(apiCall, comment.id);
+      setComments((prevList) =>
+        prevList.map((item) =>
+          item.id === comment.id ? { ...item, voted: !item.voted, noUpvote: item.noUpvote + 1 } : item
+        )
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const toggleUnupvoteComment = async (comment) => {
+    try {
+      unupvoteComment(apiCall, comment.id);
+      setComments((prevList) =>
+        prevList.map((item) =>
+          item.id === comment.id ? { ...item, voted: !item.voted, noUpvote: item.noUpvote - 1 > 0 ? item.noUpvote - 1 : 0 } : item
+        )
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const updateUpvoted = (loadedReplies, comment) => {
+    const replyId = comment.replyId;
+
+    if (loadedReplies[replyId]) {
+      loadedReplies[replyId] = loadedReplies[replyId].map(reply =>
+        reply.id === comment.id ? { ...reply, voted: true, noUpvote: reply.noUpvote + 1 } : reply
+      );
+    }
+
+    return { ...loadedReplies }; // Trả về một object mới để React nhận diện thay đổi
+  };
+
+  const updateUnupvoted = (loadedReplies, comment) => {
+    const replyId = comment.replyId;
+    if (loadedReplies[replyId]) {
+      loadedReplies[replyId] = loadedReplies[replyId].map(reply =>
+        reply.id === comment.id ? { ...reply, voted: false, noUpvote: reply.noUpvote - 1 > 0 ? reply.noUpvote - 1 : 0 } : reply
+      );
+    }
+
+    return { ...loadedReplies }; // Trả về một object mới để React nhận diện thay đổi
+  };
+
+  const handleUpvoteUnupvoteReply = (comment) => {
+    if (comment.voted) {
+      toggleUnupvoteReply(comment);
+    }
+    else {
+      toggleUpvoteReply(comment);
+    }
+  }
+
+  const toggleUpvoteReply = async (comment) => {
+    try {
+      upvoteComment(apiCall, comment.id);
+      setLoadedReplies(updateUpvoted(loadedReplies, comment));
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const toggleUnupvoteReply = async (comment) => {
+    try {
+      unupvoteComment(apiCall, comment.id);
+      for (let i = 0; i < loadedReplies.length; i++) {
+        if (comment.replyId = loadedReplies[i]) {
+
+        }
+      }
+      setLoadedReplies(updateUnupvoted(loadedReplies, comment));
+    } catch (error) {
+      console.log(error);
     }
   }
 
@@ -183,12 +299,12 @@ export default function DiscussionSection({ id, problemId }) {
       replyId: commentId,
       voted: false
     }
-
     try {
-      const response = await postComment(apiCall, problemId, replyText, commentId)
+      const response = await postComment(apiCall, locationId, replyText, commentId, type)
       if (response.status) {
         setTotalComments(totalComments + 1)
       }
+      newReply.id = response.data.id;
     } catch (error) {
       console.error("Error posting comment:", error)
     }
@@ -218,8 +334,73 @@ export default function DiscussionSection({ id, problemId }) {
       ...prev,
       [commentId]: true
     }))
+
+  }
+  const toggleEditComment = (id, status, newComment) => {
+    if (status == "SAVE") {
+      if (newComment === "") {
+        toast({
+          title: "Error",
+          description: "Please enter a comment",
+          variant: "destructive" // destructive
+        })
+      }
+      else {
+        editNewComment(id, newComment);
+        setIsEditOpen((prev) => ({
+          ...prev,
+          [id]: status == "EDIT" ? true : false
+        }))
+      }
+    }
+    else {
+      setIsEditOpen((prev) => ({
+        ...prev,
+        [id]: status == "EDIT" ? true : false
+      }))
+    }
   }
 
+  const editNewComment = async (id, comment) => {
+    try {
+      await editComment(apiCall, id, comment);
+      toast({
+        title: "Edit Comment",
+        description: "Edit comment successful",
+        variant: "default" // destructive
+      })
+      setComments((prevList) =>
+        prevList.map((item) =>
+          item.id === id ? { ...item, comment: comment } : item
+        )
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const setNewComment = (newComment, id) => {
+    setComments((prevList) =>
+      prevList.map((item) =>
+        item.id === id ? { ...item, comment: newComment } : item
+      )
+    );
+  }
+
+  const setNewReply = (newComment, reply) => {
+    setLoadedReplies(updateReply(loadedReplies, reply, newComment))
+  }
+
+  const updateReply = (loadedReplies, comment, newComment) => {
+    const replyId = comment.replyId;
+    if (loadedReplies[replyId]) {
+      loadedReplies[replyId] = loadedReplies[replyId].map(reply =>
+        reply.id === comment.id ? { ...reply, comment: newComment } : reply
+      );
+    }
+
+    return { ...loadedReplies }; // Trả về một object mới để React nhận diện thay đổi
+  };
 
   if (isAuthenticated) {
     return (
@@ -229,12 +410,16 @@ export default function DiscussionSection({ id, problemId }) {
             <MessageCircle className="w-5 h-5" />
             Discussion ({totalComments})
           </h2>
-          <Button variant="ghost" size="sm">
+          {totalComments > 0 && <Button variant="ghost" size="sm">
             {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-          </Button>
+          </Button>}
         </div>
 
-        {!isCollapsed && (
+        {<motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: !isCollapsed ? 1 : 0, height: !isCollapsed ? "auto" : 0 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          className="overflow-hidden">
           <div className="space-y-4">
             <div>
               <Textarea
@@ -299,18 +484,23 @@ export default function DiscussionSection({ id, problemId }) {
                           </div>
                         </div>
                         <div className="text-sm">
-                          <p>{comment.comment}</p>
+                          <p>
+                            {isEditOpen[comment.id]
+                              ? <Textarea required
+                                style={{ width: "95%" }}
+                                placeholder="Type comment here"
+                                className="min-h-[50px] resize-none border-0 bg-background ring-1"
+                                value={comment.comment}
+                                onChange={(e) => setNewComment(e.target.value, comment.id)}
+                              />
+                              : comment.comment}
+                          </p>
                         </div>
                         <div className="flex items-center gap-4 pt-2">
                           <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <svg fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 429.658 429.658">
-                                <g>
-                                  <g>
-                                    <path d="M235.252,13.406l-0.447-0.998c-3.417-7.622-11.603-12.854-19.677-12.375l-0.3,0.016l-0.302-0.016    C214.194,0.011,213.856,0,213.524,0c-7.706,0-15.386,5.104-18.674,12.413l-0.452,0.998L13.662,176.079    c-6.871,6.183-6.495,12.657-4.971,16.999c2.661,7.559,10.361,13.373,18.313,13.82l1.592,0.297c0.68,0.168,1.356,0.348,2.095,0.427    c23.036,2.381,45.519,2.876,64.472,3.042l5.154,0.048V407.93c0,11.023,7.221,15.152,11.522,16.635l0.967,0.33l0.77,0.671    c3.105,2.717,7.02,4.093,11.644,4.093h179.215c4.626,0,8.541-1.376,11.639-4.093l0.771-0.671l0.965-0.33    c4.307-1.482,11.532-5.611,11.532-16.635V210.706l5.149-0.048c18.961-0.17,41.446-0.666,64.475-3.042    c0.731-0.079,1.407-0.254,2.082-0.422l1.604-0.302c7.952-0.447,15.65-6.262,18.312-13.82c1.528-4.336,1.899-10.811-4.972-16.998    L235.252,13.406z M344.114,173.365c-11.105,0.18-22.216,0.254-33.337,0.254c-5.153,0-9.363,1.607-12.507,4.768    c-3.372,3.4-5.296,8.48-5.266,13.932l0.005,0.65l-0.157,0.629c-0.437,1.767-0.64,3.336-0.64,4.928v194.001H137.458V198.526    c0-1.597-0.201-3.161-0.638-4.928l-0.157-0.629l0.005-0.65c0.031-5.456-1.892-10.537-5.271-13.937    c-3.141-3.161-7.353-4.763-12.507-4.768c-11.124,0-22.224-0.074-33.337-0.254l-13.223-0.218L214.834,44.897l142.503,128.249    L344.114,173.365z" />
-                                  </g>
-                                </g>
-                              </svg>
+                            <Button onClick={() => handleUpvoteUnupvoteComment(comment)} variant="ghost" size="icon" className="h-8 w-8">
+                              {comment.voted ? <svg className="h-4 w-4 text-yellow-500" fill="currentColor" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>
+                                : <svg className="h-4 w-4 text-black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>}
                             </Button>
                             <span className="text-sm">{comment.noUpvote}</span>
                           </div>
@@ -325,6 +515,25 @@ export default function DiscussionSection({ id, problemId }) {
                               Reply
                             </Button>
                           }
+                          {comment.user && comment.canEdit && !isEditOpen[comment.id] && <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-sm"
+                            onClick={() => toggleEditComment(comment.id, "EDIT", comment.comment)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>}
+
+                          {comment.user && comment.canEdit && isEditOpen[comment.id] && <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-sm bg-green-500 text-white font-bold hover:bg-green-500 hover:text-white "
+                            onClick={() => toggleEditComment(comment.id, "SAVE", comment.comment)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Save
+                          </Button>}
                           {comment.noReply > 0 && (
                             <>
                               <Separator orientation="vertical" />
@@ -410,22 +619,47 @@ export default function DiscussionSection({ id, problemId }) {
                                 <span className="text-xs text-muted-foreground">{reply.createdAt}</span>
                               </div>
                               <div className="text-sm">
-                                <p>{reply.comment}</p>
+                                <p>
+                                  {isEditOpen[reply.id]
+                                    ? <Textarea
+                                      style={{ width: "95%" }}
+                                      placeholder="Type comment here"
+                                      className="min-h-[50px] resize-none border-0 bg-background ring-1"
+                                      value={reply.comment}
+                                      onChange={(e) => setNewReply(e.target.value, reply)}
+                                    />
+                                    : reply.comment}
+                                </p>
                               </div>
                               <div className="flex items-center gap-4 pt-1">
                                 <div className="flex items-center gap-1">
-                                  <Button variant="ghost" size="icon" className="h-6 w-6">
-                                    <svg fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 429.658 429.658">
-                                      <g>
-                                        <g>
-                                          <path d="M235.252,13.406l-0.447-0.998c-3.417-7.622-11.603-12.854-19.677-12.375l-0.3,0.016l-0.302-0.016    C214.194,0.011,213.856,0,213.524,0c-7.706,0-15.386,5.104-18.674,12.413l-0.452,0.998L13.662,176.079    c-6.871,6.183-6.495,12.657-4.971,16.999c2.661,7.559,10.361,13.373,18.313,13.82l1.592,0.297c0.68,0.168,1.356,0.348,2.095,0.427    c23.036,2.381,45.519,2.876,64.472,3.042l5.154,0.048V407.93c0,11.023,7.221,15.152,11.522,16.635l0.967,0.33l0.77,0.671    c3.105,2.717,7.02,4.093,11.644,4.093h179.215c4.626,0,8.541-1.376,11.639-4.093l0.771-0.671l0.965-0.33    c4.307-1.482,11.532-5.611,11.532-16.635V210.706l5.149-0.048c18.961-0.17,41.446-0.666,64.475-3.042    c0.731-0.079,1.407-0.254,2.082-0.422l1.604-0.302c7.952-0.447,15.65-6.262,18.312-13.82c1.528-4.336,1.899-10.811-4.972-16.998    L235.252,13.406z M344.114,173.365c-11.105,0.18-22.216,0.254-33.337,0.254c-5.153,0-9.363,1.607-12.507,4.768    c-3.372,3.4-5.296,8.48-5.266,13.932l0.005,0.65l-0.157,0.629c-0.437,1.767-0.64,3.336-0.64,4.928v194.001H137.458V198.526    c0-1.597-0.201-3.161-0.638-4.928l-0.157-0.629l0.005-0.65c0.031-5.456-1.892-10.537-5.271-13.937    c-3.141-3.161-7.353-4.763-12.507-4.768c-11.124,0-22.224-0.074-33.337-0.254l-13.223-0.218L214.834,44.897l142.503,128.249    L344.114,173.365z" />
-                                        </g>
-                                      </g>
-                                    </svg>
+                                  <Button onClick={() => handleUpvoteUnupvoteReply(reply)} variant="ghost" size="icon" className="h-6 w-6">
+                                    {reply.voted ? <svg className="h-4 w-4 text-yellow-500" fill="currentColor" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>
+                                      : <svg className="h-4 w-4 text-black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>}
                                   </Button>
                                   <span className="text-xs">{reply.noUpvote}</span>
                                 </div>
+                                {reply.user && reply.canEdit && !isEditOpen[reply.id] && <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-sm"
+                                  onClick={() => toggleEditComment(reply.id, "EDIT", reply.comment)}
+                                >
+                                  <Edit className="h-4 w-4 mr-1" />
+                                  Edit
+                                </Button>}
+
+                                {reply.user && reply.canEdit && isEditOpen[reply.id] && <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-sm bg-green-500 text-white font-bold hover:bg-green-500 hover:text-white "
+                                  onClick={() => toggleEditComment(reply.id, "SAVE", reply.comment)}
+                                >
+                                  <Edit className="h-4 w-4 mr-1" />
+                                  Save
+                                </Button>}
                               </div>
+
 
                               {/* Nested reply box */}
                               {replyBoxes[reply.id] && (
@@ -477,7 +711,7 @@ export default function DiscussionSection({ id, problemId }) {
                 ))}
             </div>
 
-            {totalPages > 2 &&
+            {totalPages >= 2 &&
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
@@ -505,7 +739,7 @@ export default function DiscussionSection({ id, problemId }) {
               </Pagination>
             }
           </div>
-        )}
+        </motion.div>}
       </div>
     )
   } else return <div></div>

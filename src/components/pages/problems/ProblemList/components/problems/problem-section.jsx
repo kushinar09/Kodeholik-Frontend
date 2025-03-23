@@ -10,44 +10,23 @@ export function ProblemSection({
   problems,
   currentPage,
   totalPages,
+  pageSize,
   sortConfig,
   search,
   setSearch,
-  difficulty,
-  setDifficulty,
-  topics,
-  selectedTopics,
-  toggleTopic,
-  removeAllTopic,
-  skills,
-  selectedSkills,
-  setSelectedSkills,
   handleSort,
   handleProblemDetail,
   setCurrentPage,
-  clearAllFilter,
-  setSearchQuery
+  setSearchQuery,
+  isFiltersOpen,
+  setIsFiltersOpen,
+  isLoading
 }) {
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
 
   const handleSearchChange = (value) => {
     setSearchQuery((prev) => ({
       ...prev,
       title: value
-    }))
-  }
-
-  const handleDifficultyChange = (newDifficulty) => {
-    setSearchQuery((prev) => ({
-      ...prev,
-      difficulty: newDifficulty
-    }))
-  }
-
-  const handleSkillsChange = (newSkills) => {
-    setSearchQuery((prev) => ({
-      ...prev,
-      skills: newSkills
     }))
   }
 
@@ -63,31 +42,16 @@ export function ProblemSection({
         setIsFiltersOpen={setIsFiltersOpen}
       />
 
-      <FilterPanel
-        isFiltersOpen={isFiltersOpen}
-        setIsFiltersOpen={setIsFiltersOpen}
-        difficulty={difficulty}
-        setDifficulty={setDifficulty}
-        topics={topics}
-        selectedTopics={selectedTopics}
-        toggleTopic={toggleTopic}
-        removeAllTopic={removeAllTopic}
-        skills={skills}
-        selectedSkills={selectedSkills}
-        setSelectedSkills={setSelectedSkills}
-        clearAllFilter={clearAllFilter}
-        onDifficultyChange={handleDifficultyChange}
-        onSkillsChange={handleSkillsChange}
-      />
-
       <ProblemTable
         problems={problems}
         currentPage={currentPage}
         totalPages={totalPages}
+        pageSize={pageSize}
         sortConfig={sortConfig}
         handleSort={handleSort}
         handleProblemDetail={handleProblemDetail}
         setCurrentPage={setCurrentPage}
+        isLoading={isLoading}
       />
     </section>
   )
