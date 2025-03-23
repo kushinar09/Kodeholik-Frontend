@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { getCourse, getCourseDiscussion, discussionCourse, getDiscussionReply, upvoteDiscussion, unUpvoteDiscussion, getImage } from "@/lib/api/course_api";
+import { getCourse, getCourseDiscussion, discussionCourse, getDiscussionReply, upvoteDiscussion, unUpvoteDiscussion } from "@/lib/api/course_api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { GLOBALS } from "@/lib/constants";
-import { Send, X, ThumbsUp, ChevronDown, ChevronUp, MessageSquare, Clock } from 'lucide-react';
+import { Send, X, ArrowBigUp, ChevronDown, ChevronUp, MessageSquare, Clock } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -62,42 +62,35 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
   };
 
   const transformDiscussionData = async (discussionData, replyData) => {
-    const messagesWithAvatars = await Promise.all(
-      discussionData.map(async (comment) => {
-        const commentReplies = replyData.filter((reply) => reply.replyId === comment.id);
-        // Fetch avatar for main comment
-        const avatarUrl = comment.createdBy.avatar 
-          ? await getImage(comment.createdBy.avatar).catch(() => "/placeholder.svg?height=40&width=40")
-          : "/placeholder.svg?height=40&width=40";
-
-        // Fetch avatars for replies
-        const repliesWithAvatars = await Promise.all(
-          commentReplies.map(async (reply) => ({
-            id: reply.id,
-            user: reply.createdBy.username,
-            text: reply.comment,
-            time: reply.createdAt,
-            avatar: reply.createdBy.avatar 
-              ? await getImage(reply.createdBy.avatar).catch(() => "/placeholder.svg?height=40&width=40")
-              : "/placeholder.svg?height=40&width=40",
-            likes: reply.noUpvote,
-            liked: reply.voted,
-          }))
-        );
-
-        return {
-          id: comment.id,
-          user: comment.createdBy.username,
-          text: comment.comment,
-          time: comment.createdAt,
-          avatar: avatarUrl,
-          likes: comment.noUpvote,
-          liked: comment.voted,
-          replies: repliesWithAvatars,
-          showReplies: false,
-        };
-      })
-    );
+    const messagesWithAvatars = discussionData.map((comment) => {
+      const commentReplies = replyData.filter((reply) => reply.replyId === comment.id);
+      
+      // Use the avatar URL directly if it exists, otherwise use placeholder
+      const avatarUrl = comment.createdBy.avatar || "/placeholder.svg?height=40&width=40";
+  
+      const repliesWithAvatars = commentReplies.map((reply) => ({
+        id: reply.id,
+        user: reply.createdBy.username,
+        text: reply.comment,
+        time: reply.createdAt,
+        avatar: reply.createdBy.avatar || "/placeholder.svg?height=40&width=40",
+        likes: reply.noUpvote,
+        liked: reply.voted,
+      }));
+  
+      return {
+        id: comment.id,
+        user: comment.createdBy.username,
+        text: comment.comment,
+        time: comment.createdAt,
+        avatar: avatarUrl,
+        likes: comment.noUpvote,
+        liked: comment.voted,
+        replies: repliesWithAvatars,
+        showReplies: false,
+      };
+    });
+    
     return messagesWithAvatars;
   };
 
@@ -247,7 +240,7 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
         className={`h-7 px-2 rounded-full ${message.liked ? "text-primary-button bg-primary-button/10" : "text-text-muted hover:bg-bg-muted hover:text-primary"}`}
         onClick={() => toggleLike(message.id, isReply, parentId)}
       >
-        <ThumbsUp className={`h-3.5 w-3.5 mr-1 ${message.liked ? "fill-primary-button" : ""}`} />
+        <ArrowBigUp className={`h-3.5 w-3.5 mr-1 ${message.liked ? "fill-primary-button" : ""}`} />
         <span className="text-xs">{message.likes > 0 ? message.likes : ""}</span>
       </Button>
       

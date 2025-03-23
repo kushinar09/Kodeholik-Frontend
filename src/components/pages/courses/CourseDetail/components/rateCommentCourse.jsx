@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/providers/AuthProvider"; // Import useAuth
+import { useAuth } from "@/providers/AuthProvider";
 import { Star, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { rateCommentCourse, getRateCommentCourse, getCourse } from "@/lib/api/course_api";
+import { rateCommentCourse, getRateCommentCourse, getCourse, checkEnrollCourse } from "@/lib/api/course_api";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 export default function RateCommentCourse({ courseId, setCourse }) {
-  const { isAuthenticated } = useAuth(); // Access authentication status
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -21,30 +23,40 @@ export default function RateCommentCourse({ courseId, setCourse }) {
   const [submitSuccess, setSubmitSuccess] = useState("");
   const [hoverRating, setHoverRating] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isEnrolled, setIsEnrolled] = useState(false);
 
   const ITEMS_PER_PAGE = 3;
 
   useEffect(() => {
-    async function fetchComments() {
+    async function fetchData() {
       try {
         setLoadingComments(true);
-        console.log("Fetching comments for courseId:", courseId);
         if (!courseId || isNaN(courseId)) {
-          throw new Error("Invalid courseId provided to fetchComments");
+          throw new Error("Invalid courseId provided");
         }
+
         const fetchedComments = await getRateCommentCourse(courseId);
         console.log("Successfully fetched comments:", fetchedComments);
         setComments(Array.isArray(fetchedComments) ? fetchedComments : []);
         setCurrentPage(1);
+
+        if (isAuthenticated) {
+          const enrolled = await checkEnrollCourse(courseId);
+          console.log("Enrollment status for course", courseId, ":", enrolled);
+          setIsEnrolled(enrolled);
+        } else {
+          setIsEnrolled(false);
+        }
       } catch (error) {
-        console.error("Failed to fetch comments:", error.message);
+        console.error("Failed to fetch data:", error.message);
         setComments([]);
+        setIsEnrolled(false);
       } finally {
         setLoadingComments(false);
       }
     }
-    fetchComments();
-  }, [courseId]);
+    fetchData();
+  }, [courseId, isAuthenticated]);
 
   const handleRating = (value) => {
     setRating(value);
@@ -92,6 +104,16 @@ export default function RateCommentCourse({ courseId, setCourse }) {
       return;
     }
 
+    if (!isAuthenticated) {
+      setSubmitError("You must be logged in to submit a rating.");
+      return;
+    }
+
+    if (!isEnrolled) {
+      setSubmitError("You must enroll in the course before rating.");
+      return;
+    }
+
     setSubmitLoading(true);
     try {
       const data = {
@@ -111,7 +133,7 @@ export default function RateCommentCourse({ courseId, setCourse }) {
           console.error("Server error response:", errorText);
           throw new Error(`Failed to submit rating and comment: ${response.status} - ${errorText}`);
         }
-        const responseData = await response.json().catch(() => ({}));
+        const responseData = await response.json();
         console.log("Server success response:", responseData);
         return responseData;
       };
@@ -119,18 +141,7 @@ export default function RateCommentCourse({ courseId, setCourse }) {
       const submittedData = await rateCommentCourse(data, apiCall);
       setSubmitSuccess("Rating and comment submitted successfully!");
 
-      const newComment =
-        submittedData && submittedData.id
-          ? submittedData
-          : {
-              id: Date.now(),
-              courseId: Number.parseInt(courseId),
-              rating,
-              comment: comment.trim(),
-              createdAt: new Date().toLocaleString(),
-              user: { username: "You" },
-            };
-      setComments((prev) => [newComment, ...prev]);
+      setComments((prev) => [submittedData, ...prev]);
       setCurrentPage(1);
 
       const updatedCourse = await getCourse(courseId);
@@ -143,7 +154,7 @@ export default function RateCommentCourse({ courseId, setCourse }) {
 
       const fetchedComments = await getRateCommentCourse(courseId);
       console.log("Refetched comments after submission:", fetchedComments);
-      setComments(Array.isArray(fetchedComments) ? fetchedComments : [newComment]);
+      setComments(Array.isArray(fetchedComments) ? fetchedComments : [submittedData]);
     } catch (error) {
       setSubmitError(error.message);
       console.error("Submission error:", error);
@@ -174,75 +185,88 @@ export default function RateCommentCourse({ courseId, setCourse }) {
       <Card className="bg-gray-800/50 border-gray-700 shadow-xl">
         <CardContent className="p-6 sm:p-8">
           <div className="space-y-8">
-            {/* Show rating/comment input only if authenticated */}
             {isAuthenticated ? (
-              <Card className="bg-gray-900 border-gray-700">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-xl font-mono text-white">Rate & Comment</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Button
-                            key={star}
-                            variant="ghost"
-                            size="sm"
-                            className="h-9 w-9 p-0 rounded-full"
-                            onMouseEnter={() => setHoverRating(star)}
-                            onMouseLeave={() => setHoverRating(0)}
-                            onClick={() => handleRating(star)}
-                          >
-                            <Star
-                              className={cn(
-                                "h-6 w-6 transition-all",
-                                hoverRating >= star || rating >= star ? "text-yellow-400 scale-110" : "text-gray-500",
-                              )}
-                              fill={hoverRating >= star || rating >= star ? "currentColor" : "none"}
-                            />
-                            <span className="sr-only">Rate {star} stars</span>
-                          </Button>
-                        ))}
-                        <span className="ml-2 text-sm text-gray-400">
-                          {rating > 0 ? `${rating} star${rating !== 1 ? "s" : ""}` : "Select rating"}
-                        </span>
+              isEnrolled ? (
+                <Card className="bg-gray-900 border-gray-700">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-xl font-mono text-white">Rate & Comment</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Button
+                              key={star}
+                              variant="ghost"
+                              size="sm"
+                              className="h-9 w-9 p-0 rounded-full"
+                              onMouseEnter={() => setHoverRating(star)}
+                              onMouseLeave={() => setHoverRating(0)}
+                              onClick={() => handleRating(star)}
+                            >
+                              <Star
+                                className={cn(
+                                  "h-6 w-6 transition-all",
+                                  hoverRating >= star || rating >= star ? "text-yellow-400 scale-110" : "text-gray-500",
+                                )}
+                                fill={hoverRating >= star || rating >= star ? "currentColor" : "none"}
+                              />
+                              <span className="sr-only">Rate {star} stars</span>
+                            </Button>
+                          ))}
+                          <span className="ml-2 text-sm text-gray-400">
+                            {rating > 0 ? `${rating} star${rating !== 1 ? "s" : ""}` : "Select rating"}
+                          </span>
+                        </div>
+                        {ratingError && <p className="text-red-400 text-sm">{ratingError}</p>}
                       </div>
-                      {ratingError && <p className="text-red-400 text-sm">{ratingError}</p>}
-                    </div>
 
-                    <div className="space-y-2">
-                      <Textarea
-                        placeholder="Share your experience with this course (10-5000 characters)..."
-                        value={comment}
-                        onChange={handleCommentChange}
-                        className="min-h-[120px] bg-gray-800 border-gray-700 text-gray-200 focus:border-gray-500 resize-y"
-                        disabled={submitLoading}
-                      />
-                      {commentError && <p className="text-red-400 text-sm">{commentError}</p>}
-                    </div>
+                      <div className="space-y-2">
+                        <Textarea
+                          placeholder="Share your experience with this course (10-5000 characters)..."
+                          value={comment}
+                          onChange={handleCommentChange}
+                          className="min-h-[120px] bg-gray-800 border-gray-700 text-gray-200 focus:border-gray-500 resize-y"
+                          disabled={submitLoading}
+                        />
+                        {commentError && <p className="text-red-400 text-sm">{commentError}</p>}
+                      </div>
 
-                    <div className="space-y-2">
-                      <Button
-                        onClick={handleSubmitRatingComment}
-                        disabled={submitLoading || !!ratingError || !!commentError}
-                        className="w-full sm:w-auto bg-primary hover:bg-primary-button-hover text-bg-card"
-                      >
-                        {submitLoading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Submitting...
-                          </>
-                        ) : (
-                          "Submit Review"
-                        )}
-                      </Button>
-                      {submitError && <p className="text-red-400 text-sm">{submitError}</p>}
-                      {submitSuccess && <p className="text-green-400 text-sm">{submitSuccess}</p>}
+                      <div className="space-y-2">
+                        <Button
+                          onClick={handleSubmitRatingComment}
+                          disabled={submitLoading || !!ratingError || !!commentError}
+                          className="w-full sm:w-auto bg-primary hover:bg-primary-button-hover text-bg-card"
+                        >
+                          {submitLoading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Submitting...
+                            </>
+                          ) : (
+                            "Submit Review"
+                          )}
+                        </Button>
+                        {submitError && <p className="text-red-400 text-sm">{submitError}</p>}
+                        {submitSuccess && <p className="text-green-400 text-sm">{submitSuccess}</p>}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="bg-gray-900 border-gray-700">
+                  <CardContent className="p-6 text-center">
+                    <p className="text-gray-300 mb-4">You must enroll in this course to rate and comment.</p>
+                    <Button
+                      onClick={() => navigate(`/course/${courseId}`)}
+                      className="bg-primary hover:bg-primary-button-hover text-bg-card"
+                    >
+                      Enroll Now
+                    </Button>
+                  </CardContent>
+                </Card>
+              )
             ) : (
               <p className="text-gray-300 text-center">Please log in to rate and comment on this course.</p>
             )}

@@ -4,7 +4,7 @@ import FooterSection from "@/components/common/shared/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import { getCourseSearch, getTopicList, getImage } from "@/lib/api/course_api"
+import { getCourseSearch, getTopicList } from "@/lib/api/course_api"
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { GLOBALS } from "@/lib/constants"
@@ -24,7 +24,6 @@ export default function CoursePage() {
   const [selectedTopic, setSelectedTopic] = useState("All")
   const [isFilterExpanded, setIsFilterExpanded] = useState(false)
   const [totalPages, setTotalPages] = useState(1)
-  const [courseImages, setCourseImages] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
 
@@ -59,25 +58,6 @@ export default function CoursePage() {
     };
     fetchCourses();
   }, [currentPage, searchQuery, selectedTopic]);
-
-  // Fetch course images whenever courses change
-  useEffect(() => {
-    const fetchImages = async () => {
-      const imagesMap = {};
-      for (const course of courses) {
-        try {
-          const imageUrl = await getImage(course.image);
-          imagesMap[course.id] = imageUrl;
-        } catch (error) {
-          console.error(`Error fetching image for course ${course.id}:`, error);
-          imagesMap[course.id] = "/default-image.jpg"; // Fallback image
-        }
-      }
-      setCourseImages(imagesMap);
-    };
-
-    if (courses.length > 0) fetchImages();
-  }, [courses]);
 
   // Fetch topics on mount
   useEffect(() => {
@@ -245,7 +225,7 @@ export default function CoursePage() {
               >
                 <div className="relative h-48 overflow-hidden rounded-md mb-3">
                   <img
-                    src={courseImages[course.id] || "/default-image.jpg"}
+                    src={course.image || "/default-image.jpg"}
                     alt={course.title}
                     className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                   />

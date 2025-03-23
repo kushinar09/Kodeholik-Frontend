@@ -38,7 +38,6 @@ export default function CourseDetail({
   loading,
   error,
   navigate,
-  imageUrl,
   open,
   setOpen,
   processing,
@@ -239,10 +238,9 @@ export default function CourseDetail({
                         <Dialog open={open} onOpenChange={setOpen}>
                           <DialogTrigger asChild>
                             <Button
-                              variant="outline"
                               size="lg"
                               disabled={processing}
-                              className="gap-2 border-gray-600 hover:bg-gray-700 hover:text-primary transition-all duration-300"
+                              className="gap-2 bg-bg-error text-white hover:bg-primary hover:text-black transition-all duration-300"
                             >
                               {processing ? (
                                 "Processing..."
@@ -328,11 +326,11 @@ export default function CourseDetail({
 
             <div className="w-full md:w-1/3 bg-gray-900/80 p-8 flex flex-col items-center">
               <div className="relative mb-6 group">
-                {imageUrl ? (
+                {course.image ? (
                   <div className="relative">
                     <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl opacity-70 group-hover:opacity-100 transition-opacity"></div>
                     <img
-                      src={imageUrl || "/placeholder.svg"}
+                      src={course.image || "/placeholder.svg"}
                       alt={course.title}
                       className="w-64 h-64 object-cover rounded-full border-4 border-primary/30 shadow-lg shadow-primary/20 relative transition-transform group-hover:scale-105 duration-300"
                     />
