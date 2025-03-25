@@ -177,7 +177,7 @@ export default function CourseDetailPage() {
 
           {/* Add TabsContent to control what shows for each tab */}
           <TabsContent value="overview">
-            <RateCommentCourse courseId={id} setCourse={setCourse} />
+            <RateCommentCourse courseId={id} setCourse={setCourse} isAuthenticated={isAuthenticated} isEnrolled={isEnrolled}/>
           </TabsContent>
           <TabsContent value="modules">
             <CourseModule chapters={chapters} toggleChapter={toggleChapter} navigate={navigate} />
@@ -186,7 +186,7 @@ export default function CourseDetailPage() {
       </div>
 
       {/* Show chat button and discussion only if authenticated */}
-      {isAuthenticated && (
+      {isAuthenticated && isEnrolled && (
         <>
           <button
             onClick={() => setShowChat(!showChat)}

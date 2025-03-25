@@ -9,8 +9,7 @@ import { rateCommentCourse, getRateCommentCourse, getCourse, checkEnrollCourse }
 import { cn } from "@/lib/utils"
 import { useNavigate } from "react-router-dom"
 
-export default function RateCommentCourse({ courseId, setCourse }) {
-  const { isAuthenticated } = useAuth()
+export default function RateCommentCourse({ courseId, setCourse, isAuthenticated, isEnrolled }) {
   const navigate = useNavigate()
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState("")
@@ -23,7 +22,6 @@ export default function RateCommentCourse({ courseId, setCourse }) {
   const [submitSuccess, setSubmitSuccess] = useState("")
   const [hoverRating, setHoverRating] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
-  const [isEnrolled, setIsEnrolled] = useState(false)
 
   const ITEMS_PER_PAGE = 3
 
