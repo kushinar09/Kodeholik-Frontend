@@ -16,7 +16,7 @@ export default function ProblemEditorial({ editorial }) {
   useEffect(() => {
     document.querySelectorAll("pre code").forEach((block) => {
       if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") == "yes"))
-        hljs.highlightBlock(block)
+        hljs.highlightElement(block)
     })
   }, [editorial])
 

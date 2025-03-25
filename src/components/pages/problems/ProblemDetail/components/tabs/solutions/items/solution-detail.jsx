@@ -80,7 +80,7 @@ export default function SolutionDetail({ solutionId, handleBack, setIsEditMode, 
   useEffect(() => {
     document.querySelectorAll("pre code").forEach((block) => {
       if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") == "yes"))
-        hljs.highlightBlock(block)
+        hljs.highlightElement(block)
     })
   }, [solution])
 
@@ -164,24 +164,25 @@ export default function SolutionDetail({ solutionId, handleBack, setIsEditMode, 
           <>
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold mb-4">{solution.title}</h2>
-              {solution.currentUserCreated && <Button onClick={() => editSolution()} className="h-12 font-bold ml-4 hover:bg-green-400">
-                <svg
-                  className="!h-6 !w-6 text-black mr-1"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  stroke="currentColor"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  {" "}
-                  <path stroke="none" d="M0 0h24v24H0z" />{" "}
-                  <path d="M9 7 h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" />{" "}
-                  <path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3" />{" "}
-                  <line x1="16" y1="5" x2="19" y2="8" />
-                </svg>
-                Edit
-              </Button>}
+              {solution.currentUserCreated &&
+                <Button onClick={() => editSolution()} className="h-12 font-bold ml-4 hover:bg-green-400">
+                  <svg
+                    className="!h-6 !w-6 text-black mr-1"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    stroke="currentColor"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    {" "}
+                    <path stroke="none" d="M0 0h24v24H0z" />{" "}
+                    <path d="M9 7 h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" />{" "}
+                    <path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3" />{" "}
+                    <line x1="16" y1="5" x2="19" y2="8" />
+                  </svg>
+                  Edit
+                </Button>}
             </div>
             <div>
               <Button variant="ghost" size="icon" onClick={() => toggleUpvote(solution.id)} className="h-3 w-3">
