@@ -3,6 +3,11 @@
 import { marked } from "marked"
 import { useMemo } from "react"
 import { ENDPOINTS } from "@/lib/constants"
+import "./styles.css"
+
+// // Import styles
+// import "@/components/common/editor-code/css/prism-darcula.css"
+// import "@/components/common/editor-code/css/prism-atom-dark.css"
 
 const imageUrlCache = new Map()
 
@@ -15,7 +20,7 @@ export default function RenderMarkdown({ content, className = "" }) {
     const lockedCodeRegex = /LOCKED-CODE\s*([\s\S]*?)\s*LOCKED-CODE/g
 
     content = content.replace(lockedCodeRegex, (match, codeContent) => {
-      return `<div class="locked-code"><pre><code>${codeContent.trim()}</code></pre></div>`
+      return `<div class="locked-code"><pre><code class="language-java font-code">${codeContent.trim()}</code></pre></div>`
     })
     customRenderer.image = (href) => {
       const title = href.title || ""

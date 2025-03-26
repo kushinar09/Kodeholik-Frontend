@@ -29,15 +29,17 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 
-// highlight.js
-import hljs from "highlight.js"
-import "highlight.js/styles/default.css"
+import Prism from "prismjs"
+import "prismjs/components/prism-java"
+// Import styles
+// import "@/components/common/editor-code/css/prism-darcula.css"
+import "@/components/common/editor-code/css/prism-atom-dark.css"
+
 import { getCookie, setCookie } from "@/lib/utils"
 import { toast } from "sonner"
 import { ENDPOINTS } from "@/lib/constants"
 import { useAuth } from "@/providers/AuthProvider"
 import RenderMarkdown from "./RenderMarkdown"
-
 
 // Cache for storing image URLs
 const imageUrlCache = new Map()
@@ -95,10 +97,13 @@ const MarkdownEditor = ({ canDelete = null, setCanDelete = null, value = "", onC
 
   useEffect(() => {
     document.querySelectorAll("pre code").forEach((block) => {
-      if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") == "yes"))
-        hljs.highlightElement(block)
+      if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") === "yes")) {
+        block.classList.add("language-java", "font-code")
+        Prism.highlightElement(block)
+        block.setAttribute("data-highlighted", "yes")
+      }
     })
-    if (onChange) onChange(markdownContent)
+
   }, [markdownContent])
 
   useEffect(() => {
@@ -690,7 +695,7 @@ const MarkdownEditor = ({ canDelete = null, setCanDelete = null, value = "", onC
       <div className="flex-1 grid grid-cols-2 divide-x min-h-0">
         <div id="editor" ref={editorRef} className="h-full w-full overflow-auto focus-within:ring-1 focus-within:ring-ring" />
         <div className="h-full overflow-auto">
-          <RenderMarkdown content={markdownContent} className="p-4"/>
+          <RenderMarkdown content={markdownContent} className="p-4" />
         </div>
       </div>
     </div>

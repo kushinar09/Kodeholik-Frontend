@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAuth } from "@/providers/AuthProvider"
-import { format } from "date-fns"
+import { format, parse } from "date-fns"
 import { ArrowDownAZ, ArrowUpAZ } from "lucide-react"
 import { useEffect, useState } from "react"
 
@@ -133,8 +133,8 @@ export default function ProblemSubmissions({ submissionsData, selectedSubmission
                       </TableCell>
                       <TableCell>{submission.memoryUsage > 0 ? `${submission.memoryUsage.toFixed(1)} MB` : "-"}</TableCell>
                       <TableCell>
-                        {submission.createdAt && !isNaN(new Date(submission.createdAt).getTime())
-                          ? format(new Date(submission.createdAt), "dd, MM, yyyy HH:mm")
+                        {submission.createdAt && !isNaN(parse(submission.createdAt, "dd/MM/yyyy, HH:mm", new Date()).getTime())
+                          ? format(parse(submission.createdAt, "dd/MM/yyyy, HH:mm", new Date()), "dd/MM/yyyy HH:mm")
                           : "N/A"}
                       </TableCell>
                     </TableRow>

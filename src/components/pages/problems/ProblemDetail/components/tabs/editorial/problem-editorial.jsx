@@ -112,7 +112,10 @@ export default function ProblemEditorial({ editorial }) {
                     {/* <pre className="text-sm">
                       <code className="font-code">{solution.solutionCode}</code>
                     </pre> */}
-                    <CodeHighlighter code={solution.solutionCode} language={solution.solutionLanguage.toLowerCase()} />
+                    <CodeHighlighter
+                      code={solution.solutionCode}
+                      language={solution.solutionLanguage}
+                    />
                   </div>
                 ))}
               </div>

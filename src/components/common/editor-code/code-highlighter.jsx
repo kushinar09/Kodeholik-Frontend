@@ -2,8 +2,23 @@
 
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import Prism from "prismjs"
+
+// Import core and base languages first
+import "prismjs/components/prism-core"
+import "prismjs/components/prism-clike"
+import "prismjs/components/prism-javascript"
+
+// Then import specific languages that depend on clike
+import "prismjs/components/prism-java"
+import "prismjs/components/prism-c"
+
+// Import styles
 import "./css/prism-darcula.css"
 // import "./css/prism-atom-dark.css"
+
+import "prismjs/plugins/line-numbers/prism-line-numbers.css"
+import "prismjs/plugins/line-numbers/prism-line-numbers"
 
 export function CodeHighlighter({ code, language = "javascript", showLineNumbers = true, className = "" }) {
   const [highlightedCode, setHighlightedCode] = useState("")
@@ -14,9 +29,6 @@ export function CodeHighlighter({ code, language = "javascript", showLineNumbers
       // Import the core
       import("prismjs/components/prism-core")
 
-      // Import language support based on the prop
-      import(`prismjs/components/prism-${language}`)
-
       // Import additional plugins if needed
       if (showLineNumbers) {
         import("prismjs/plugins/line-numbers/prism-line-numbers")
@@ -25,8 +37,8 @@ export function CodeHighlighter({ code, language = "javascript", showLineNumbers
       // Highlight the code
       const highlighted = Prism.default.highlight(
         code,
-        Prism.default.languages[language] || Prism.default.languages.javascript,
-        language,
+        Prism.default.languages[language.toLowerCase()] || Prism.default.languages.javascript,
+        language.toLowerCase()
       )
       setHighlightedCode(highlighted)
     })
@@ -34,9 +46,9 @@ export function CodeHighlighter({ code, language = "javascript", showLineNumbers
 
 
   return (
-    <div className={cn("relative overflow-hidden", className)}>
+    <div className={cn("relative overflow-hidden bg-bg-card", className)}>
       <pre className={cn("p-4 overflow-x-auto text-sm", showLineNumbers && "line-numbers")}>
-        <code className={`language-${language} font-code`} dangerouslySetInnerHTML={{ __html: highlightedCode }} />
+        <code className={`language-${language.toLowerCase()} font-code`} dangerouslySetInnerHTML={{ __html: highlightedCode }} />
       </pre>
     </div>
   )

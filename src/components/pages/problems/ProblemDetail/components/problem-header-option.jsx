@@ -18,7 +18,7 @@ export default function ProblemHeader({ onRun, onSubmit, isRunning }) {
               <LOGO className="size-8" />
             </div>
           </a>
-          <Button variant="ghost" className="w-fit p-2 px-3 bg-bg-primary/80 text-input-text">
+          <Button onClick={() => window.location.href = "/"} variant="ghost" className="w-fit p-2 px-3 bg-bg-primary/80 text-input-text">
             <ListChecksIcon className="w-6 h-6" />
             <span className="text-sm font-bold pl-2">Problem List</span>
           </Button>

@@ -1,16 +1,17 @@
+/* eslint-disable indent */
 "use client"
 
-import { getMyProgress } from "@/lib/api/user_api";
-import { useAuth } from "@/providers/AuthProvider";
+import { getMyProgress } from "@/lib/api/user_api"
+import { useAuth } from "@/providers/AuthProvider"
 import { useEffect, useState } from "react"
-import { FilterBarProgress } from "../components/filter-list-progress";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { FilterBarProgress } from "../components/filter-list-progress"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
-import { useNavigate } from "react-router-dom";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { useNavigate } from "react-router-dom"
+import { ArrowDown, ArrowUp } from "lucide-react"
 
 const requestData = {
     page: 0,
@@ -21,40 +22,40 @@ const requestData = {
 }
 
 export default function MyProgress() {
-    const [myProgress, setMyProgress] = useState(null);
-    const { apiCall } = useAuth();
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(0);
-    const [totalElements, setTotalElements] = useState(0);
-    const [noContent, setNoContent] = useState(false);
+    const [myProgress, setMyProgress] = useState(null)
+    const { apiCall } = useAuth()
+    const [currentPage, setCurrentPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(0)
+    const [totalElements, setTotalElements] = useState(0)
+    const [noContent, setNoContent] = useState(false)
     const [filters, setFilters] = useState({
         status: ""
-    });
-    const [size, setSize] = useState("5");
-    const navigate = useNavigate();
-    const [sortBy, setSortBy] = useState("noSubmission");
-    const [ascending, setAscending] = useState(false);
+    })
+    const [size, setSize] = useState("5")
+    const navigate = useNavigate()
+    const [sortBy, setSortBy] = useState("noSubmission")
+    const [ascending, setAscending] = useState(false)
 
     const fetchMyProgress = async () => {
         try {
-            const response = await getMyProgress(apiCall, requestData);
+            const response = await getMyProgress(apiCall, requestData)
             if (response == null) {
                 setNoContent(true)
                 setTotalElements(0)
             }
             else {
-                setMyProgress(response.content);
+                setMyProgress(response.content)
                 setTotalPages(response.totalPages)
                 setNoContent(false)
                 setTotalElements(response.totalElements)
             }
         } catch (error) {
-            console.log(error);
+            console.log(error)
         }
     }
 
     useEffect(() => {
-        fetchMyProgress();
+        fetchMyProgress()
     }, [])
 
     const handleFilterChange = (newFilters) => {
@@ -81,7 +82,7 @@ export default function MyProgress() {
         requestData.page = 0
         setCurrentPage(1)
         setSize(size)
-        requestData.size = Number(size);
+        requestData.size = Number(size)
         fetchMyProgress()
     }
 
@@ -140,12 +141,12 @@ export default function MyProgress() {
             {!noContent &&
                 <Table>
                     <TableHeader>
-                        <TableRow>
+                        <TableRow className="hover:bg-gray-700/50">
                             <TableHead className="text-primary-text">Problem</TableHead>
                             <TableHead className="text-primary-text">Difficulty</TableHead>
                             <TableHead className="text-primary-text">Status</TableHead>
-                            <TableHead onClick={() => { handleSort("noSubmission")}} className="text-primary-text">
-                            <p className="cursor-pointer">No Submission
+                            <TableHead onClick={() => { handleSort("noSubmission") }} className="text-primary-text">
+                                <p className="cursor-pointer">No Submission
                                     {sortBy == "noSubmission" && ascending &&
                                         <ArrowUp className="ml-2 h-4 w-4 inline" />
                                     }
@@ -154,7 +155,7 @@ export default function MyProgress() {
                                     }
                                 </p>
                             </TableHead>
-                            <TableHead onClick={() => { handleSort("createdAt")}} className="text-primary-text">
+                            <TableHead onClick={() => { handleSort("createdAt") }} className="text-primary-text">
                                 <p className="cursor-pointer">Last Submitted
                                     {sortBy == "createdAt" && ascending &&
                                         <ArrowUp className="ml-2 h-4 w-4 inline" />
@@ -168,29 +169,26 @@ export default function MyProgress() {
                     </TableHeader>
                     <TableBody>
                         {myProgress != null && myProgress.map((progress) => (
-                            <TableRow key={progress.problemLink}>
+                            <TableRow key={progress.problemLink} className="hover:bg-gray-700/50">
                                 <TableCell onClick={() => navigate("/problem/" + progress.problemLink)} className="text-primary-text font-bold cursor-pointer">{progress.problemTitle}</TableCell>
                                 <TableCell className="text-primary-text">
-                                    {progress.difficulty == "EASY" && <Badge variant="outline" className="bg-green-500 py-1.5 text-black">Easy</Badge>}
-                                    {progress.difficulty == "MEDIUM" && <Badge variant="outline" className="bg-yellow-500 py-1.5 text-black">Medium</Badge>}
-                                    {progress.difficulty == "Hard" && <Badge variant="outline" className="bg-red-500 py-1.5 text-black">Hard</Badge>}
+                                    {progress.difficulty == "EASY" && <Badge variant="ghost" className="bg-green-500 py-1.5 text-black border-none">Easy</Badge>}
+                                    {progress.difficulty == "MEDIUM" && <Badge variant="ghost" className="bg-yellow-500 py-1.5 text-black border-none">Medium</Badge>}
+                                    {progress.difficulty == "Hard" && <Badge variant="ghost" className="bg-red-500 py-1.5 text-black border-none">Hard</Badge>}
                                 </TableCell>
                                 <TableCell className="text-primary-text">
-                                    {progress.progressType == "SOLVED" && <div className="flex items-center">
-                                        <div>
-                                            <svg class="h-8 w-8 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />  <polyline points="22 4 12 14.01 9 11.01" /></svg>                                        </div>
-                                        <div className="text-green-500 ml-2">
-                                            Solved
-                                        </div>
-                                    </div>}
-                                    {progress.progressType == "ATTEMPTED" && <div className="flex items-center">
-                                        <div>
-                                            <svg class="h-8 w-8 text-yellow-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z" />  <circle cx="12" cy="12" r="1" />  <circle cx="12" cy="12" r="5" />  <circle cx="12" cy="12" r="9" /></svg>
-                                        </div>
-                                        <div className="text-yellow-500 ml-2">
-                                            Attempted
-                                        </div>
-                                    </div>}
+                                    {progress.progressType == "SOLVED" &&
+                                        <div className="flex items-center">
+                                            <div className="text-green-500">
+                                                Solved
+                                            </div>
+                                        </div>}
+                                    {progress.progressType == "ATTEMPTED" &&
+                                        <div className="flex items-center">
+                                            <div className="text-yellow-500">
+                                                Attempted
+                                            </div>
+                                        </div>}
                                 </TableCell>
                                 <TableCell className="text-primary-text">{progress.noSubmission}</TableCell>
                                 <TableCell className="text-primary-text">{progress.lastSubmitted}</TableCell>
@@ -211,7 +209,7 @@ export default function MyProgress() {
                         <div className="flex-1 flex justify-center gap-2">
                             <Button
                                 variant="ghost"
-                                className="text-primary font-bold hover:bg-primary transition hover:text-white"
+                                className="font-semibold text-text-primary hover:bg-primary hover:text-bg-card"
                                 onClick={() => handlePageChange(currentPage - 1)}
                                 disabled={currentPage === 1}
                             >
@@ -232,8 +230,8 @@ export default function MyProgress() {
                                                 key={index}
                                                 onClick={() => handlePageChange(index + 1)}
                                                 className={cn(
-                                                    "text-primary font-bold hover:bg-primary transition hover:text-white",
-                                                    currentPage === index + 1 && "bg-button-primary text-black bg-primary hover:bg-button-hover"
+                                                    "text-text-primary font-bold transition",
+                                                    currentPage === index + 1 ? "text-bg-card bg-primary" : "hover:text-bg-card/70 hover:bg-primary"
                                                 )}
                                             >
                                                 {index + 1}
@@ -254,7 +252,7 @@ export default function MyProgress() {
                             </div>
                             <Button
                                 variant="ghost"
-                                className="text-primary font-bold hover:bg-primary transition hover:text-white"
+                                className="font-semibold text-text-primary hover:bg-primary hover:text-bg-card"
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={currentPage === totalPages}
                             >

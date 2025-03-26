@@ -10,6 +10,7 @@ import { formatValue, copyToClipboard } from "@/lib/utils/format-utils"
 import hljs from "highlight.js"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useNavigate } from "react-router-dom"
+import { CodeHighlighter } from "@/components/common/editor-code/code-highlighter"
 
 /**
  * Component to display submitted code and results
@@ -17,17 +18,17 @@ import { useNavigate } from "react-router-dom"
  * @param {Object} props.submitted - Submission results
  * @param {string} props.code - Submitted code
  */
-export default function SubmittedCodeView({ submitted, code, setActiveTab, problemLink, selectedSubmissionId}) {
+export default function SubmittedCodeView({ submitted, code, setActiveTab, problemLink, selectedSubmissionId }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
   const navigate = useNavigate();
 
-  useEffect(() => {
-    document.querySelectorAll("pre code").forEach((block) => {
-      if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") == "yes"))
-        hljs.highlightElement(block)
-    })
-  }, [])
+  // useEffect(() => {
+  //   document.querySelectorAll("pre code").forEach((block) => {
+  //     if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") == "yes"))
+  //       hljs.highlightElement(block)
+  //   })
+  // }, [])
 
   useEffect(() => {
     setCopied(false)
@@ -231,11 +232,16 @@ export default function SubmittedCodeView({ submitted, code, setActiveTab, probl
               </Button>
             </div>
           </div>
-          <div className={cn("overflow-hidden transition-all duration-300", isExpanded ? "h-auto" : "max-h-[230px]")}>
+          {/* <div className={cn("overflow-hidden transition-all duration-300", isExpanded ? "h-auto" : "max-h-[230px]")}>
             <pre className="text-sm">
               <code>{code}</code>
             </pre>
-          </div>
+          </div> */}
+          <CodeHighlighter
+            className={cn("overflow-hidden transition-all duration-300", isExpanded ? "h-auto" : "max-h-[230px]")}
+            code={code}
+            language={submitted.languageName}
+          />
           {code && code.split("\n").length > 10 && (
             <div className="border-t border-border p-2 text-center">
               <Button

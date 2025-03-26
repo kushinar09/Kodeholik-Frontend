@@ -1,14 +1,13 @@
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { MessageCircle, ArrowBigUp } from "lucide-react"
+import { MessageCircle} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { unupvoteSolution, upvoteSolution } from "@/lib/api/problem_api"
 import { toast } from "@/hooks/use-toast"
 import { useAuth } from "@/providers/AuthProvider"
 
 export default function SolutionCard({ infor, solutions, setSolutions, handleClickSolution }) {
-  const { apiCall } = useAuth();
+  const { apiCall } = useAuth()
   const initials = infor.createdBy.username
     .split(" ")
     .map((word) => word[0])
@@ -19,7 +18,7 @@ export default function SolutionCard({ infor, solutions, setSolutions, handleCli
     console.log(solutions)
     try {
       if (!infor.currentUserVoted) {
-        const response = await upvoteSolution(apiCall, infor.id);
+        const response = await upvoteSolution(apiCall, infor.id)
         if (response.status) {
           toast({
             title: "Upvote Solution",
@@ -27,16 +26,16 @@ export default function SolutionCard({ infor, solutions, setSolutions, handleCli
             variant: "default" // destructive
           })
           setSolutions((prevSolution) => ({
-            ...prevSolution,  
+            ...prevSolution,
             content: prevSolution.content.map((item) =>
               item.id === infor.id ? { ...item, noUpvote: item.noUpvote + 1, currentUserVoted: true } : item
-            ) 
-          }));          
+            )
+          }))
 
         }
       }
       else {
-        const response = await unupvoteSolution(apiCall, infor.id);
+        const response = await unupvoteSolution(apiCall, infor.id)
         if (response.status) {
           toast({
             title: "Unupvote Solution",
@@ -44,17 +43,17 @@ export default function SolutionCard({ infor, solutions, setSolutions, handleCli
             variant: "default" // destructive
           })
           setSolutions((prevSolution) => ({
-            ...prevSolution,  
+            ...prevSolution,
             content: prevSolution.content.map((item) =>
               item.id === infor.id ? { ...item, noUpvote: item.noUpvote - 1 > 0 ? item.noUpvote - 1 : 0, currentUserVoted: false } : item
-            ) 
-          }));    
+            )
+          }))
 
         }
       }
 
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
   }
 
@@ -83,8 +82,8 @@ export default function SolutionCard({ infor, solutions, setSolutions, handleCli
               <div className="flex items-center gap-6 text-muted-foreground text-sm">
                 <div className="flex items-center gap-2">
                   <Button onClick={() => toggleUpvote(infor.id)} variant="ghost" size="icon" className="h-3 w-3">
-                  {infor.currentUserVoted ? <svg className="h-4 w-4 text-yellow-500" fill="currentColor" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>
-                : <svg className="h-4 w-4 text-black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>}
+                    {infor.currentUserVoted ? <svg className="h-4 w-4 text-yellow-500" fill="currentColor" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>
+                      : <svg className="h-4 w-4 text-black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>}
                   </Button>
                   <span>{infor.noUpvote}</span>
                 </div>
