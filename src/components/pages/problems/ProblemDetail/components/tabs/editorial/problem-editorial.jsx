@@ -7,18 +7,19 @@ import "highlight.js/styles/default.css"
 import { useEffect, useState } from "react"
 import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 import { Button } from "@/components/ui/button"
+import { CodeHighlighter } from "@/components/common/editor-code/code-highlighter"
 /**
  * Component to display problem editorial
  * @param {Object} props - Component props
  * @param {Object} props.editorial - Editorial data
  */
 export default function ProblemEditorial({ editorial }) {
-  useEffect(() => {
-    document.querySelectorAll("pre code").forEach((block) => {
-      if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") == "yes"))
-        hljs.highlightElement(block)
-    })
-  }, [editorial])
+  // useEffect(() => {
+  //   document.querySelectorAll("pre code").forEach((block) => {
+  //     if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") == "yes"))
+  //       hljs.highlightElement(block)
+  //   })
+  // }, [editorial])
 
   const { isAuthenticated } = useAuth()
 
@@ -106,11 +107,12 @@ export default function ProblemEditorial({ editorial }) {
                 {editorial.solutionCodes.map((solution, index) => (
                   <div
                     key={index}
-                    className={`code-block bg-gray-50 dark:bg-gray-900 overflow-auto ${index === 0 ? "" : "hidden"}`}
+                    className={`code-block dark:bg-gray-900 overflow-auto ${index === 0 ? "" : "hidden"}`}
                   >
-                    <pre className="text-sm">
+                    {/* <pre className="text-sm">
                       <code className="font-code">{solution.solutionCode}</code>
-                    </pre>
+                    </pre> */}
+                    <CodeHighlighter code={solution.solutionCode} language={solution.solutionLanguage.toLowerCase()} />
                   </div>
                 ))}
               </div>

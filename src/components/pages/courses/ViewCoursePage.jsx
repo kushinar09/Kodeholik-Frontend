@@ -1,16 +1,22 @@
+"use client"
+
 import { Card } from "@/components/ui/card"
 import FooterSection from "@/components/common/shared/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
+import { Checkbox } from "@/components/ui/checkbox"
 import { getCourseSearch, getTopicList } from "@/lib/api/course_api"
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { GLOBALS } from "@/lib/constants"
 import HeaderSection from "@/components/common/shared/header"
+import placeholder from "@/assets/images/placeholder_square.jpg"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { BookOpenCheck, BookText, Dot, Star } from "lucide-react"
+import { StarFilledIcon } from "@radix-ui/react-icons"
 
 // Sync with desired page size
-const ITEMS_PER_PAGE = 8
+const ITEMS_PER_PAGE = 9
 
 export default function CoursePage() {
   useEffect(() => {
@@ -21,13 +27,13 @@ export default function CoursePage() {
   const [topics, setTopics] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedTopic, setSelectedTopic] = useState("All")
-  const [isFilterExpanded, setIsFilterExpanded] = useState(false)
+  const [selectedTopics, setSelectedTopics] = useState([])
   const [totalPages, setTotalPages] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
+  const [showAllTopics, setShowAllTopics] = useState(false)
   const navigate = useNavigate()
 
-  // Fetch courses based on currentPage, searchQuery, and selectedTopic
+  // Fetch courses based on currentPage, searchQuery, and selectedTopics
   useEffect(() => {
     const fetchCourses = async () => {
       setIsLoading(true)
@@ -38,13 +44,11 @@ export default function CoursePage() {
           sortBy: "numberOfParticipant",
           ascending: true,
           query: searchQuery || undefined,
-          topic: selectedTopic === "All" ? undefined : selectedTopic
+          topic: selectedTopics.length > 0 ? selectedTopics.join(",") : undefined,
         })
         // Filter by title manually if backend doesn't support it
         const filteredCourses = searchQuery
-          ? (data.content || []).filter(course =>
-            course.title.toLowerCase().includes(searchQuery.toLowerCase())
-          )
+          ? (data.content || []).filter((course) => course.title.toLowerCase().includes(searchQuery.toLowerCase()))
           : data.content || []
         setCourses(filteredCourses)
         setTotalPages(data.totalPages || 1)
@@ -57,7 +61,7 @@ export default function CoursePage() {
       }
     }
     fetchCourses()
-  }, [currentPage, searchQuery, selectedTopic])
+  }, [currentPage, searchQuery, selectedTopics])
 
   // Fetch topics on mount
   useEffect(() => {
@@ -79,263 +83,301 @@ export default function CoursePage() {
     }
   }
 
-  const handleFilterClick = () => {
-    setIsFilterExpanded(!isFilterExpanded)
+  const handleTopicChange = (topic) => {
+    setSelectedTopics((prev) => (prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic]))
+    setCurrentPage(1)
   }
 
-  const handleTopicClick = (topic) => {
-    setSelectedTopic(topic === "All" ? "All" : topic)
-    setCurrentPage(1) // Reset to first page when filter changes
-    setIsFilterExpanded(false)
+  const toggleShowAllTopics = () => {
+    setShowAllTopics(!showAllTopics)
   }
 
   // Handle clearing all filters
   const handleClearFilters = () => {
     setSearchQuery("")
-    setSelectedTopic("All")
+    setSelectedTopics([])
     setCurrentPage(1)
   }
 
+  // Determine which topics to display based on showAllTopics state
+  const displayedTopics = showAllTopics ? topics : topics.slice(0, 5)
+
   return (
     <div className="min-h-screen bg-bg-primary">
-      <HeaderSection currentActive="courses"/>
-      <div className="mx-36 mt-4">
-        <div className="mb-8">
-          <h1 className="text-xl font-bold text-white mb-2">Explore Courses</h1>
-          <p className="text-md text-text-secondary">Discover and enroll in our wide range of courses</p>
-        </div>
-
-        <div className="mb-8 bg-bg-card rounded-lg p-4 shadow-md border border-border-muted">
-          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
-            <div className="relative flex-grow">
-              <Input
-                type="text"
-                placeholder="Search courses..."
-                className="p-2 pl-10 w-full bg-input-bg text-input-text placeholder-input-placeholder border-input-border focus:border-input-borderFocus focus:ring-input-focusRing rounded-md"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-input-placeholder"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+      <HeaderSection currentActive="courses" />
+      <div className="mx-36 py-8 text-text-primary">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Left sidebar with filters */}
+          <div className="w-full md:w-64 shrink-0">
+            <div className="flex justify-between">
+              <h2 className="text-xl font-bold mb-6">Filter by</h2>
+              {selectedTopics.length > 0 &&
+                <Button variant="outline" size="sm" onClick={handleClearFilters} className="text-sm bg-bg-card text-text-primary hover:text-text-primary border-none hover:bg-bg-card/90">
+                  Clear all
+                </Button>
+              }
             </div>
-            <Button
-              variant="ghost"
-              onClick={handleFilterClick}
-              className={cn(
-                "text-primary font-medium hover:bg-primary transition hover:text-black px-4 min-w-[120px]",
-                isFilterExpanded && "bg-button-primary text-bg-primary hover:bg-button-hover"
+
+            {/* Topics filter */}
+            <div className="mb-8">
+              <h3 className="font-semibold mb-3">Topics</h3>
+              <div className="space-y-2">
+                {displayedTopics.map((topic) => {
+                  const topicName = typeof topic === "string" ? topic : topic.name || ""
+                  const topicId = typeof topic === "string" ? topic : topic.id || topicName
+
+                  return (
+                    <div key={topicId} className="flex items-center">
+                      <Checkbox
+                        id={`topic-${topicId}`}
+                        checked={selectedTopics.includes(topicName)}
+                        onCheckedChange={() => handleTopicChange(topicName)}
+                        className="mr-2 text-bg-card"
+                      />
+                      <label
+                        htmlFor={`topic-${topicId}`}
+                        className="text-sm flex justify-between w-full cursor-pointer"
+                      >
+                        <span>{topicName}</span>
+                      </label>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {topics.length > 5 && (
+                <button onClick={toggleShowAllTopics} className="text-sm text-primary mt-2 hover:underline">
+                  {showAllTopics ? "Show less" : "Show more"}
+                </button>
               )}
-            >
-              Filter by Topic
-              <span className="ml-2 text-sm">{isFilterExpanded ? "▲" : "▼"}</span>
-            </Button>
-            {(searchQuery || selectedTopic !== "All") && (
-              <Button
-                variant="ghost"
-                onClick={handleClearFilters}
-                className="text-primary border border-primary hover:bg-primary hover:text-black px-4"
-              >
-                Clear Filters
-              </Button>
+            </div>
+          </div>
+
+          {/* Main content area */}
+          <div className="flex-1">
+            <h2 className="text-xl font-semibold mb-6">
+              {searchQuery ? `Results for "${searchQuery}"` : "All Courses"}
+            </h2>
+
+            {/* Search input */}
+            <div className="mb-6">
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Search courses..."
+                  className="p-2 pl-10 w-full focus:border-primary"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {/* Selected filters */}
+            {selectedTopics.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {selectedTopics.map((topic) => (
+                  <div key={topic} className="bg-bg-card text-primary px-3 py-1 rounded-md text-sm flex items-center text-center">
+                    {topic}
+                    <button
+                      onClick={() => handleTopicChange(topic)}
+                      className="ml-2 text-muted-foreground hover:text-primary"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {isLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+              </div>
+            ) : courses.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-16 w-16 text-muted-foreground mb-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <h3 className="text-xl font-semibold mb-2">No courses found</h3>
+                <p className="text-muted-foreground max-w-md">
+                  We couldn&apos;t find any courses matching your search criteria. Try adjusting your filters or search
+                  term.
+                </p>
+                <Button className="mt-4 text-bg-card" onClick={handleClearFilters}>
+                  Clear filters
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                {courses.map((course) => (
+                  <Card
+                    key={course.id}
+                    className="overflow-hidden text-text-primary flex flex-col cursor-pointer hover:shadow-lg hover:scale-105 transition-all bg-bg-card border-none"
+                    onClick={() => navigate(`/courses/${course.id}`)}
+                  >
+                    <div className="relative">
+                      <img
+                        src={course.image || placeholder}
+                        alt={course.title}
+                        className="w-full aspect-[5/3] object-cover"
+                      />
+                      {course.numberOfParticipant > 0 && (
+                        <div className="absolute top-2 right-2 bg-bg-primary text-primary font-semibold px-2 py-0.5 text-sm rounded">
+                          {course.numberOfParticipant} Students
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4 flex flex-col flex-1 gap-3">
+                      <div className="flex gap-2">
+                        <Avatar className="cursor-pointer bg-white size-6 border-2 border-primary hover:border-primary/80 transition-colors">
+                          <AvatarImage src={course.createdBy.avatar} alt={course.createdBy.fullname || "User"} />
+                          <AvatarFallback className="bg-primary/10 text-bg-card font-semibold">
+                            {course.createdBy.username ? course.createdBy.username
+                              .split(" ")
+                              .map((part) => part[0])
+                              .join("")
+                              .toUpperCase()
+                              .substring(0, 2) : "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium text-sm">{course.createdBy.username}</span>
+                      </div>
+                      <h3 className="font-bold line-clamp-2">{course.title}</h3>
+                      {course.topics && course.topics.length > 0 &&
+                        <p className="text-sm"><span className="font-semibold">The course covers the following topics: </span>{course.topics.join(", ")}</p>
+                      }
+                      <div className="flex gap-4 text-sm">
+                        <div className="flex gap-2 items-center">
+                          <BookText className="size-4" />
+                          {course.noChapter} Chapters
+                        </div>
+                        <div className="flex gap-2 items-center">
+                          <BookOpenCheck className="size-4" />
+                          {course.noLesson} Lessons
+                        </div>
+                      </div>
+                      <div className="mt-auto">
+                        <div className="flex items-center text-sm gap-2">
+                          <div className="flex items-center text-amber-500">
+                            <span className="mr-1 font-semibold">{course.rate}</span>
+                            <StarFilledIcon className="size-4" />
+                          </div>
+                          -
+                          <span>{course.noVote} Reviews</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-10 mb-6 gap-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="rounded-md px-4 hover:bg-bg-card/70 hover:text-text-primary"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Prev
+                </Button>
+                <div className="flex gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+                    let pageToShow
+                    if (totalPages <= 5) {
+                      pageToShow = index + 1
+                    } else if (currentPage <= 3) {
+                      pageToShow = index + 1
+                    } else if (currentPage >= totalPages - 2) {
+                      pageToShow = totalPages - 4 + index
+                    } else {
+                      pageToShow = currentPage - 2 + index
+                    }
+
+                    return (
+                      <Button
+                        key={pageToShow}
+                        onClick={() => handlePageChange(pageToShow)}
+                        className={`min-w-[40px] h-10 rounded-md ${currentPage === pageToShow ? "bg-bg-card text-primary hover:bg-bg-card hover:text-primary" : "bg-transparent text-text-primary hover:bg-bg-card/70"}`}
+                      >
+                        {pageToShow}
+                      </Button>
+                    )
+                  })}
+
+                  {totalPages > 5 && currentPage < totalPages - 2 && (
+                    <>
+                      <span className="flex items-center px-2">...</span>
+                      <Button
+                        variant="outline"
+                        onClick={() => handlePageChange(totalPages)}
+                        className="min-w-[40px] h-10 rounded-md"
+                      >
+                        {totalPages}
+                      </Button>
+                    </>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="rounded-md px-4 hover:bg-bg-card/70 hover:text-text-primary"
+                >
+                  Next
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Button>
+              </div>
             )}
           </div>
-
-          {isFilterExpanded && (
-            <div className="mt-4 flex gap-2 flex-wrap bg-bg-card border border-border-muted rounded-lg p-4 shadow-sm">
-              <Button
-                variant="ghost"
-                onClick={() => handleTopicClick("All")}
-                className={cn(
-                  "text-primary font-medium hover:bg-primary transition hover:text-black rounded-full px-4 py-2 text-sm",
-                  selectedTopic === "All" && "bg-button-primary text-bg-primary hover:bg-button-hover"
-                )}
-              >
-                All Topics
-              </Button>
-              {topics.map((topic) => (
-                <Button
-                  key={topic.id || topic}
-                  variant="ghost"
-                  onClick={() => handleTopicClick(topic.name || topic)}
-                  className={cn(
-                    "text-primary font-medium hover:bg-primary transition hover:text-black rounded-full px-4 py-2 text-sm",
-                    selectedTopic === (topic.name || topic) &&
-                      "bg-button-primary text-bg-primary hover:bg-button-hover"
-                  )}
-                >
-                  {topic.name || topic}
-                </Button>
-              ))}
-            </div>
-          )}
         </div>
-
-        {isLoading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-          </div>
-        )}
-
-        {!isLoading && courses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-16 w-16 text-text-secondary mb-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <h3 className="text-xl font-semibold text-text-primary mb-2">No courses found</h3>
-            <p className="text-text-secondary max-w-md">
-              We couldn&apos;t find any courses matching your search criteria. Try adjusting your filters or search term.
-            </p>
-            <Button
-              className="mt-4 bg-button-primary text-bg-primary hover:bg-button-hover"
-              onClick={handleClearFilters}
-            >
-              Clear filters
-            </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {courses.map((course) => (
-              <Card
-                key={course.id}
-                className="p-4 bg-bg-card rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-shadow duration-300 border border-border-muted overflow-hidden flex flex-col"
-                onClick={() => navigate(`/courses/${course.id}`)}
-              >
-                <div className="relative h-48 overflow-hidden rounded-md mb-3">
-                  <img
-                    src={course.image || "/default-image.jpg"}
-                    alt={course.title}
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                  />
-                </div>
-                <h3
-                  className="mt-2 text-lg text-text-primary font-semibold overflow-hidden text-ellipsis"
-                  style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}
-                >
-                  {course.title}
-                </h3>
-                <div className="mt-auto pt-2">
-                  <p className="text-sm text-yellow-400 flex items-center">
-                    {course.rate ? (
-                      <>
-                        <span className="mr-1">{course.rate}</span>
-                        <span className="text-yellow-400">★</span>
-                      </>
-                    ) : (
-                      "No rating yet"
-                    )}
-                  </p>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {totalPages > 1 && (
-          <div className="flex justify-center mt-10 mb-6 gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="text-primary border border-primary hover:bg-primary hover:text-black disabled:opacity-50 rounded-md px-4"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Prev
-            </Button>
-            <div className="flex gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
-                let pageToShow
-                if (totalPages <= 5) {
-                  pageToShow = index + 1
-                } else if (currentPage <= 3) {
-                  pageToShow = index + 1
-                } else if (currentPage >= totalPages - 2) {
-                  pageToShow = totalPages - 4 + index
-                } else {
-                  pageToShow = currentPage - 2 + index
-                }
-
-                return (
-                  <Button
-                    key={pageToShow}
-                    variant={currentPage === pageToShow ? "default" : "ghost"}
-                    onClick={() => handlePageChange(pageToShow)}
-                    className={cn(
-                      "min-w-[40px] h-10 rounded-md",
-                      currentPage === pageToShow
-                        ? "bg-button-primary text-bg-primary hover:bg-button-hover"
-                        : "text-primary border border-primary hover:bg-primary hover:text-black"
-                    )}
-                  >
-                    {pageToShow}
-                  </Button>
-                )
-              })}
-
-              {totalPages > 5 && currentPage < totalPages - 2 && (
-                <>
-                  <span className="flex items-center px-2">...</span>
-                  <Button
-                    variant="ghost"
-                    onClick={() => handlePageChange(totalPages)}
-                    className="min-w-[40px] h-10 rounded-md text-primary border border-primary hover:bg-primary hover:text-black"
-                  >
-                    {totalPages}
-                  </Button>
-                </>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="text-primary border border-primary hover:bg-primary hover:text-black disabled:opacity-50 rounded-md px-4"
-            >
-              Next
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 ml-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Button>
-          </div>
-        )}
       </div>
       <FooterSection />
     </div>
   )
 }
+

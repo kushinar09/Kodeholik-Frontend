@@ -59,7 +59,8 @@ export default function UserActionMenu() {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => navigate("/profile")}
-               className="cursor-pointer">
+                className="cursor-pointer"
+              >
                 <svg
                   className="h-4 w-4 mr-2"
                   viewBox="0 0 24 24"
@@ -74,7 +75,7 @@ export default function UserActionMenu() {
                 </svg>
                 Profile
               </DropdownMenuItem>
-              
+
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
