@@ -1,52 +1,56 @@
+/* eslint-disable indent */
 "use client"
 
-import { getMyFavourite, getMyProgress, untagFavourite } from "@/lib/api/user_api";
-import { useAuth } from "@/providers/AuthProvider";
+import { getMyFavourite, getMyProgress, untagFavourite } from "@/lib/api/user_api"
+import { useAuth } from "@/providers/AuthProvider"
 import { useEffect, useState } from "react"
-import { FilterBarProgress } from "../components/filter-list-progress";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge"
-import { useNavigate } from "react-router-dom";
-import { ArrowDown, ArrowUp } from "lucide-react";
-import { toast } from "sonner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
+import { StarFilledIcon } from "@radix-ui/react-icons"
 
+
+const requestData = {
+    page: 0,
+    size: 5,
+    status: null,
+    sortBy: "noSubmission",
+    ascending: false
+}
 
 export default function MyFavourite() {
-    const [myFavourite, setMyFavourite] = useState(null);
-    const { apiCall } = useAuth();
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(0);
-    const [totalElements, setTotalElements] = useState(0);
-    const [noContent, setNoContent] = useState(false);
-    const [filters, setFilters] = useState({
-        status: ""
-    });
-    const [size, setSize] = useState("5");
-    const navigate = useNavigate();
+    const [myFavourite, setMyFavourite] = useState(null)
+    const { apiCall } = useAuth()
+    const [currentPage, setCurrentPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(0)
+    const [totalElements, setTotalElements] = useState(0)
+    const [noContent, setNoContent] = useState(false)
+    const [size, setSize] = useState("5")
+    const navigate = useNavigate()
 
     const fetchMyFavourite = async () => {
         try {
-            const response = await getMyFavourite(apiCall, currentPage - 1, size);
+            const response = await getMyFavourite(apiCall, requestData.page, requestData.size)
             if (response == null) {
                 setNoContent(true)
                 setTotalElements(0)
             }
             else {
-                setMyFavourite(response.content);
+                setMyFavourite(response.content)
                 setTotalPages(response.totalPages)
                 setNoContent(false)
                 setTotalElements(response.totalElements)
             }
         } catch (error) {
-            console.log(error);
+            console.log(error)
         }
     }
 
     useEffect(() => {
-        fetchMyFavourite();
+        fetchMyFavourite()
     }, [])
 
     const handlePageChange = (page) => {
@@ -59,23 +63,23 @@ export default function MyFavourite() {
         requestData.page = 0
         setCurrentPage(1)
         setSize(size)
-        requestData.size = Number(size);
+        requestData.size = Number(size)
         fetchMyFavourite()
     }
 
     const handleUntagProblem = (link) => {
-        untagFavouriteProblem(link);
+        untagFavouriteProblem(link)
     }
 
     const untagFavouriteProblem = async (link) => {
         try {
-            await untagFavourite(apiCall, link);
+            await untagFavourite(apiCall, link)
             toast.success("Untag Problem", {
                 description: "Untag problem successful"
             })
-            fetchMyFavourite();
+            fetchMyFavourite()
         } catch (error) {
-            console.log(error);
+            console.log(error)
         }
     }
 
@@ -115,7 +119,7 @@ export default function MyFavourite() {
                         <TableRow>
                             <TableHead className="text-primary-text">ID</TableHead>
                             <TableHead className="text-primary-text">Title</TableHead>
-                            <TableHead className="text-primary-text">Action</TableHead>
+                            <TableHead className="text-primary-text"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -124,7 +128,7 @@ export default function MyFavourite() {
                                 <TableCell>{favourite.id}</TableCell>
                                 <TableCell onClick={() => navigate("/problem/" + favourite.link)} className="text-primary-text font-bold cursor-pointer">{favourite.title}</TableCell>
                                 <TableCell className="text-black">
-                                   <Button onClick={() => handleUntagProblem(favourite.link)}>Untag</Button>
+                                    <StarFilledIcon className="size-5 cursor-pointer text-amber-500" onClick={() => handleUntagProblem(favourite.link)} />
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -143,7 +147,7 @@ export default function MyFavourite() {
                         <div className="flex-1 flex justify-center gap-2">
                             <Button
                                 variant="ghost"
-                                className="text-primary font-bold hover:bg-primary transition hover:text-white"
+                                className="font-semibold text-text-primary hover:bg-primary hover:text-bg-card"
                                 onClick={() => handlePageChange(currentPage - 1)}
                                 disabled={currentPage === 1}
                             >
@@ -164,8 +168,8 @@ export default function MyFavourite() {
                                                 key={index}
                                                 onClick={() => handlePageChange(index + 1)}
                                                 className={cn(
-                                                    "text-primary font-bold hover:bg-primary transition hover:text-white",
-                                                    currentPage === index + 1 && "bg-button-primary text-black bg-primary hover:bg-button-hover"
+                                                    "text-text-primary font-bold transition",
+                                                    currentPage === index + 1 ? "text-bg-card bg-primary" : "hover:text-bg-card/70 hover:bg-primary"
                                                 )}
                                             >
                                                 {index + 1}
@@ -186,7 +190,7 @@ export default function MyFavourite() {
                             </div>
                             <Button
                                 variant="ghost"
-                                className="text-primary font-bold hover:bg-primary transition hover:text-white"
+                                className="font-semibold text-text-primary hover:bg-primary hover:text-bg-card"
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={currentPage === totalPages}
                             >

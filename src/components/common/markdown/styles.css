@@ -196,3 +196,13 @@
   height: 100%;
   margin: 0;
 }
+/* 
+.locked-code pre{
+  @apply bg-gray-800;
+} */
+
+.locked-code code{
+  font-size: 1rem;
+  line-height: 1.5rem
+}
+

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAuth } from "@/providers/AuthProvider"
-import { format } from "date-fns"
+import { format, parse } from "date-fns"
 import { ArrowDownAZ, ArrowUpAZ } from "lucide-react"
 import { useEffect, useState } from "react"
 
@@ -27,7 +27,7 @@ export default function ProblemSubmissions({ submissionsData, selectedSubmission
   const [submissions, setSubmissions] = useState(submissionsData)
 
   useEffect(() => {
-    setSubmissions(submissionsData);
+    setSubmissions(submissionsData)
   }, [submissionsData])
   const handleSort = (field) => {
     const newDirection = sortField === field && sortDirection === "asc" ? "desc" : "asc"
@@ -122,7 +122,7 @@ export default function ProblemSubmissions({ submissionsData, selectedSubmission
                 </TableHeader>
                 <TableBody>
                   {submissions.map((submission, index) => (
-                    <TableRow className={`cursor-pointer ${selectedSubmissionId == submission.id ? 'bg-gray-300 hover:bg-gray-300' : ''}`} onClick={() => setSelectedSubmissionId(submission.id)} key={submission.id}>
+                    <TableRow className={`cursor-pointer ${selectedSubmissionId == submission.id ? "bg-gray-300 hover:bg-gray-300" : ""}`} onClick={() => setSelectedSubmissionId(submission.id)} key={submission.id}>
                       <TableCell className="font-medium">{index + 1}</TableCell>
                       <TableCell className={getTextColorClass(submission.status)}>
                         {formatStatus(submission.status)}
@@ -133,8 +133,8 @@ export default function ProblemSubmissions({ submissionsData, selectedSubmission
                       </TableCell>
                       <TableCell>{submission.memoryUsage > 0 ? `${submission.memoryUsage.toFixed(1)} MB` : "-"}</TableCell>
                       <TableCell>
-                        {submission.createdAt && !isNaN(new Date(submission.createdAt).getTime())
-                          ? format(new Date(submission.createdAt), "MMM d, yyyy HH:mm")
+                        {submission.createdAt && !isNaN(parse(submission.createdAt, "dd/MM/yyyy, HH:mm", new Date()).getTime())
+                          ? format(parse(submission.createdAt, "dd/MM/yyyy, HH:mm", new Date()), "dd/MM/yyyy HH:mm")
                           : "N/A"}
                       </TableCell>
                     </TableRow>

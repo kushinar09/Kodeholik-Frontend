@@ -1,17 +1,16 @@
+/* eslint-disable indent */
 "use client"
 
-import { getMySubmission } from "@/lib/api/user_api";
-import { useAuth } from "@/providers/AuthProvider";
+import { getMySubmission } from "@/lib/api/user_api"
+import { useAuth } from "@/providers/AuthProvider"
 import { useEffect, useState } from "react"
-import { FilterBarProgress } from "../components/filter-list-progress";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge"
-import { useNavigate } from "react-router-dom";
-import { ArrowDown, ArrowUp, Clock, Cpu } from "lucide-react";
-import { FilterBarSubmission } from "../components/filter-list-submission";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import { useNavigate } from "react-router-dom"
+import { ArrowDown, ArrowUp, Clock, Cpu } from "lucide-react"
+import { FilterBarSubmission } from "../components/filter-list-submission"
 
 const requestData = {
     page: 0,
@@ -24,40 +23,40 @@ const requestData = {
 }
 
 export default function MySubmission() {
-    const [mySubmission, setMySubmission] = useState(null);
-    const { apiCall } = useAuth();
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(0);
-    const [totalElements, setTotalElements] = useState(0);
-    const [noContent, setNoContent] = useState(false);
+    const [mySubmission, setMySubmission] = useState(null)
+    const { apiCall } = useAuth()
+    const [currentPage, setCurrentPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(0)
+    const [totalElements, setTotalElements] = useState(0)
+    const [noContent, setNoContent] = useState(false)
     const [filters, setFilters] = useState({
         status: ""
-    });
-    const [size, setSize] = useState("5");
-    const navigate = useNavigate();
-    const [sortBy, setSortBy] = useState("createdAt");
-    const [ascending, setAscending] = useState(false);
+    })
+    const [size, setSize] = useState("5")
+    const navigate = useNavigate()
+    const [sortBy, setSortBy] = useState("createdAt")
+    const [ascending, setAscending] = useState(false)
 
     const fetchMySubmission = async () => {
         try {
-            const response = await getMySubmission(apiCall, requestData);
+            const response = await getMySubmission(apiCall, requestData)
             if (response == null) {
                 setNoContent(true)
                 setTotalElements(0)
             }
             else {
-                setMySubmission(response.content);
+                setMySubmission(response.content)
                 setTotalPages(response.totalPages)
                 setNoContent(false)
                 setTotalElements(response.totalElements)
             }
         } catch (error) {
-            console.log(error);
+            console.log(error)
         }
     }
 
     useEffect(() => {
-        fetchMySubmission();
+        fetchMySubmission()
     }, [])
 
     const handleFilterChange = (newFilters) => {
@@ -86,7 +85,7 @@ export default function MySubmission() {
         requestData.page = 0
         setCurrentPage(1)
         setSize(size)
-        requestData.size = Number(size);
+        requestData.size = Number(size)
         fetchMySubmission()
     }
 
@@ -110,7 +109,7 @@ export default function MySubmission() {
     return (
         <div className="space-y-4 p-4">
 
-            <div className="flex justify-between">
+            <div className="flex flex-col justify-between">
                 <div className="flex items-center text-primary-text">
                     <div>
                         No Result: <span className="font-semibold">{totalElements}</span>
@@ -193,7 +192,7 @@ export default function MySubmission() {
                                             <Clock className="h-4 w-4 text-primary-text" />
                                         </div>
                                         <div className="ml-2">
-                                        {submission.executionTime + " ms"}
+                                            {submission.executionTime + " ms"}
                                         </div>
                                     </div>
                                 </TableCell>
@@ -208,23 +207,26 @@ export default function MySubmission() {
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-primary-text">
-                                    {submission.status == "SUCCESS" && <div className="flex items-center">
-                                        <div>
-                                            <svg class="h-8 w-8 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />  <polyline points="22 4 12 14.01 9 11.01" /></svg>                                        </div>
-                                        <div className="text-green-500 ml-2">
-                                            Success
-                                        </div>
-                                    </div>}
-                                    {submission.status == "FAILED" && <div className="flex items-center">
-                                        <div>
-                                            <svg class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-                                        <div className="text-red-500 ml-2">
-                                            Failed
-                                        </div>
-                                    </div>}
+                                    {submission.status == "SUCCESS" &&
+                                        <div className="flex items-center">
+                                            <div>
+                                                <svg className="size-5 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />  <polyline points="22 4 12 14.01 9 11.01" /></svg>
+                                            </div>
+                                            <div className="text-green-500 ml-2">
+                                                Success
+                                            </div>
+                                        </div>}
+                                    {submission.status == "FAILED" &&
+                                        <div className="flex items-center">
+                                            <div>
+                                                <svg className="size-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                            <div className="text-red-500 ml-2">
+                                                Failed
+                                            </div>
+                                        </div>}
                                 </TableCell>
                                 <TableCell className="text-primary-text">{submission.createdAt}</TableCell>
                             </TableRow>
@@ -244,7 +246,7 @@ export default function MySubmission() {
                         <div className="flex-1 flex justify-center gap-2">
                             <Button
                                 variant="ghost"
-                                className="text-primary font-bold hover:bg-primary transition hover:text-white"
+                                className="font-semibold text-text-primary hover:bg-primary hover:text-bg-card"
                                 onClick={() => handlePageChange(currentPage - 1)}
                                 disabled={currentPage === 1}
                             >
@@ -265,8 +267,8 @@ export default function MySubmission() {
                                                 key={index}
                                                 onClick={() => handlePageChange(index + 1)}
                                                 className={cn(
-                                                    "text-primary font-bold hover:bg-primary transition hover:text-white",
-                                                    currentPage === index + 1 && "bg-button-primary text-black bg-primary hover:bg-button-hover"
+                                                    "text-text-primary font-bold transition",
+                                                    currentPage === index + 1 ? "text-bg-card bg-primary" : "hover:text-bg-card/70 hover:bg-primary"
                                                 )}
                                             >
                                                 {index + 1}
@@ -287,7 +289,7 @@ export default function MySubmission() {
                             </div>
                             <Button
                                 variant="ghost"
-                                className="text-primary font-bold hover:bg-primary transition hover:text-white"
+                                className="font-semibold text-text-primary hover:bg-primary hover:text-bg-card"
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={currentPage === totalPages}
                             >

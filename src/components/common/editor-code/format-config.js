@@ -24,7 +24,7 @@ function formatJavaCode(code) {
     lastNonEmptyLine: ""
   }
 
-  const INDENT_SIZE = 2
+  const INDENT_SIZE = 4
   const INDENT = " ".repeat(INDENT_SIZE)
 
   for (let i = 0; i < lines.length; i++) {
