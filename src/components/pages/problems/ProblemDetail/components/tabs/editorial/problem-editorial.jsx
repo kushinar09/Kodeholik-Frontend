@@ -1,26 +1,12 @@
 "use client"
 
 import { useAuth } from "@/providers/AuthProvider"
-
-import hljs from "highlight.js"
 import "highlight.js/styles/default.css"
-import { useEffect, useState } from "react"
 import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 import { Button } from "@/components/ui/button"
 import { CodeHighlighter } from "@/components/common/editor-code/code-highlighter"
-/**
- * Component to display problem editorial
- * @param {Object} props - Component props
- * @param {Object} props.editorial - Editorial data
- */
-export default function ProblemEditorial({ editorial }) {
-  // useEffect(() => {
-  //   document.querySelectorAll("pre code").forEach((block) => {
-  //     if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") == "yes"))
-  //       hljs.highlightElement(block)
-  //   })
-  // }, [editorial])
 
+export default function ProblemEditorial({ editorial, isLoadingEditorial }) {
   const { isAuthenticated } = useAuth()
 
   if (!isAuthenticated) {
@@ -45,24 +31,69 @@ export default function ProblemEditorial({ editorial }) {
           </svg>
           Please login to view this content
         </div>
-        <Button className="mt-2 w-fit" variant="outline" onClick={() => window.location.href = "/login"}>
+        <Button className="mt-2 w-fit" variant="outline" onClick={() => (window.location.href = "/login")}>
           Sign In
         </Button>
       </div>
     )
   }
 
-  return (
+  return isLoadingEditorial ? (
+    <div className="space-y-4">
+      {/* Title skeleton */}
+      <div className="h-8 w-3/4 bg-gray-200 animate-pulse rounded mb-4"></div>
+
+      {/* Skills/tags skeleton */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        <div className="h-6 w-20 bg-gray-200 animate-pulse rounded-full"></div>
+        <div className="h-6 w-24 bg-gray-200 animate-pulse rounded-full"></div>
+        <div className="h-6 w-16 bg-gray-200 animate-pulse rounded-full"></div>
+      </div>
+
+      {/* Editorial content skeleton */}
+      <div className="space-y-3">
+        <div className="h-4 w-full bg-gray-200 animate-pulse rounded"></div>
+        <div className="h-4 w-full bg-gray-200 animate-pulse rounded"></div>
+        <div className="h-4 w-3/4 bg-gray-200 animate-pulse rounded"></div>
+        <div className="h-4 w-full bg-gray-200 animate-pulse rounded"></div>
+        <div className="h-4 w-5/6 bg-gray-200 animate-pulse rounded"></div>
+        <div className="h-4 w-full bg-gray-200 animate-pulse rounded"></div>
+        <div className="h-4 w-2/3 bg-gray-200 animate-pulse rounded"></div>
+      </div>
+
+      {/* Solution code skeleton */}
+      <div className="mt-6">
+        <div className="h-6 w-32 bg-gray-200 animate-pulse rounded mb-3"></div>
+        <div className="border rounded-lg overflow-hidden">
+          {/* Language tabs skeleton */}
+          <div className="flex border-b p-2 gap-2">
+            <div className="h-8 w-20 bg-gray-200 animate-pulse rounded"></div>
+            <div className="h-8 w-20 bg-gray-200 animate-pulse rounded"></div>
+          </div>
+
+          {/* Code block skeleton */}
+          <div className="p-4 bg-gray-50 dark:bg-gray-900">
+            <div className="space-y-2">
+              <div className="h-4 w-full bg-gray-200 animate-pulse rounded"></div>
+              <div className="h-4 w-full bg-gray-200 animate-pulse rounded"></div>
+              <div className="h-4 w-3/4 bg-gray-200 animate-pulse rounded"></div>
+              <div className="h-4 w-5/6 bg-gray-200 animate-pulse rounded"></div>
+              <div className="h-4 w-full bg-gray-200 animate-pulse rounded"></div>
+              <div className="h-4 w-2/3 bg-gray-200 animate-pulse rounded"></div>
+              <div className="h-4 w-full bg-gray-200 animate-pulse rounded"></div>
+              <div className="h-4 w-4/5 bg-gray-200 animate-pulse rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : (
     <>
       {editorial ? (
         <>
           <h2 className="text-xl font-bold mb-4">{editorial.editorialTitle}</h2>
           <div className="flex flex-wrap gap-2 mb-4">
-            <span
-              className="px-2 py-1 text-xs font-medium bg-bg-card text-primary rounded-full"
-            >
-              Editorial
-            </span>
+            <span className="px-2 py-1 text-xs font-medium bg-bg-card text-primary rounded-full">Editorial</span>
             {editorial.editorialSkills?.map((skill, index) => (
               <span
                 key={index}
@@ -88,9 +119,16 @@ export default function ProblemEditorial({ editorial }) {
                         // Set all tabs to inactive
                         e.currentTarget.parentElement
                           .querySelectorAll("button")
-                          .forEach((btn) => btn.classList.remove("bg-gray-100", "dark:bg-gray-800", "font-semibold", "text-gray-800"))
+                          .forEach((btn) =>
+                            btn.classList.remove("bg-gray-100", "dark:bg-gray-800", "font-semibold", "text-gray-800"),
+                          )
                         // Set clicked tab to active
-                        e.currentTarget.classList.add("bg-gray-100", "dark:bg-gray-800", "font-semibold", "text-gray-800")
+                        e.currentTarget.classList.add(
+                          "bg-gray-100",
+                          "dark:bg-gray-800",
+                          "font-semibold",
+                          "text-gray-800",
+                        )
 
                         // Hide all code blocks
                         const codeBlocks = e.currentTarget.closest(".border").querySelectorAll(".code-block")
@@ -109,13 +147,7 @@ export default function ProblemEditorial({ editorial }) {
                     key={index}
                     className={`code-block dark:bg-gray-900 overflow-auto ${index === 0 ? "" : "hidden"}`}
                   >
-                    {/* <pre className="text-sm">
-                      <code className="font-code">{solution.solutionCode}</code>
-                    </pre> */}
-                    <CodeHighlighter
-                      code={solution.solutionCode}
-                      language={solution.solutionLanguage}
-                    />
+                    <CodeHighlighter code={solution.solutionCode} language={solution.solutionLanguage} />
                   </div>
                 ))}
               </div>

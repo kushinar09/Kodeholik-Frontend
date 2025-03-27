@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog-custo
 import { copyToClipboard } from "@/lib/utils/format-utils"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { CodeHighlighter } from "@/components/common/editor-code/code-highlighter"
 
 export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
   const [activeTab, setActiveTab] = useState("")
@@ -23,9 +24,11 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
   const highlightTimeoutRef = useRef(null)
   const [copied, setCopied] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
+
   const handleCopyClipBoard = async (code) => {
     const success = await copyToClipboard(code)
     setCopied(success)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   // Set the first problem as active tab when results load
@@ -35,27 +38,8 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
     }
   }, [examResults])
 
-  // Function to apply syntax highlighting
-  const applyHighlighting = () => {
-    // Clear any existing timeout to prevent race conditions
-    if (highlightTimeoutRef.current) {
-      clearTimeout(highlightTimeoutRef.current)
-    }
-
-    // Set a new timeout to apply highlighting after the DOM has updated
-    highlightTimeoutRef.current = setTimeout(() => {
-      document.querySelectorAll("pre code").forEach((block) => {
-        hljs.highlightElement(block)
-      })
-    }, 50) // Small delay to ensure DOM is updated
-  }
-
   // Apply syntax highlighting when results load or tab changes
   useEffect(() => {
-    if (isOpen && examResults) {
-      applyHighlighting()
-    }
-
     // Cleanup timeout on unmount
     return () => {
       if (highlightTimeoutRef.current) {
@@ -70,16 +54,12 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
     setTimeout(() => {
       setActiveTab(value)
       setIsTransitioning(false)
-      // Apply highlighting after tab change is complete
-      applyHighlighting()
     }, 300)
   }
 
   // Handle sub-tab changes
   const handleSubTabChange = (value) => {
     setActiveSubTab(value)
-    // Apply highlighting after sub-tab change
-    setTimeout(applyHighlighting, 50)
   }
 
   // Show loading state when dialog is open but results aren't loaded yet
@@ -103,8 +83,8 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] min-h-[90vh] overflow-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[90vh] min-h-[90vh] overflow-auto flex flex-col">
+        <DialogHeader className="h-fit">
           <DialogTitle>
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Exam Results</h3>
@@ -133,7 +113,7 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
               ))}
             </TabsList>
 
-            <div className="relative min-h-[400px]">
+            <div className="relative">
               {examResults.problemResults.map((problem) => (
                 <AnimatedTabsContent
                   key={problem.id}
@@ -142,7 +122,7 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
                 >
                   {problem.submissionResponseDto
                     ?
-                    <div className="m-4">
+                    <div className="m-4 h-fit">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center">
                           <h3 className="text-lg font-medium">{problem.title}</h3>
@@ -172,8 +152,8 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
                           <TabsTrigger value="results">Test Results</TabsTrigger>
                         </TabsList>
 
-                        <div className="relative min-h-[390px]">
-                          <AnimatedTabsContent value="code" className="pt-4 absolute w-full">
+                        <div className="relative">
+                          <AnimatedTabsContent value="code" className="pt-4 w-full">
                             <div className="absolute -top-9 right-0 mb-2 text-sm text-muted-foreground">
                               <div>
                                 Submitted: <span className="font-medium">{problem.submissionResponseDto.createdAt}</span>
@@ -191,12 +171,6 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
                               </Alert>
                             )}
 
-                            {/* <div className="bg-muted rounded-md overflow-auto min-h-[200px] max-h-[350px] no-scrollbar">
-                              <pre className="text-sm font-mono">
-                                <code className="language-java">{problem.submissionResponseDto.code}</code>
-                              </pre>
-                            </div> */}
-
                             <Card>
                               <CardContent className="p-0">
                                 <div className="border-b border-border p-4 py-1 flex items-center justify-between">
@@ -211,11 +185,11 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
                                     </Button>
                                   </div>
                                 </div>
-                                <div className={cn("overflow-hidden transition-all duration-300", isExpanded ? "h-auto" : "max-h-[230px]")}>
-                                  <pre className="text-sm">
-                                    <code>{problem.submissionResponseDto.code}</code>
-                                  </pre>
-                                </div>
+                                <CodeHighlighter
+                                  className={cn("overflow-hidden transition-all duration-300", isExpanded ? "h-auto" : "max-h-[230px]")}
+                                  code={problem.submissionResponseDto.code}
+                                  language={problem.submissionResponseDto.languageName}
+                                />
                                 {problem.submissionResponseDto.code && problem.submissionResponseDto.code.split("\n").length > 10 && (
                                   <div className="border-t border-border p-2 text-center">
                                     <Button
@@ -246,7 +220,7 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
                             )}
                           </AnimatedTabsContent>
 
-                          <AnimatedTabsContent value="results" className="pt-4 absolute w-full">
+                          <AnimatedTabsContent value="results" className="pt-4 w-full">
                             <div className="space-y-4 min-h-[200px]">
                               <div>
                                 <div className="flex items-center justify-between mb-2">
@@ -267,9 +241,9 @@ export default function ExamResultsDialog({ isOpen, onClose, examResults }) {
                                       </span>
                                     )}
                                   </div>
-                                  <span className="font-medium">{problem.percentPassed}</span>
+                                  <span className="font-semibold">{problem.percentPassed}</span>
                                 </div>
-                                <Progress value={Number.parseInt(problem.percentPassed)} className="h-2 bg-gray-200" />
+                                {/* <Progress value={Number.parseInt(problem.percentPassed)} className="h-2 bg-gray-200" /> */}
                               </div>
 
                               {problem.submissionResponseDto.inputWrong && (

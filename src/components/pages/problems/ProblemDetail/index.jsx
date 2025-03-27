@@ -10,6 +10,7 @@ import "./styles.css"
 
 // API imports
 import {
+  getProblemAvailableLanguages,
   getProblemDescription,
   getProblemEditorial,
   getProblemInitCode,
@@ -27,14 +28,13 @@ import TestCasePanel from "./components/right-panel/test-case-panel"
 import { useAuth } from "@/providers/AuthProvider"
 import { leftTabEnum } from "./data/data"
 import { debounce } from "lodash"
-import SubmissionDetail from "./components/right-panel/submission-detail"
-import LoadingScreen from "@/components/common/shared/other/loading"
+// import LoadingScreen from "@/components/common/shared/other/loading"
 import ShareSolution from "../ShareSolution"
 
 export default function ProblemDetail() {
   const { id } = useParams()
-  const { submission } = useParams();
-  const { solution } = useParams();
+  const { submission } = useParams()
+  const { solution } = useParams()
   const { apiCall } = useAuth()
 
   const [problemId, setProblemId] = useState(0)
@@ -43,7 +43,12 @@ export default function ProblemDetail() {
   const [openedTabSolution, setOpenedTabSolution] = useState(false)
 
   // Loading
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingDescription, setIsLoadingDescription] = useState(true)
+  const [isLoadingEditorial, setIsLoadingEditorial] = useState(true)
+  const [isLoadingSolutions, setIsLoadingSolutions] = useState(true)
+  const [isLoadingSubmission, setIsLoadingSubmission] = useState(true)
+  const [isLoadingInitCode, setIsLoadingInitCode] = useState(true)
+
   const [isRunning, setIsRunning] = useState("")
 
   // Panel state
@@ -62,7 +67,9 @@ export default function ProblemDetail() {
   const [submissions, setSubmissions] = useState(null)
 
   // Code state
+  const [importLib , setImportLib] = useState("")
   const [code, setCode] = useState("")
+  const [currentCode, setCurrentCode] = useState("")
   const [testCases, setTestCases] = useState([])
 
   // Test case state
@@ -80,17 +87,18 @@ export default function ProblemDetail() {
   const [isSubmittedActive, setIsSubmittedActive] = useState(false)
   const [showSolution, setShowSolution] = useState(solution == null ? false : true)
   // Submission id
-  const [selectedSubmissionId, setSelectedSubmissionId] = useState(submission);
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState(submission)
   const [currentSolutionId, setCurrentSolutionId] = useState(solution != null ? solution : 0)
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [currentSolution, setCurrentSolution] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [currentSolution, setCurrentSolution] = useState(null)
 
   useEffect(() => {
-    console.log(selectedSubmissionId);
-    fetchProblemSubmission();
+    console.log(selectedSubmissionId)
+    fetchProblemSubmission()
   }, [selectedSubmissionId])
   // Language
-  const [language, setLanguage] = useState("Java")
+  const [availableLanguages, setAvailableLanguages] = useState([])
+  const [language, setLanguage] = useState("")
 
   // Panel resize detection
   useEffect(() => {
@@ -139,7 +147,7 @@ export default function ProblemDetail() {
   const fetchProblemDescription = async () => {
     if (!id) return
     if (!description) {
-      setIsLoading(true)
+      setIsLoadingDescription(true)
       try {
         const result = await getProblemDescription(apiCall, id)
         if (result.status && result.data) {
@@ -147,26 +155,53 @@ export default function ProblemDetail() {
           setProblemId(result.data.id)
         }
       } finally {
-        setIsLoading(false)
+        setTimeout(() => setIsLoadingDescription(false), 200)
       }
+    }
+  }
+
+  const fetchProblemInitCode = async () => {
+    if (!id || !language) return
+    setIsLoadingInitCode(true)
+    try {
+      const codeResult = await getProblemInitCode(id, language)
+      if (codeResult.status && codeResult.data) {
+        setImportLib(codeResult.data.importCommands.join("\n"))
+        setCode(codeResult.data.template)
+        setTestCases(codeResult.data.testCases)
+      }
+    } finally {
+      setIsLoadingInitCode(false)
+    }
+  }
+
+  const fetchProblemAvailableLanguages = async () => {
+    if (!id) return
+    setIsLoadingInitCode(true)
+    try {
+      const codeResult = await getProblemAvailableLanguages(id)
+      if (codeResult.status && codeResult.data) {
+        setAvailableLanguages(codeResult.data)
+        setLanguage(codeResult.data[0])
+      }
+    } finally {
+      setIsLoadingInitCode(false)
     }
   }
 
   const fetchProblemEditorial = async () => {
     if (!id) return
     if (!editorial) {
-      setIsLoading(true)
+      setIsLoadingEditorial(true)
       try {
         const result = await getProblemEditorial(apiCall, id)
         if (result.status && result.data) {
           setEditorial(result.data)
         }
       } finally {
-        setIsLoading(false)
+        setTimeout(() => setIsLoadingEditorial(false), 200)
       }
     }
-    // const eds = mockEditorial.editorialDtos[0]
-    // setEditorial(eds)
   }
 
   const fetchProblemSolutions = useCallback(
@@ -174,7 +209,7 @@ export default function ProblemDetail() {
       async (page = 0, size = 10, title = null, languageName = null, sortBy = null, ascending = null, topics = []) => {
         if (!id) return
         if (!solutions || page != null) {
-          setIsLoading(true)
+          setIsLoadingSolutions(true)
           try {
             const result = await getProblemSolutions(
               apiCall,
@@ -191,39 +226,19 @@ export default function ProblemDetail() {
               setSolutions(result.data)
             }
           } finally {
-            setIsLoading(false)
+            setTimeout(() => setIsLoadingSolutions(false), 200)
           }
         }
       },
       500
-    ), // Debounce 500ms
+    ),
     []
   )
-
-  // const fetchProblemSolutions = async (
-  //   page = 0,
-  //   size = 10,
-  //   title = null,
-  //   languageName = null,
-  //   sortBy = null,
-  //   ascending = null,
-  //   topics = []
-  // ) => {
-  //   if (!id) return
-  //   if (!solutions || page != null) {
-  //     const result = await getProblemSolutions(apiCall, id, page, size, title, languageName, sortBy, ascending, topics)
-  //     if (result.status && result.data) {
-  //       setSolutions(result.data)
-  //     }
-  //   }
-  //   // const sos = mockSolutions
-  //   // setSolutions(sos)
-  // }
 
   const fetchProblemSubmission = async () => {
     if (!id) return
     if (!submissions) {
-      setIsLoading(true)
+      setIsLoadingSubmission(true)
       try {
         const result = await getProblemSubmission(apiCall, id)
         console.log(result.data)
@@ -231,11 +246,9 @@ export default function ProblemDetail() {
           setSubmissions(result.data)
         }
       } finally {
-        setIsLoading(false)
+        setTimeout(() => setIsLoadingSubmission(false), 200)
       }
     }
-    //   const sus = mockSubmissions
-    //   setSubmissions(sus)
   }
 
   function onchangeFilterSolutions(param) {
@@ -251,10 +264,11 @@ export default function ProblemDetail() {
   }
 
   async function onLanguageChange(language) {
-    setIsLoading(true)
+    setIsLoadingInitCode(true)
     try {
       const result = await getProblemInitCode(id, language)
       if (result.status && result.data) {
+        setImportLib(result.data.importCommands.join("\n"))
         setCode(result.data.template)
         setTestCases(result.data.testCases)
         setLanguage(language)
@@ -262,46 +276,42 @@ export default function ProblemDetail() {
         console.error("Failed to fetch initial code template:", result.message)
       }
     } finally {
-      setIsLoading(false)
+      setIsLoadingInitCode(false)
     }
   }
 
   // Initial data loading
   useEffect(() => {
-    const fetchInitialData = async () => {
-      if (!id) return
+    fetchProblemDescription()
 
-      setIsLoading(true)
-      try {
-        // Fetch problem description
-        const descResult = await getProblemDescription(apiCall, id)
-        if (descResult.status && descResult.data) {
-          setDescription(descResult.data)
-          setProblemId(descResult.data.id)
-        }
-
-        // Fetch initial code template
-        const codeResult = await getProblemInitCode(id, "Java")
-        if (codeResult.status && codeResult.data) {
-          setCode(codeResult.data.template)
-          setTestCases(codeResult.data.testCases)
-        }
-      } finally {
-        setIsLoading(false)
+    // First fetch available languages, then fetch init code only after language is set
+    const initializeCode = async () => {
+      await fetchProblemAvailableLanguages()
+      // Now that language is set, fetch the initial code
+      if (language) {
+        fetchProblemInitCode()
       }
     }
 
-    fetchInitialData()
+    initializeCode()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
+  // Add a separate effect to fetch init code when language changes
+  useEffect(() => {
+    if (language && id) {
+      fetchProblemInitCode()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language, id])
+
   // Code execution handlers
   const handleCodeChange = (newCode) => {
-    setCode(newCode)
+    setCurrentCode(newCode)
   }
 
   const handleTabChange = (tabId, tabLabel) => {
-    console.log(tabLabel);
+    console.log(tabLabel)
     fetchData(tabLabel)
     setActiveTab(tabId)
   }
@@ -309,7 +319,7 @@ export default function ProblemDetail() {
   async function handleRunCode() {
     setIsRunning("run")
     try {
-      const result = await runCode(apiCall, id, code, language)
+      const result = await runCode(apiCall, id, currentCode, language)
       setResults(result)
       setShowResult(true)
       setIsResultActive(true)
@@ -322,7 +332,7 @@ export default function ProblemDetail() {
   async function handleSubmitCode() {
     setIsRunning("submit")
     try {
-      const result = await submitCode(apiCall, id, code, language)
+      const result = await submitCode(apiCall, id, currentCode, language)
       setSubmitted(result)
       setShowSubmitted(true)
       setIsSubmittedActive(true)
@@ -333,103 +343,107 @@ export default function ProblemDetail() {
 
   return (
     <div>
-      {isEditMode && <ShareSolution solution={currentSolution} setIsEditMode={setIsEditMode}/>}
+      {isEditMode && <ShareSolution solution={currentSolution} setIsEditMode={setIsEditMode} />}
 
-      {!isEditMode && <div className="h-screen flex flex-col">
-        <ProblemHeader
-          onRun={handleRunCode}
-          onSubmit={handleSubmitCode}
-          isRunning={isRunning}
-        />
+      {!isEditMode &&
+        <div className="h-screen flex flex-col">
+          <ProblemHeader
+            onRun={handleRunCode}
+            onSubmit={handleSubmitCode}
+            isRunning={isRunning}
+          />
 
-        <div className="flex-1 p-2 bg-bg-primary/50">
-          <PanelGroup direction="horizontal" onLayout={(sizes) => setLeftSize(sizes[0])}>
-            {/* Left Panel */}
-            <Panel className="min-w-[40px] overflow-auto bg-background rounded-md" defaultSize={50}>
-              <div ref={leftPanelRef} className="h-full overflow-hidden">
-                <div className={cn("h-full flex flex-col transition-all duration-200", isCompactLeft ? "w-[40px]" : "")}>
-                  <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} isCompact={isCompactLeft} />
+          <div className="flex-1 p-2 bg-bg-primary/50">
+            <PanelGroup direction="horizontal" onLayout={(sizes) => setLeftSize(sizes[0])}>
+              {/* Left Panel */}
+              <Panel className="min-w-[40px] overflow-auto bg-background rounded-md" defaultSize={50}>
+                <div ref={leftPanelRef} className="h-full overflow-hidden">
+                  <div className={cn("h-full flex flex-col transition-all duration-200", isCompactLeft ? "w-[40px]" : "")}>
+                    <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} isCompact={isCompactLeft} />
 
-                  <LeftPanelContent
-                    id={id}
-                    problemId={problemId}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    isCompact={isCompactLeft}
-                    description={description}
-                    setDescription={setDescription}
-                    editorial={editorial}
-                    solutions={solutions}
-                    setSolutions={setSolutions}
-                    submissions={submissions}
-                    selectedSubmissionId={selectedSubmissionId}
-                    setSelectedSubmissionId={setSelectedSubmissionId}
-                    onchangeFilterSolutions={onchangeFilterSolutions}
-                    showSolution={showSolution}
-                    setShowSolution={setShowSolution}
-                    currentSolutionId={currentSolutionId}
-                    setCurrentSolutionId={setCurrentSolutionId}
-                    setIsEditMode={setIsEditMode}
-                    setCurrentSolution={setCurrentSolution}
-
-                  />
+                    <LeftPanelContent
+                      id={id}
+                      problemId={problemId}
+                      activeTab={activeTab}
+                      setActiveTab={setActiveTab}
+                      isCompact={isCompactLeft}
+                      description={description}
+                      setDescription={setDescription}
+                      editorial={editorial}
+                      solutions={solutions}
+                      setSolutions={setSolutions}
+                      submissions={submissions}
+                      selectedSubmissionId={selectedSubmissionId}
+                      setSelectedSubmissionId={setSelectedSubmissionId}
+                      onchangeFilterSolutions={onchangeFilterSolutions}
+                      showSolution={showSolution}
+                      setShowSolution={setShowSolution}
+                      currentSolutionId={currentSolutionId}
+                      setCurrentSolutionId={setCurrentSolutionId}
+                      setIsEditMode={setIsEditMode}
+                      setCurrentSolution={setCurrentSolution}
+                      isLoadingDescription={isLoadingDescription}
+                      isLoadingEditorial={isLoadingEditorial}
+                      isLoadingSolutions={isLoadingSolutions}
+                      isLoadingSubmission={isLoadingSubmission}
+                    />
+                  </div>
                 </div>
-              </div>
-            </Panel>
+              </Panel>
 
-            <PanelResizeHandle className="splitter splitter_vert relative w-1.5 transition-colors" />
+              <PanelResizeHandle className="splitter splitter_vert relative w-1.5 transition-colors" />
 
-            {/* Right Panel Group */}
-            <Panel className="min-w-[40px] overflow-auto">
-              <PanelGroup direction="vertical">
-                {/* Right Top Panel - Code Editor */}
+              {/* Right Panel Group */}
+              <Panel className="min-w-[40px] overflow-auto">
+                <PanelGroup direction="vertical">
+                  {/* Right Top Panel - Code Editor */}
 
-                <Panel className="min-h-[40px] rounded-md overflow-hidden">
-                  <CodePanel
-                    isSubmittedActive={isSubmittedActive}
-                    setIsSubmittedActive={setIsSubmittedActive}
-                    isCompact={isCompactRight}
-                    code={code}
-                    onCodeChange={handleCodeChange}
-                    submitted={submitted}
-                    setSubmitted={setSubmitted}
-                    showSubmitted={showSubmitted}
-                    setShowSubmitted={setShowSubmitted}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    selectedSubmissionId={selectedSubmissionId}
-                    problemLink={id}
-                  />
-                </Panel>
+                  <Panel className="min-h-[40px] rounded-md overflow-hidden">
+                    <CodePanel
+                      isSubmittedActive={isSubmittedActive}
+                      setIsSubmittedActive={setIsSubmittedActive}
+                      isCompact={isCompactRight}
+                      code={code}
+                      staticCode={importLib}
+                      onCodeChange={handleCodeChange}
+                      submitted={submitted}
+                      setSubmitted={setSubmitted}
+                      showSubmitted={showSubmitted}
+                      setShowSubmitted={setShowSubmitted}
+                      onLanguageChange={onLanguageChange}
+                      language={language}
+                      availableLanguages={availableLanguages}
+                      activeTab={activeTab}
+                      setActiveTab={setActiveTab}
+                      selectedSubmissionId={selectedSubmissionId}
+                      problemLink={id}
+                    />
+                  </Panel>
 
-                <PanelResizeHandle className="splitter splitter_horz relative h-1.5 transition-colors" />
+                  <PanelResizeHandle className="splitter splitter_horz relative h-1.5 transition-colors" />
 
-                {/* Right Bottom Panel - Test Cases */}
-                <Panel className="min-h-[40px] overflow-auto rounded-md">
-                  <TestCasePanel
-                    isResultActive={isResultActive}
-                    setIsResultActive={setIsResultActive}
-                    isCompact={isCompactRight}
-                    testCases={testCases}
-                    activeCase={activeCase}
-                    setActiveCase={setActiveCase}
-                    results={results}
-                    showResult={showResult}
-                    activeResult={activeResult}
-                    setActiveResult={setActiveResult}
-                  />
-                </Panel>
-              </PanelGroup>
-            </Panel>
+                  {/* Right Bottom Panel - Test Cases */}
+                  <Panel className="min-h-[40px] overflow-auto rounded-md">
+                    <TestCasePanel
+                      isResultActive={isResultActive}
+                      setIsResultActive={setIsResultActive}
+                      isCompact={isCompactRight}
+                      testCases={testCases}
+                      activeCase={activeCase}
+                      setActiveCase={setActiveCase}
+                      results={results}
+                      showResult={showResult}
+                      activeResult={activeResult}
+                      setActiveResult={setActiveResult}
+                    />
+                  </Panel>
+                </PanelGroup>
+              </Panel>
 
-          </PanelGroup>
-        </div>
-      </div >
-      }
-      {isLoading &&
-        <LoadingScreen />
+            </PanelGroup>
+          </div>
+        </div >
       }
     </div>
   )
 }
-

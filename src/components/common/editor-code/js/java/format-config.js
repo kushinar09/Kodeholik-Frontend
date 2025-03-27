@@ -100,8 +100,8 @@ function formatLine(line, state) {
 
   // Format spacce for operators [==, ++, --, +=, -=]
   formattedLine = formattedLine.replace(/\s*=\s*=\s*/g, " == ")
-  formattedLine = formattedLine.replace(/\s*\+\s*\+\s*/g, " ++ ")
-  formattedLine = formattedLine.replace(/\s*-\s*-\s*/g, " -- ")
+  formattedLine = formattedLine.replace(/\s*\+\s*\+\s*/g, "++")
+  formattedLine = formattedLine.replace(/\s*-\s*-\s*/g, "--")
   formattedLine = formattedLine.replace(/\s*\+\s*=\s*/g, " += ")
   formattedLine = formattedLine.replace(/\s*-\s*=\s*/g, " -= ")
 

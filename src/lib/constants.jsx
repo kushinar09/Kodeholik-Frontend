@@ -57,6 +57,7 @@ const ENDPOINTS = {
   GET_PROBLEM_DESCRIPTION: `${API_URL}/problem/description/:id`,
   GET_PROBLEM_EDITORIAL: `${API_URL}/problem/editorial/:id`,
   GET_PROBLEM_INIT_CODE: `${API_URL}/problem/compile-information/:id`,
+  GET_PROBLEM_LANGUAGES_SUPPORT: `${API_URL}/problem/language-support/:id`,
 
   GET_PROBLEM_COMMENTS: `${API_URL}/comment/problem/:id`,
   POST_COMMENT: `${API_URL}/comment/post`,

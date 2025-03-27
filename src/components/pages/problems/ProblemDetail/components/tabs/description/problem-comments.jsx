@@ -19,7 +19,7 @@ import { Separator } from "@/components/ui/separator"
 import { postComment } from "@/lib/api/problem_api"
 import { motion } from "framer-motion"
 import { editComment, unupvoteComment, upvoteComment } from "@/lib/api/comment_api"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 export default function DiscussionSection({ id, locationId, type, activeTab }) {
   const [isCollapsed, setIsCollapsed] = useState(true)
@@ -339,10 +339,8 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
   const toggleEditComment = (id, status, newComment) => {
     if (status == "SAVE") {
       if (newComment === "") {
-        toast({
-          title: "Error",
-          description: "Please enter a comment",
-          variant: "destructive" // destructive
+        toast.error("Error", {
+          description: "Please enter a comment"
         })
       }
       else {
@@ -364,10 +362,8 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
   const editNewComment = async (id, comment) => {
     try {
       await editComment(apiCall, id, comment)
-      toast({
-        title: "Edit Comment",
-        description: "Edit comment successful",
-        variant: "default" // destructive
+      toast.success("Edit Comment", {
+        description: "Edit comment successful"
       })
       setComments((prevList) =>
         prevList.map((item) =>
@@ -410,11 +406,9 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
             <MessageCircle className="w-5 h-5" />
             Discussion ({totalComments})
           </h2>
-          {totalComments > 0 &&
-            <Button variant="ghost" size="sm">
-              {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-            </Button>
-          }
+          <Button variant="ghost" size="sm">
+            {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+          </Button>
         </div>
 
         {
@@ -426,12 +420,14 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
           >
             <div className="space-y-4">
               <div>
-                <Textarea
-                  placeholder="Type comment here"
-                  className="min-h-[50px] resize-none border-0 bg-background ring-1"
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                />
+                <div className="pt-4 px-2">
+                  <Textarea
+                    placeholder="Type comment here"
+                    className="min-h-[50px] resize-none border-0 bg-background ring-1"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                  />
+                </div>
                 <div className="flex flex-col items-end justify-center">
                   {!isAuthenticated && <p className="text-red-500 text-sm mt-2">Login to push comment</p>}
                   <Button
@@ -485,6 +481,9 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
                                 <span className="font-medium">{comment.createdBy.username}</span>
                               )}
                               <span className="text-sm text-muted-foreground">{comment.createdAt}</span>
+                              {comment.updatedAt && comment.updatedAt !== comment.createdAt &&
+                                <span className="text-sm text-muted-foreground">(edited)</span>
+                              }
                             </div>
                           </div>
                           <div className="text-sm">

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
-import Prism from "prismjs"
 
 // Import core and base languages first
 import "prismjs/components/prism-core"
