@@ -322,7 +322,7 @@ export default function ProblemDetail() {
     setIsRunning("run")
     try {
       const result = await runCode(apiCall, id, currentCode, language)
-      console.log(result)
+      console.log(result.data)
       if (result.status) {
         setResults(result.data)
         setShowResult(true)

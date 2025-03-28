@@ -9,11 +9,14 @@ export async function runCode(apiCall, id, code, languageName) {
       body: JSON.stringify({ code, languageName })
     }, true)
 
+    const data = await response.json()
+    console.log(data)
+
     if (response.ok) {
-      return { status: true, data: response.json() }
+      return { status: true, data: data }
     }
 
-    return { status: false, data: response.json() }
+    return { status: false, data: data }
   } catch (error) {
     throw new Error(error.message)
   }
