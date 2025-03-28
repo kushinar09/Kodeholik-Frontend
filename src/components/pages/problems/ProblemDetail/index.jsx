@@ -30,6 +30,7 @@ import { leftTabEnum } from "./data/data"
 import { debounce } from "lodash"
 // import LoadingScreen from "@/components/common/shared/other/loading"
 import ShareSolution from "../ShareSolution"
+import { toast } from "sonner"
 
 export default function ProblemDetail() {
   const { id } = useParams()
@@ -67,7 +68,7 @@ export default function ProblemDetail() {
   const [submissions, setSubmissions] = useState(null)
 
   // Code state
-  const [importLib , setImportLib] = useState("")
+  const [importLib, setImportLib] = useState("")
   const [code, setCode] = useState("")
   const [currentCode, setCurrentCode] = useState("")
   const [testCases, setTestCases] = useState([])
@@ -168,6 +169,7 @@ export default function ProblemDetail() {
       if (codeResult.status && codeResult.data) {
         setImportLib(codeResult.data.importCommands.join("\n"))
         setCode(codeResult.data.template)
+        setCurrentCode(codeResult.data.template)
         setTestCases(codeResult.data.testCases)
       }
     } finally {
@@ -320,10 +322,17 @@ export default function ProblemDetail() {
     setIsRunning("run")
     try {
       const result = await runCode(apiCall, id, currentCode, language)
-      setResults(result)
-      setShowResult(true)
-      setIsResultActive(true)
-      setActiveResult("0")
+      console.log(result)
+      if (result.status) {
+        setResults(result.data)
+        setShowResult(true)
+        setIsResultActive(true)
+        setActiveResult("0")
+      } else {
+        toast.error("Run code error", {
+          description: result.data.message
+        })
+      }
     } finally {
       setIsRunning("")
     }

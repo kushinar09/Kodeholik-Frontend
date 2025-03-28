@@ -26,123 +26,98 @@ self.MonacoEnvironment = {
 
 export default function CodeEditor({ initialCode, staticCode = "", onChange, className = "", language = "java" }) {
   const editorRef = useRef(null)
+  const staticEditorRef = useRef(null)
+  const containerRef = useRef(null)
   const [editor, setEditor] = useState(null)
+  const [staticEditor, setStaticEditor] = useState(null)
   const [breakpoints, setBreakpoints] = useState(new Map()) // Track breakpoints
-  const staticDecorationsRef = useRef([])
-  const staticCodeLengthRef = useRef(0)
-  const isUpdatingRef = useRef(false)
-  const previousStaticCodeRef = useRef("")
   const previousInitialCodeRef = useRef("")
+  const previousStaticCodeRef = useRef("")
+  const resizeObserverRef = useRef(null)
 
-  // Process static code to ensure it ends with a newline if needed
-  const processStaticCode = (code) => {
-    return code ? (code.endsWith("\n") ? code : code + "\n") : ""
-  }
+  // Create or update static editor
+  const setupStaticEditor = (code) => {
+    if (!staticEditorRef.current) return null
 
-  // Combine static code with editable code
-  const getFullCode = (staticCode, editableCode) => {
-    const processedStatic = processStaticCode(staticCode)
-    return processedStatic + (editableCode || "")
-  }
-
-  // Extract editable part from full code
-  const getEditableCode = (fullCode, staticCode) => {
-    const processedStatic = processStaticCode(staticCode)
-    if (!processedStatic) return fullCode
-    return fullCode.substring(processedStatic.length)
-  }
-
-  // Apply read-only decoration to static code
-  const applyStaticCodeDecoration = (editorInstance, staticCode) => {
-    if (!editorInstance) return
-
-    const processedStatic = processStaticCode(staticCode)
-    staticCodeLengthRef.current = processedStatic.length
-
-    if (!processedStatic) {
-      // Clear decorations if no static code
-      if (staticDecorationsRef.current.length) {
-        editorInstance.deltaDecorations(staticDecorationsRef.current, [])
-        staticDecorationsRef.current = []
+    // If editor already exists, update its content
+    if (staticEditor) {
+      try {
+        const model = staticEditor.getModel()
+        if (model) {
+          model.setValue(code)
+        }
+        return staticEditor
+      } catch (error) {
+        console.error("Error updating static editor:", error)
       }
-      return
     }
 
-    const model = editorInstance.getModel()
-    if (!model) return
-
-    const staticCodeEndPos = model.getPositionAt(processedStatic.length)
-
-    // Clear previous decorations
-    if (staticDecorationsRef.current.length) {
-      editorInstance.deltaDecorations(staticDecorationsRef.current, [])
-    }
-
-    // Apply new decoration - allow selection but prevent editing
-    staticDecorationsRef.current = editorInstance.deltaDecorations(
-      [],
-      [
-        {
-          range: new monaco.Range(1, 1, staticCodeEndPos.lineNumber, staticCodeEndPos.column),
-          options: {
-            inlineClassName: "static-code",
-            isWholeLine: false,
-            stickiness: monaco.editor.TrackedRangeStickiness.GrowsOnlyWhenTypingBefore,
-          },
+    // Create new editor
+    try {
+      const staticEditorInstance = monaco.editor.create(staticEditorRef.current, {
+        ...editorConfig,
+        value: code,
+        readOnly: true,
+        minimap: { enabled: false },
+        scrollBeyondLastLine: false,
+        renderLineHighlight: "none",
+        hideCursorInOverviewRuler: true,
+        overviewRulerBorder: false,
+        overviewRulerLanes: 0,
+        lineNumbers: "off",
+        scrollbar: {
+          vertical: "hidden",
+          horizontal: "hidden",
         },
-      ],
-    )
+        glyphMargin: false,
+        folding: false,
+        lineDecorationsWidth: 0,
+        lineNumbersMinChars: 0,
+        language: language.toLowerCase(),
+        wordWrap: "on", // Enable word wrap for better display
+      })
+
+      return staticEditorInstance
+    } catch (error) {
+      console.error("Error creating static editor:", error)
+      return null
+    }
   }
 
-  // Safely update editor content
-  const safelyUpdateEditorContent = (editorInstance, newFullCode) => {
-    if (!editorInstance || isUpdatingRef.current) return
+  // Adjust editor heights based on content
+  const adjustEditorHeights = () => {
+    if (!staticEditor || !staticCode) return
 
     try {
-      isUpdatingRef.current = true
+      // Get the content height directly from the editor
+      const contentHeight = staticEditor.getContentHeight()
 
-      const currentPosition = editorInstance.getPosition()
-      const currentSelections = editorInstance.getSelections()
+      // Set the height of the container
+      if (staticEditorRef.current) {
+        staticEditorRef.current.style.height = `${contentHeight}px`
 
-      editorInstance.executeEdits("update-content", [
-        {
-          range: editorInstance.getModel().getFullModelRange(),
-          text: newFullCode,
-          forceMoveMarkers: true,
-        },
-      ])
-
-      // Restore cursor position and selections if possible
-      if (currentPosition) {
-        editorInstance.setPosition(currentPosition)
-      }
-
-      if (currentSelections) {
-        editorInstance.setSelections(currentSelections)
+        // Force layout update
+        staticEditor.layout()
       }
     } catch (error) {
-      console.error("Error updating editor content:", error)
-    } finally {
-      isUpdatingRef.current = false
+      console.error("Error adjusting editor heights:", error)
     }
   }
 
-  // Initialize editor
+  // Initialize editors
   useEffect(() => {
+    // Initialize main editor
     if (editorRef.current && !editor) {
       monaco.languages.register({ id: "java" })
 
-      const processedStatic = processStaticCode(staticCode)
-      previousStaticCodeRef.current = staticCode
       previousInitialCodeRef.current = initialCode || INITIAL_CODE_DEFAULT
-
-      const fullInitialCode = getFullCode(staticCode, initialCode || INITIAL_CODE_DEFAULT)
 
       const editorInstance = monaco.editor.create(editorRef.current, {
         ...editorConfig,
-        value: fullInitialCode,
+        value: initialCode || INITIAL_CODE_DEFAULT,
         glyphMargin: true,
-        scrollBeyondLastLine: true, // Enable proper scrolling
+        scrollBeyondLastLine: true,
+        language: language.toLowerCase(),
       })
 
       if (!isCompletionProviderRegistered) {
@@ -152,50 +127,11 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
       JavaDiagnosticsProvider(monaco)
       JavaFormatter(monaco)
 
-      // Apply read-only decoration to static code if it exists
-      applyStaticCodeDecoration(editorInstance, staticCode)
-
-      // Handle key events to prevent backspace at boundary
-      editorInstance.onKeyDown((e) => {
-        const position = editorInstance.getPosition()
-        const model = editorInstance.getModel()
-
-        if (!model || !position) return
-
-        const offset = model.getOffsetAt(position)
-
-        // If at boundary and backspace is pressed, prevent default
-        if (offset === staticCodeLengthRef.current && e.keyCode === monaco.KeyCode.Backspace) {
-          e.preventDefault()
-          e.stopPropagation()
-          return false
-        }
-      })
-
       editorInstance.onDidChangeModelContent((e) => {
-        if (isUpdatingRef.current) return
-
-        const model = editorInstance.getModel()
-        if (!model) return
-
-        const fullCode = editorInstance.getValue()
-        const processedStatic = processStaticCode(staticCode)
-
-        // Check if static code was modified
-        if (fullCode.substring(0, processedStatic.length) !== processedStatic) {
-          // Restore the full code with static part intact
-          const editableCode = getEditableCode(fullCode, staticCode)
-          const correctedCode = getFullCode(staticCode, editableCode)
-
-          safelyUpdateEditorContent(editorInstance, correctedCode)
-          applyStaticCodeDecoration(editorInstance, staticCode)
-          return
-        }
-
-        // Only report changes to the editable portion
+        // Report all changes to the entire editor content
         if (onChange) {
-          const editableCode = getEditableCode(fullCode, staticCode)
-          onChange(editableCode)
+          const fullCode = editorInstance.getValue()
+          onChange(fullCode)
         }
       })
 
@@ -207,50 +143,128 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
       })
 
       setEditor(editorInstance)
+    }
 
-      return () => {
-        editorInstance.getModel()?.dispose()
-        editorInstance.dispose()
+    // Initialize static editor if there's static code
+    if (staticEditorRef.current && staticCode && !staticEditor) {
+      const newStaticEditor = setupStaticEditor(staticCode)
+      if (newStaticEditor) {
+        setStaticEditor(newStaticEditor)
+        previousStaticCodeRef.current = staticCode
+      }
+    }
+
+    return () => {
+      if (editor) {
+        editor.getModel()?.dispose()
+        editor.dispose()
+      }
+
+      if (staticEditor) {
+        staticEditor.getModel()?.dispose()
+        staticEditor.dispose()
+      }
+
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Set up ResizeObserver for container
+  useEffect(() => {
+    if (containerRef.current && !resizeObserverRef.current) {
+      resizeObserverRef.current = new ResizeObserver(() => {
+        if (editor) editor.layout()
+        if (staticEditor) {
+          staticEditor.layout()
+          adjustEditorHeights()
+        }
+      })
+
+      resizeObserverRef.current.observe(containerRef.current)
+    }
+
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect()
+        resizeObserverRef.current = null
+      }
+    }
+  }, [editor, staticEditor])
 
   // Handle changes to initialCode
   useEffect(() => {
     if (!editor || initialCode === previousInitialCodeRef.current) return
 
     try {
-      const processedStatic = processStaticCode(staticCode)
-      const newFullCode = getFullCode(staticCode, initialCode || INITIAL_CODE_DEFAULT)
+      const model = editor.getModel()
+      if (!model) return
 
-      safelyUpdateEditorContent(editor, newFullCode)
+      // Store cursor position and selections before update
+      const currentPosition = editor.getPosition()
+      const currentSelections = editor.getSelections()
+
+      // Update content
+      editor.executeEdits("update-content", [
+        {
+          range: model.getFullModelRange(),
+          text: initialCode || INITIAL_CODE_DEFAULT,
+          forceMoveMarkers: true,
+        },
+      ])
+
+      // Restore cursor position and selections if possible
+      if (currentPosition) {
+        editor.setPosition(currentPosition)
+      }
+
+      if (currentSelections) {
+        editor.setSelections(currentSelections)
+      }
+
       previousInitialCodeRef.current = initialCode || INITIAL_CODE_DEFAULT
+
+      // Adjust static editor height after initialCode changes
+      // This is important as the container might resize
+      if (staticEditor) {
+        setTimeout(adjustEditorHeights, 0)
+      }
     } catch (error) {
       console.error("Error updating initialCode:", error)
     }
-  }, [initialCode, editor, staticCode])
+  }, [initialCode, editor])
 
   // Handle changes to staticCode
   useEffect(() => {
-    if (!editor || staticCode === previousStaticCodeRef.current) return
+    if (staticCode === previousStaticCodeRef.current) return
 
     try {
-      // Get current editable content
-      const currentFullCode = editor.getValue()
-      const currentEditableCode = getEditableCode(currentFullCode, previousStaticCodeRef.current)
-
-      // Create new full code with updated static code
-      const newFullCode = getFullCode(staticCode, currentEditableCode)
-
-      safelyUpdateEditorContent(editor, newFullCode)
-      applyStaticCodeDecoration(editor, staticCode)
+      // If we have a static editor, update it
+      if (staticEditor) {
+        const model = staticEditor.getModel()
+        if (model) {
+          model.setValue(staticCode)
+        }
+      }
+      // Otherwise create a new one if we have static code
+      else if (staticCode && staticEditorRef.current) {
+        const newStaticEditor = setupStaticEditor(staticCode)
+        if (newStaticEditor) {
+          setStaticEditor(newStaticEditor)
+        }
+      }
 
       previousStaticCodeRef.current = staticCode
+
+      // Adjust height after content update
+      // Use setTimeout to ensure the editor has processed the content change
+      setTimeout(adjustEditorHeights, 0)
     } catch (error) {
       console.error("Error updating staticCode:", error)
     }
-  }, [staticCode, editor])
+  }, [staticCode, staticEditor])
 
   // Handle language changes
   useEffect(() => {
@@ -264,7 +278,35 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
         console.error("Error updating editor language:", error)
       }
     }
-  }, [language, editor])
+
+    if (staticEditor) {
+      try {
+        const model = staticEditor.getModel()
+        if (model) {
+          monaco.editor.setModelLanguage(model, language.toLowerCase())
+        }
+      } catch (error) {
+        console.error("Error updating static editor language:", error)
+      }
+    }
+  }, [language, editor, staticEditor])
+
+  // Adjust heights whenever static editor or code changes
+  useEffect(() => {
+    if (staticEditor && staticCode) {
+      // Initial adjustment
+      adjustEditorHeights()
+
+      // Also set up a listener for content height changes
+      const contentChangeDisposable = staticEditor.onDidContentSizeChange(() => {
+        adjustEditorHeights()
+      })
+
+      return () => {
+        contentChangeDisposable.dispose()
+      }
+    }
+  }, [staticEditor, staticCode])
 
   const toggleBreakpoint = (editor, lineNumber) => {
     setBreakpoints((prev) => {
@@ -294,10 +336,41 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
   }
 
   return (
-    <div className={`w-full h-full ${className}`}>
-      <div ref={editorRef} className="w-full h-full min-h-[200px]" />
+    <div ref={containerRef} className={`code-editor-container w-full ${className}`}>
+      {/* Static code editor (read-only with syntax highlighting) */}
+      {staticCode && <div ref={staticEditorRef} className="static-code-editor" />}
+
+      {/* Main editor for editable code */}
+      <div ref={editorRef} className="main-code-editor min-h-[200px]" />
+
       <style>
         {`
+          .code-editor-container {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            overflow: auto;
+          }
+          
+          .static-code-editor {
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.03);
+            border-bottom: none;
+            margin-left: 43px;
+          }
+          
+          .static-code-divider {
+            height: 1px;
+            background-color: #e0e0e0;
+            width: 100%;
+          }
+          
+          .main-code-editor {
+            width: 100%;
+            flex-grow: 1;
+          }
+          
           .breakpoint-icon::after {
             border-radius: 100%;
             content: "";
@@ -307,16 +380,6 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
             height: 10px;
             width: 10px;
             background-color: rgb(226, 74, 66);
-          }
-          
-          .static-code {
-            background-color: rgba(0, 0, 0, 0.05);
-            opacity: 0.8;
-          }
-          
-          /* Ensure editor container allows scrolling */
-          .monaco-editor {
-            overflow: auto !important;
           }
         `}
       </style>
