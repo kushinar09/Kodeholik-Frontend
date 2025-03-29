@@ -349,12 +349,10 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
             display: flex;
             flex-direction: column;
             border: 1px solid #e0e0e0;
-            border-radius: 4px;
             overflow: auto;
           }
           
           .static-code-editor {
-            width: 100%;
             background-color: rgba(0, 0, 0, 0.03);
             border-bottom: none;
             margin-left: 43px;

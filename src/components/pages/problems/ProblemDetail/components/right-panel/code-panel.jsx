@@ -13,6 +13,7 @@ export default function CodePanel({
   setIsSubmittedActive,
   isCompact,
   code,
+  currentCode,
   staticCode,
   onCodeChange,
   submitted,
@@ -137,7 +138,7 @@ export default function CodePanel({
         )}
       </div>
       <div className={cn("overflow-hidden flex-1", isCompact ? "justify-center hidden" : "")}>
-        <div className="min-w-[420px] h-full">
+        <div className="min-w-[420px] h-full flex flex-col">
           {!isSubmittedActive && code && (
             <>
               <div className={cn("m-1", isCompact ? "w-full mt-4" : "flex-shrink-0")}>
@@ -156,7 +157,7 @@ export default function CodePanel({
                   </SelectContent>
                 </Select>
               </div>
-              <CodeEditor staticCode={staticCode} initialCode={code} onChange={onCodeChange} language={selectedLanguage} />
+              <CodeEditor className="flex-1" staticCode={staticCode} initialCode={currentCode || code || ""} onChange={onCodeChange} language={selectedLanguage} />
             </>
           )}
           {isSubmittedActive && submitted && activeTab != "Submissions" && <SubmittedCodeView submitted={submitted} code={code} setActiveTab={setActiveTab} problemLink={problemLink} selectedSubmissionId={selectedSubmissionId}/>}

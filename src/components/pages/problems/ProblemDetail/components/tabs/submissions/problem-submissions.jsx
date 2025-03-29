@@ -194,7 +194,7 @@ export default function ProblemSubmissions({
                       </TableCell>
                       <TableCell>{submission.languageName}</TableCell>
                       <TableCell>
-                        {submission.executionTime > 0 ? `${submission.executionTime.toFixed(1)} ms` : "-"}
+                        {submission.executionTime > 0 ? `${submission.executionTime.toFixed(2)} ms` : "-"}
                       </TableCell>
                       <TableCell>
                         {submission.memoryUsage > 0 ? `${submission.memoryUsage.toFixed(1)} MB` : "-"}

@@ -157,12 +157,12 @@ export default function TestCasePanel({
             <div className="w-full space-y-4 p-4">
               {results.status && results.status.toLowerCase() === "success" && (
                 <div>
-                  <span className="text-lg text-text-success">Accepted</span>
+                  <span className="text-lg font-semibold text-text-success">Accepted</span>
                 </div>
               )}
               {results.status && results.status.toLowerCase() === "failed" && (
                 <div>
-                  <span className="text-lg text-text-error">Failed</span>
+                  <span className="text-lg font-semibold text-text-error">Failed</span>
                 </div>
               )}
 

@@ -5,9 +5,24 @@ import "highlight.js/styles/default.css"
 import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 import { Button } from "@/components/ui/button"
 import { CodeHighlighter } from "@/components/common/editor-code/code-highlighter"
+import { copyToClipboard } from "@/lib/utils/format-utils"
+import { useEffect, useState } from "react"
+import { Check, Copy, RotateCcw } from "lucide-react"
 
 export default function ProblemEditorial({ editorial, isLoadingEditorial }) {
   const { isAuthenticated } = useAuth()
+  const [copied, setCopied] = useState(false)
+  const [currentCode, setCurrentCode] = useState("")
+
+  useEffect(() => {
+    setCurrentCode(editorial?.solutionCodes[0]?.solutionCode)
+  }, [editorial])
+
+  const handleCopyClipBoard = async () => {
+    const success = await copyToClipboard(currentCode)
+    setCopied(success)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   if (!isAuthenticated) {
     return (
@@ -110,37 +125,46 @@ export default function ProblemEditorial({ editorial, isLoadingEditorial }) {
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-3">Solution Code</h3>
               <div className="border rounded-lg overflow-hidden">
-                <div className="flex border-b">
-                  {editorial.solutionCodes.map((solution, index) => (
-                    <button
-                      key={index}
-                      className={`px-4 py-2 text-sm font-medium text-gray-500 ${index == 0 ? "bg-gray-100 dark:bg-gray-800 font-semibold text-gray-800" : ""}`}
-                      onClick={(e) => {
-                        // Set all tabs to inactive
-                        e.currentTarget.parentElement
-                          .querySelectorAll("button")
-                          .forEach((btn) =>
-                            btn.classList.remove("bg-gray-100", "dark:bg-gray-800", "font-semibold", "text-gray-800"),
+                <div className="flex border-b justify-between">
+                  <div>
+                    {editorial.solutionCodes.map((solution, index) => (
+                      <button
+                        key={index}
+                        className={`px-4 py-2 text-sm font-medium text-gray-500 ${index == 0 ? "bg-gray-100 dark:bg-gray-800 font-semibold text-gray-800" : ""}`}
+                        onClick={(e) => {
+                          // Set all tabs to inactive
+                          e.currentTarget.parentElement
+                            .querySelectorAll("button")
+                            .forEach((btn) =>
+                              btn.classList.remove("bg-gray-100", "dark:bg-gray-800", "font-semibold", "text-gray-800")
+                            )
+                          // Set clicked tab to active
+                          e.currentTarget.classList.add(
+                            "bg-gray-100",
+                            "dark:bg-gray-800",
+                            "font-semibold",
+                            "text-gray-800"
                           )
-                        // Set clicked tab to active
-                        e.currentTarget.classList.add(
-                          "bg-gray-100",
-                          "dark:bg-gray-800",
-                          "font-semibold",
-                          "text-gray-800",
-                        )
 
-                        // Hide all code blocks
-                        const codeBlocks = e.currentTarget.closest(".border").querySelectorAll(".code-block")
-                        codeBlocks.forEach((block) => block.classList.add("hidden"))
+                          // Hide all code blocks
+                          const codeBlocks = e.currentTarget.closest(".border").querySelectorAll(".code-block")
+                          codeBlocks.forEach((block) => block.classList.add("hidden"))
 
-                        // Show selected code block
-                        codeBlocks[index].classList.remove("hidden")
-                      }}
-                    >
-                      {solution.solutionLanguage}
-                    </button>
-                  ))}
+                          // Show selected code block
+                          codeBlocks[index].classList.remove("hidden")
+
+                          setCurrentCode(solution.solutionCode)
+                        }}
+                      >
+                        {solution.solutionLanguage}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="ghost" size="icon" onClick={handleCopyClipBoard}>
+                      {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                  </div>
                 </div>
                 {editorial.solutionCodes.map((solution, index) => (
                   <div

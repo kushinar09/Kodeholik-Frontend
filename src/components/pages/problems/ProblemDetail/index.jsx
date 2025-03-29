@@ -237,13 +237,12 @@ export default function ProblemDetail() {
     []
   )
 
-  const fetchProblemSubmission = async () => {
+  const fetchProblemSubmission = async (force = false) => {
     if (!id) return
-    if (!submissions) {
+    if (!submissions || force) {
       setIsLoadingSubmission(true)
       try {
         const result = await getProblemSubmission(apiCall, id)
-        console.log(result.data)
         if (result.status && result.data) {
           setSubmissions(result.data)
         }
@@ -322,7 +321,6 @@ export default function ProblemDetail() {
     setIsRunning("run")
     try {
       const result = await runCode(apiCall, id, currentCode, language)
-      console.log(result.data)
       if (result.status) {
         setResults(result.data)
         setShowResult(true)
@@ -342,9 +340,16 @@ export default function ProblemDetail() {
     setIsRunning("submit")
     try {
       const result = await submitCode(apiCall, id, currentCode, language)
-      setSubmitted(result)
-      setShowSubmitted(true)
-      setIsSubmittedActive(true)
+      if (result.status) {
+        setSubmitted(result.data)
+        setShowSubmitted(true)
+        setIsSubmittedActive(true)
+        fetchProblemSubmission(true)
+      } else {
+        toast.error("Submit code error", {
+          description: result.data.message
+        })
+      }
     } finally {
       setIsRunning("")
     }
@@ -413,6 +418,7 @@ export default function ProblemDetail() {
                       setIsSubmittedActive={setIsSubmittedActive}
                       isCompact={isCompactRight}
                       code={code}
+                      currentCode={currentCode}
                       staticCode={importLib}
                       onCodeChange={handleCodeChange}
                       submitted={submitted}
