@@ -45,8 +45,8 @@ export function CodeHighlighter({ code, language = "javascript", showLineNumbers
 
 
   return (
-    <div className={cn("relative overflow-hidden bg-bg-card", className)}>
-      <pre className={cn("p-4 overflow-x-auto text-sm", showLineNumbers && "line-numbers")}>
+    <div className={cn("relative bg-bg-card overflow-hidden", className)}>
+      <pre className={cn("!m-0 !rounded-none p-4 overflow-x-auto text-sm", showLineNumbers && "line-numbers")}>
         <code className={`language-${language.toLowerCase()} font-code`} dangerouslySetInnerHTML={{ __html: highlightedCode }} />
       </pre>
     </div>
