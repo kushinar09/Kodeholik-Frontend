@@ -12,10 +12,10 @@ import { GLOBALS } from "@/lib/constants"
 import HeaderSection from "@/components/common/shared/header"
 import placeholder from "@/assets/images/placeholder_square.jpg"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { BookOpenCheck, BookText, Dot, Star } from "lucide-react"
+import { BookOpenCheck, BookText } from "lucide-react"
 import { StarFilledIcon } from "@radix-ui/react-icons"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-// Sync with desired page size
 const ITEMS_PER_PAGE = 9
 
 export default function CoursePage() {
@@ -31,9 +31,10 @@ export default function CoursePage() {
   const [totalPages, setTotalPages] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [showAllTopics, setShowAllTopics] = useState(false)
+  const [sortBy, setSortBy] = useState("title")
+  const [ascending, setAscending] = useState(true)
   const navigate = useNavigate()
 
-  // Fetch courses based on currentPage, searchQuery, and selectedTopics
   useEffect(() => {
     const fetchCourses = async () => {
       setIsLoading(true)
@@ -41,14 +42,14 @@ export default function CoursePage() {
         const data = await getCourseSearch({
           page: currentPage - 1,
           size: ITEMS_PER_PAGE,
-          sortBy: "numberOfParticipant",
-          ascending: true,
+          sortBy,
+          ascending,
           query: searchQuery || undefined,
           topic: selectedTopics.length > 0 ? selectedTopics.join(",") : undefined,
         })
-        // Filter by title manually if backend doesn't support it
         const filteredCourses = searchQuery
-          ? (data.content || []).filter((course) => course.title.toLowerCase().includes(searchQuery.toLowerCase()))
+          ? (data.content || []).filter((course) => 
+              course.title.toLowerCase().includes(searchQuery.toLowerCase()))
           : data.content || []
         setCourses(filteredCourses)
         setTotalPages(data.totalPages || 1)
@@ -61,9 +62,8 @@ export default function CoursePage() {
       }
     }
     fetchCourses()
-  }, [currentPage, searchQuery, selectedTopics])
+  }, [currentPage, searchQuery, selectedTopics, sortBy, ascending])
 
-  // Fetch topics on mount
   useEffect(() => {
     const fetchTopics = async () => {
       try {
@@ -84,7 +84,9 @@ export default function CoursePage() {
   }
 
   const handleTopicChange = (topic) => {
-    setSelectedTopics((prev) => (prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic]))
+    setSelectedTopics((prev) => 
+      prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic]
+    )
     setCurrentPage(1)
   }
 
@@ -92,14 +94,25 @@ export default function CoursePage() {
     setShowAllTopics(!showAllTopics)
   }
 
-  // Handle clearing all filters
   const handleClearFilters = () => {
     setSearchQuery("")
     setSelectedTopics([])
     setCurrentPage(1)
+    setSortBy("title")
+    setAscending(true)
   }
 
-  // Determine which topics to display based on showAllTopics state
+  const handleSortChange = (value) => {
+    if (value.endsWith("-desc")) {
+      setSortBy(value.replace("-desc", ""))
+      setAscending(false)
+    } else {
+      setSortBy(value)
+      setAscending(true)
+    }
+    setCurrentPage(1)
+  }
+
   const displayedTopics = showAllTopics ? topics : topics.slice(0, 5)
 
   return (
@@ -107,25 +120,27 @@ export default function CoursePage() {
       <HeaderSection currentActive="courses" />
       <div className="mx-36 py-8 text-text-primary">
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Left sidebar with filters */}
           <div className="w-full md:w-64 shrink-0">
             <div className="flex justify-between">
               <h2 className="text-xl font-bold mb-6">Filter by</h2>
-              {selectedTopics.length > 0 &&
-                <Button variant="outline" size="sm" onClick={handleClearFilters} className="text-sm bg-bg-card text-text-primary hover:text-text-primary border-none hover:bg-bg-card/90">
+              {(selectedTopics.length > 0 || sortBy !== "title" || !ascending) && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleClearFilters}
+                  className="text-sm bg-bg-card text-text-primary hover:text-text-primary border-none hover:bg-bg-card/90"
+                >
                   Clear all
                 </Button>
-              }
+              )}
             </div>
 
-            {/* Topics filter */}
             <div className="mb-8">
               <h3 className="font-semibold mb-3">Topics</h3>
               <div className="space-y-2">
                 {displayedTopics.map((topic) => {
                   const topicName = typeof topic === "string" ? topic : topic.name || ""
                   const topicId = typeof topic === "string" ? topic : topic.id || topicName
-
                   return (
                     <div key={topicId} className="flex items-center">
                       <Checkbox
@@ -144,22 +159,40 @@ export default function CoursePage() {
                   )
                 })}
               </div>
-
               {topics.length > 5 && (
-                <button onClick={toggleShowAllTopics} className="text-sm text-primary mt-2 hover:underline">
+                <button 
+                  onClick={toggleShowAllTopics} 
+                  className="text-sm text-primary mt-2 hover:underline"
+                >
                   {showAllTopics ? "Show less" : "Show more"}
                 </button>
               )}
             </div>
           </div>
 
-          {/* Main content area */}
           <div className="flex-1">
-            <h2 className="text-xl font-semibold mb-6">
-              {searchQuery ? `Results for "${searchQuery}"` : "All Courses"}
-            </h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold">
+                {searchQuery ? `Results for "${searchQuery}"` : "All Courses"}
+              </h2>
+              <Select 
+                onValueChange={handleSortChange}
+                defaultValue="title"
+              >
+                <SelectTrigger className="w-[220px] bg-white text-black border-none">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent className="bg-white text-black border-none">
+                  <SelectItem value="title">Title (A-Z)</SelectItem>
+                  <SelectItem value="title-desc">Title (Z-A)</SelectItem>
+                  <SelectItem value="numberOfParticipant">Participants (Low to High)</SelectItem>
+                  <SelectItem value="numberOfParticipant-desc">Participants (High to Low)</SelectItem>
+                  <SelectItem value="createdAt">Date (Old to New)</SelectItem>
+                  <SelectItem value="createdAt-desc">Date (New to Old)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            {/* Search input */}
             <div className="mb-6">
               <div className="relative">
                 <Input
@@ -186,7 +219,6 @@ export default function CoursePage() {
               </div>
             </div>
 
-            {/* Selected filters */}
             {selectedTopics.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {selectedTopics.map((topic) => (
@@ -225,8 +257,7 @@ export default function CoursePage() {
                 </svg>
                 <h3 className="text-xl font-semibold mb-2">No courses found</h3>
                 <p className="text-muted-foreground max-w-md">
-                  We couldn&apos;t find any courses matching your search criteria. Try adjusting your filters or search
-                  term.
+                  We couldn't find any courses matching your search criteria. Try adjusting your filters or search term.
                 </p>
                 <Button className="mt-4 text-bg-card" onClick={handleClearFilters}>
                   Clear filters
@@ -268,9 +299,12 @@ export default function CoursePage() {
                         <span className="font-medium text-sm">{course.createdBy?.username}</span>
                       </div>
                       <h3 className="font-bold line-clamp-2">{course.title}</h3>
-                      {course.topics && course.topics.length > 0 &&
-                        <p className="text-sm"><span className="font-semibold">The course covers the following topics: </span>{course.topics.join(", ")}</p>
-                      }
+                      {course.topics && course.topics.length > 0 && (
+                        <p className="text-sm">
+                          <span className="font-semibold">Topics: </span>
+                          {course.topics.join(", ")}
+                        </p>
+                      )}
                       <div className="flex gap-4 text-sm">
                         <div className="flex gap-2 items-center">
                           <BookText className="size-4" />
@@ -297,7 +331,6 @@ export default function CoursePage() {
               </div>
             )}
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex justify-center mt-10 mb-6 gap-2">
                 <Button
@@ -340,7 +373,6 @@ export default function CoursePage() {
                       </Button>
                     )
                   })}
-
                   {totalPages > 5 && currentPage < totalPages - 2 && (
                     <>
                       <span className="flex items-center px-2">...</span>
@@ -380,4 +412,3 @@ export default function CoursePage() {
     </div>
   )
 }
-
