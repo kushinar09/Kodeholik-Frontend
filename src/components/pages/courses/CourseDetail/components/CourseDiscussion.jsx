@@ -6,7 +6,7 @@ import { getCourse, getCourseDiscussion, discussionCourse, getDiscussionReply, u
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { GLOBALS } from "@/lib/constants"
-import { Send, X, ArrowBigUp, ChevronDown, ChevronUp, MessageSquare, Clock } from "lucide-react"
+import { Send, X, ArrowBigUp, ChevronDown, ChevronUp, MessageSquare, Clock, GraduationCap } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
@@ -64,29 +64,30 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
     const messagesWithAvatars = discussionData.map((comment) => {
       const commentReplies = replyData.filter((reply) => reply.replyId === comment.id)
 
-      // Use the avatar URL directly if it exists, otherwise use placeholder
       const avatarUrl = comment.createdBy.avatar || "/placeholder.svg?height=40&width=40"
 
       const repliesWithAvatars = commentReplies.map((reply) => ({
         id: reply.id,
         user: reply.createdBy.username,
+        role: reply.createdBy.role || "STUDENT", // Add role, default to "STUDENT" if not provided
         text: reply.comment,
         time: reply.createdAt,
         avatar: reply.createdBy.avatar || "/placeholder.svg?height=40&width=40",
         likes: reply.noUpvote,
-        liked: reply.voted
+        liked: reply.voted,
       }))
 
       return {
         id: comment.id,
         user: comment.createdBy.username,
+        role: comment.createdBy.role || "STUDENT", // Add role, default to "STUDENT" if not provided
         text: comment.comment,
         time: comment.createdAt,
         avatar: avatarUrl,
         likes: comment.noUpvote,
         liked: comment.voted,
         replies: repliesWithAvatars,
-        showReplies: false
+        showReplies: false,
       }
     })
 
@@ -101,7 +102,7 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
       const data = {
         comment: newMessage,
         courseId: parseInt(id),
-        commentReply: replyingTo ? parseInt(replyingTo.id) : null
+        commentReply: replyingTo ? parseInt(replyingTo.id) : null,
       }
       const response = await discussionCourse(data, (url, options) => fetch(url, options))
       await fetchData()
@@ -130,17 +131,17 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
                   ? {
                     ...reply,
                     liked: !reply.liked,
-                    likes: reply.liked ? reply.likes - 1 : reply.likes + 1
+                    likes: reply.liked ? reply.likes - 1 : reply.likes + 1,
                   }
                   : reply
-              )
+              ),
             }
           }
           if (!isReply && msg.id === messageId) {
             return {
               ...msg,
               liked: !msg.liked,
-              likes: msg.liked ? msg.likes - 1 : msg.likes + 1
+              likes: msg.liked ? msg.likes - 1 : msg.likes + 1,
             }
           }
           return msg
@@ -163,17 +164,17 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
                   ? {
                     ...reply,
                     liked: !reply.liked,
-                    likes: reply.liked ? reply.likes - 1 : reply.likes + 1
+                    likes: reply.liked ? reply.likes - 1 : reply.likes + 1,
                   }
                   : reply
-              )
+              ),
             }
           }
           if (!isReply && msg.id === messageId) {
             return {
               ...msg,
               liked: !msg.liked,
-              likes: msg.liked ? msg.likes - 1 : msg.likes + 1
+              likes: msg.liked ? msg.likes - 1 : msg.likes + 1,
             }
           }
           return msg
@@ -321,7 +322,12 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
               </Avatar>
               <div className="flex-1">
                 <div className="bg-bg-muted rounded-lg p-3 border border-border-muted shadow-sm">
-                  <p className="font-medium text-sm text-text-primary">{message.user}</p>
+                  <p className="font-medium text-sm text-text-primary flex items-center">
+                    {message.user}
+                    {message.role === "TEACHER" && (
+                      <GraduationCap className="ml-1 h-3.5 w-3.5 text-primary-button" />
+                    )}
+                  </p>
                   <p className="text-sm mt-1 text-text-secondary whitespace-pre-wrap">{message.text}</p>
                 </div>
                 <MessageActions message={message} />
@@ -355,7 +361,12 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
                         </Avatar>
                         <div className="flex-1">
                           <div className="bg-bg-muted rounded-lg p-3 border border-border-muted shadow-sm">
-                            <p className="font-medium text-sm text-text-primary">{reply.user}</p>
+                            <p className="font-medium text-sm text-text-primary flex items-center">
+                              {message.user}
+                              {message.role === "TEACHER" && (
+                                <GraduationCap className="ml-1 h-3.5 w-3.5 text-primary-button" />
+                              )}
+                            </p>
                             <p className="text-sm mt-1 text-text-secondary whitespace-pre-wrap">{reply.text}</p>
                           </div>
                           <MessageActions message={reply} isReply={true} parentId={message.id} />
