@@ -11,9 +11,8 @@ import {
   Bookmark,
   BookmarkCheck,
   Users,
-  FileText,
   AlertCircle,
-  ChevronLeft,
+  ChevronLeft
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -26,12 +25,13 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogHeader,
+  DialogHeader
 } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
+import { useState, useRef, useEffect } from "react"
 
 export default function CourseDetail({
   course,
@@ -46,9 +46,19 @@ export default function CourseDetail({
   totalLessons,
   completedLessons,
   completionPercentage,
-  isEnrolled,
+  isEnrolled
 }) {
   const { isAuthenticated } = useAuth()
+
+  const [showFullDescription, setShowFullDescription] = useState(false)
+  const descriptionRef = useRef(null)
+  const [descriptionOverflows, setDescriptionOverflows] = useState(false)
+
+  useEffect(() => {
+    if (descriptionRef.current) {
+      setDescriptionOverflows(descriptionRef.current.scrollHeight > 500)
+    }
+  }, [course.description])
 
   if (loading) {
     return (
@@ -180,11 +190,33 @@ export default function CourseDetail({
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              <Card className="bg-gray-900/50 border-gray-700/50">
+              <Card className="bg-gray-900 border-gray-700/50">
                 <CardContent>
-                  <ScrollArea className="pr-4 pt-4">
-                    <RenderMarkdown className="text-text-primary leading-relaxed" content={course.description} />
-                  </ScrollArea>
+                  <div className="relative">
+                    <ScrollArea
+                      ref={descriptionRef}
+                      className={`pr-4 pt-4 ${!showFullDescription ? "max-h-[400px] overflow-hidden" : ""}`}
+                    >
+                      <RenderMarkdown className="text-text-primary leading-relaxed" content={course.description} />
+                    </ScrollArea>
+                    {descriptionRef.current && descriptionRef.current.scrollHeight > 400 && (
+                      <div
+                        className={`${!showFullDescription
+                          ? "absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-gray-900 to-transparent flex items-end justify-center pb-2"
+                          : "mt-4 text-center"
+                        }`}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowFullDescription(!showFullDescription)}
+                          className="text-primary hover:text-bg-card"
+                        >
+                          {showFullDescription ? "View Less" : "View More"}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
 
