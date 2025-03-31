@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import Prism from "prismjs"
 
 // Import core and base languages first
 import "prismjs/components/prism-core"
@@ -23,26 +24,14 @@ export function CodeHighlighter({ code, language = "javascript", showLineNumbers
   const [highlightedCode, setHighlightedCode] = useState("")
 
   useEffect(() => {
-    // Dynamically import Prism to avoid SSR issues
-    import("prismjs").then((Prism) => {
-      // Import the core
-      import("prismjs/components/prism-core")
-
-      // Import additional plugins if needed
-      if (showLineNumbers) {
-        import("prismjs/plugins/line-numbers/prism-line-numbers")
-      }
-
-      // Highlight the code
-      const highlighted = Prism.default.highlight(
-        code,
-        Prism.default.languages[language.toLowerCase()] || Prism.default.languages.javascript,
-        language.toLowerCase()
-      )
-      setHighlightedCode(highlighted)
-    })
-  }, [code, language, showLineNumbers])
-
+    // Highlight the code
+    const highlighted = Prism.highlight(
+      code,
+      Prism.languages[language.toLowerCase()] || Prism.languages.javascript,
+      language.toLowerCase()
+    )
+    setHighlightedCode(highlighted)
+  }, [code, language])
 
   return (
     <div className={cn("relative bg-bg-card overflow-hidden", className)}>
