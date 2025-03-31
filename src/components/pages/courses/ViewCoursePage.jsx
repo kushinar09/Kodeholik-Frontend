@@ -255,9 +255,9 @@ export default function CoursePage() {
                     <div className="p-4 flex flex-col flex-1 gap-3">
                       <div className="flex gap-2">
                         <Avatar className="cursor-pointer bg-white size-6 border-2 border-primary hover:border-primary/80 transition-colors">
-                          <AvatarImage src={course.createdBy.avatar} alt={course.createdBy.fullname || "User"} />
+                          <AvatarImage src={course.createdBy?.avatar} alt={course.createdBy?.fullname || "User"} />
                           <AvatarFallback className="bg-primary/10 text-bg-card font-semibold">
-                            {course.createdBy.username ? course.createdBy.username
+                            {course.createdBy?.username ? course.createdBy?.username
                               .split(" ")
                               .map((part) => part[0])
                               .join("")
@@ -265,7 +265,7 @@ export default function CoursePage() {
                               .substring(0, 2) : "U"}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="font-medium text-sm">{course.createdBy.username}</span>
+                        <span className="font-medium text-sm">{course.createdBy?.username}</span>
                       </div>
                       <h3 className="font-bold line-clamp-2">{course.title}</h3>
                       {course.topics && course.topics.length > 0 &&

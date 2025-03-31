@@ -8,25 +8,13 @@ import { useState, useEffect } from "react"
 import { getSubmissionDetail } from "@/lib/api/problem_api"
 import { useAuth } from "@/providers/AuthProvider"
 
-/**
- * Panel for code editing and submission view
- * @param {Object} props - Component props
- * @param {boolean} props.isSubmittedActive - Whether submission view is active
- * @param {Function} props.setIsSubmittedActive - Function to toggle submission view
- * @param {boolean} props.isCompact - Whether the panel is in compact mode
- * @param {string} props.code - Current code
- * @param {Function} props.onCodeChange - Code change handler
- * @param {Object} props.submitted - Submission results
- * @param {boolean} props.showSubmitted - Whether to show submission results
- * @param {string} props.language - Initial programming language
- * @param {Function} props.onLanguageChange - Language change handler
- * @param {Array} props.availableLanguages - List of available languages
- */
 export default function CodePanel({
   isSubmittedActive,
   setIsSubmittedActive,
   isCompact,
   code,
+  currentCode,
+  staticCode,
   onCodeChange,
   submitted,
   setSubmitted,
@@ -36,16 +24,13 @@ export default function CodePanel({
   setActiveTab,
   selectedSubmissionId,
   problemLink,
-  language = "Java",
+  language = "",
   onLanguageChange,
-  availableLanguages = [
-    { value: "Java", label: "Java" },
-    { value: "C", label: "C" }
-  ]
+  availableLanguages = []
 }) {
   const [selectedLanguage, setSelectedLanguage] = useState(language)
 
-  const { apiCall } = useAuth();
+  const { apiCall } = useAuth()
 
   useEffect(() => {
     setSelectedLanguage(language)
@@ -53,27 +38,26 @@ export default function CodePanel({
 
   const fetchSubmissionDetail = async (submissionId) => {
     try {
-      const response = await getSubmissionDetail(apiCall, submissionId);
-      setSubmitted(response.data);
-      console.log(response);
+      const response = await getSubmissionDetail(apiCall, submissionId)
+      setSubmitted(response.data)
+      console.log(response)
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
   }
 
   useEffect(() => {
     if (activeTab == "Submissions") {
       if (selectedSubmissionId != null) {
-        fetchSubmissionDetail(selectedSubmissionId);
-        setIsSubmittedActive(true);
-        setShowSubmitted(true);
+        fetchSubmissionDetail(selectedSubmissionId)
+        setIsSubmittedActive(true)
+        setShowSubmitted(true)
       }
     }
     else {
-      setIsSubmittedActive(false);
-      setShowSubmitted(false);
+      setIsSubmittedActive(false)
+      setShowSubmitted(false)
     }
-    console.log(selectedSubmissionId)
   }, [selectedSubmissionId, activeTab])
 
   const handleLanguageChange = (value) => {
@@ -153,8 +137,8 @@ export default function CodePanel({
           </div>
         )}
       </div>
-      <div className={cn("overflow-auto flex-1", isCompact ? "justify-center hidden" : "")}>
-        <div className="min-w-[420px] h-full">
+      <div className={cn("overflow-hidden flex-1", isCompact ? "justify-center hidden" : "")}>
+        <div className="min-w-[420px] h-full flex flex-col">
           {!isSubmittedActive && code && (
             <>
               <div className={cn("m-1", isCompact ? "w-full mt-4" : "flex-shrink-0")}>
@@ -166,14 +150,14 @@ export default function CodePanel({
                   </SelectTrigger>
                   <SelectContent>
                     {availableLanguages.map((lang) => (
-                      <SelectItem key={lang.value} value={lang.value}>
-                        {lang.label}
+                      <SelectItem key={lang} value={lang}>
+                        {lang}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <CodeEditor initialCode={code} onChange={onCodeChange} language={selectedLanguage} />
+              <CodeEditor className="flex-1" staticCode={staticCode} initialCode={currentCode || code || ""} onChange={onCodeChange} language={selectedLanguage} />
             </>
           )}
           {isSubmittedActive && submitted && activeTab != "Submissions" && <SubmittedCodeView submitted={submitted} code={code} setActiveTab={setActiveTab} problemLink={problemLink} selectedSubmissionId={selectedSubmissionId}/>}

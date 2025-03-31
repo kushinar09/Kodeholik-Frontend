@@ -12,16 +12,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useNavigate } from "react-router-dom"
 import { CodeHighlighter } from "@/components/common/editor-code/code-highlighter"
 
-/**
- * Component to display submitted code and results
- * @param {Object} props - Component props
- * @param {Object} props.submitted - Submission results
- * @param {string} props.code - Submitted code
- */
-export default function SubmittedCodeView({ submitted, code, setActiveTab, problemLink, selectedSubmissionId }) {
+export default function SubmittedCodeView({ submitted, setActiveTab, problemLink, selectedSubmissionId }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   // useEffect(() => {
   //   document.querySelectorAll("pre code").forEach((block) => {
@@ -35,12 +29,13 @@ export default function SubmittedCodeView({ submitted, code, setActiveTab, probl
   }, [])
 
   const handleCopyClipBoard = async () => {
-    const success = await copyToClipboard(code)
+    const success = await copyToClipboard(submitted.code)
     setCopied(success)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 space-y-4">
+    <div className="w-full p-4 space-y-4 overflow-y-auto no-scrollbar">
       {/* Status Bar */}
       <div className="flex justify-between">
         <div className="flex items-center justify-between">
@@ -239,10 +234,10 @@ export default function SubmittedCodeView({ submitted, code, setActiveTab, probl
           </div> */}
           <CodeHighlighter
             className={cn("overflow-hidden transition-all duration-300", isExpanded ? "h-auto" : "max-h-[230px]")}
-            code={code}
+            code={submitted.code}
             language={submitted.languageName}
           />
-          {code && code.split("\n").length > 10 && (
+          {submitted.code && submitted.code.split("\n").length > 10 && (
             <div className="border-t border-border p-2 text-center">
               <Button
                 variant="ghost"

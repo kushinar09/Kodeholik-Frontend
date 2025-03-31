@@ -9,7 +9,13 @@ export async function runCode(apiCall, id, code, languageName) {
       body: JSON.stringify({ code, languageName })
     }, true)
 
-    return response.json()
+    const data = await response.json()
+
+    if (response.ok) {
+      return { status: true, data: data }
+    }
+
+    return { status: false, data: data }
   } catch (error) {
     throw new Error(error.message)
   }
@@ -23,7 +29,13 @@ export async function submitCode(apiCall, id, code, languageName) {
       body: JSON.stringify({ code, languageName })
     }, true)
 
-    return response.json()
+    const data = await response.json()
+
+    if (response.ok) {
+      return { status: true, data: data }
+    }
+
+    return { status: false, data: data }
   } catch (error) {
     throw new Error(error.message)
   }

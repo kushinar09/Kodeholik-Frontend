@@ -24,30 +24,18 @@ export function CodeHighlighter({ code, language = "javascript", showLineNumbers
   const [highlightedCode, setHighlightedCode] = useState("")
 
   useEffect(() => {
-    // Dynamically import Prism to avoid SSR issues
-    import("prismjs").then((Prism) => {
-      // Import the core
-      import("prismjs/components/prism-core")
-
-      // Import additional plugins if needed
-      if (showLineNumbers) {
-        import("prismjs/plugins/line-numbers/prism-line-numbers")
-      }
-
-      // Highlight the code
-      const highlighted = Prism.default.highlight(
-        code,
-        Prism.default.languages[language.toLowerCase()] || Prism.default.languages.javascript,
-        language.toLowerCase()
-      )
-      setHighlightedCode(highlighted)
-    })
-  }, [code, language, showLineNumbers])
-
+    // Highlight the code
+    const highlighted = Prism.highlight(
+      code,
+      Prism.languages[language.toLowerCase()] || Prism.languages.javascript,
+      language.toLowerCase()
+    )
+    setHighlightedCode(highlighted)
+  }, [code, language])
 
   return (
-    <div className={cn("relative overflow-hidden bg-bg-card", className)}>
-      <pre className={cn("p-4 overflow-x-auto text-sm", showLineNumbers && "line-numbers")}>
+    <div className={cn("relative bg-bg-card overflow-hidden", className)}>
+      <pre className={cn("!m-0 !rounded-none p-4 overflow-x-auto text-sm", showLineNumbers && "line-numbers")}>
         <code className={`language-${language.toLowerCase()} font-code`} dangerouslySetInnerHTML={{ __html: highlightedCode }} />
       </pre>
     </div>
