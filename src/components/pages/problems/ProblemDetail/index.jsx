@@ -31,6 +31,7 @@ import { debounce } from "lodash"
 // import LoadingScreen from "@/components/common/shared/other/loading"
 import ShareSolution from "../ShareSolution"
 import { toast } from "sonner"
+import { GLOBALS } from "@/lib/constants"
 
 export default function ProblemDetail() {
   const { id } = useParams()
@@ -94,7 +95,6 @@ export default function ProblemDetail() {
   const [currentSolution, setCurrentSolution] = useState(null)
 
   useEffect(() => {
-    console.log(selectedSubmissionId)
     fetchProblemSubmission()
   }, [selectedSubmissionId])
   // Language
@@ -281,6 +281,10 @@ export default function ProblemDetail() {
     }
   }
 
+  useEffect(() => {
+    document.title = `${description?.title} - ${GLOBALS.APPLICATION_NAME}`
+  }, [description])
+
   // Initial data loading
   useEffect(() => {
     fetchProblemDescription()
@@ -312,7 +316,6 @@ export default function ProblemDetail() {
   }
 
   const handleTabChange = (tabId, tabLabel) => {
-    console.log(tabLabel)
     fetchData(tabLabel)
     setActiveTab(tabId)
   }

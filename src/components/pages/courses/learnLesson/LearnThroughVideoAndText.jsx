@@ -27,6 +27,7 @@ import FooterSection from "@/components/common/shared/footer"
 import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 import CourseDiscussion from "@/components/pages/courses/CourseDetail/components/CourseDiscussion"
 import HeaderSection from "@/components/common/shared/header"
+import { useAuth } from "@/providers/AuthProvider"
 
 export default function LearnThroughVideoAndText() {
   const { id } = useParams()
@@ -42,16 +43,14 @@ export default function LearnThroughVideoAndText() {
   const [activeAccordion, setActiveAccordion] = useState("")
   const [showChat, setShowChat] = useState(false)
   const navigate = useNavigate()
+  const { apiCall } = useAuth()
 
   // useEffect for course registration IN/OUT with debugging logs
   useEffect(() => {
-    console.log(`[Registration] Component mounted for course ID: ${id}`)
 
     const registerIn = async () => {
-      console.log(`[Registration] Triggering courseRegisterIn for course ID: ${id}`)
       try {
-        const result = await courseRegisterIn(id)
-        console.log("[Registration] courseRegisterIn completed successfully:", result)
+        await courseRegisterIn(apiCall, id)
       } catch (err) {
         console.error("[Registration] courseRegisterIn failed:", err)
       }
@@ -64,27 +63,20 @@ export default function LearnThroughVideoAndText() {
     }
 
     const registerOut = async () => {
-      console.log(`[Registration] Triggering courseRegisterOUT for course ID: ${id}`)
       try {
-        const result = await courseRegisterOUT(id)
-        console.log("[Registration] courseRegisterOUT completed successfully:", result)
+        await courseRegisterOUT(apiCall, id)
       } catch (err) {
         console.error("[Registration] courseRegisterOUT failed:", err)
       }
     }
 
-    // Add event listener for page unload
-    console.log("[Registration] Adding beforeunload event listener")
     window.addEventListener("beforeunload", () => {
-      console.log("[Registration] beforeunload event triggered")
       registerOut()
     })
 
     // Cleanup function for navigation or unmount
     return () => {
-      console.log(`[Registration] Component unmounting or navigating away for course ID: ${id}`)
       registerOut()
-      console.log("[Registration] Removing beforeunload event listener")
       window.removeEventListener("beforeunload", registerOut)
     }
   }, [id])
@@ -100,8 +92,7 @@ export default function LearnThroughVideoAndText() {
 
       try {
         setLoading(true)
-        const courseData = await getCourse(id)
-        console.log("Course Data:", courseData)
+        const courseData = await getCourse(apiCall, id)
         setCourse(courseData)
         setChapters(courseData.chapters || [])
 
@@ -111,7 +102,6 @@ export default function LearnThroughVideoAndText() {
           setActiveAccordion(`chapter-${firstChapter.id}`)
 
           if (firstChapter.lessons && firstChapter.lessons.length > 0) {
-            console.log("First Lesson:", firstChapter.lessons[0])
             await handleLessonSelect(firstChapter.lessons[0], firstChapter)
           }
         }
@@ -145,24 +135,20 @@ export default function LearnThroughVideoAndText() {
     setResourceError(null)
 
     try {
-      console.log("Selected Lesson Before Fetch:", lesson)
-      const lessonDetails = await getLessonById(lesson.id)
-      console.log("Lesson Details After Fetch:", lessonDetails)
-      console.log("Video URL:", lessonDetails.videoUrl)
+      const lessonDetails = await getLessonById(apiCall, lesson.id)
+      setSelectedLesson((prevLesson) => ({
+        ...prevLesson,
+        ...lessonDetails
+      }))
 
       if (lessonDetails.type === "VIDEO" && lessonDetails.videoUrl) {
         if (lessonDetails.videoUrl.match(/^[a-zA-Z0-9_-]{11}$/)) {
-          console.log("Setting YouTube ID:", lessonDetails.videoUrl)
           setVideoUrl(lessonDetails.videoUrl)
         } else if (lessonDetails.videoUrl.startsWith("http")) {
-          console.log("Setting Direct URL:", lessonDetails.videoUrl)
           setVideoUrl(lessonDetails.videoUrl)
         } else {
-          console.log("Invalid video URL (relative path):", lessonDetails.videoUrl)
           setResourceError("Invalid video URL provided for this lesson")
         }
-      } else if (lessonDetails.type === "DOCUMENT" && lessonDetails.attachedFile) {
-        console.log("Document Lesson Detected")
       } else if (lessonDetails.type === "VIDEO" && !lessonDetails.videoUrl) {
         setResourceError("No video URL provided for this lesson")
       }
@@ -177,8 +163,7 @@ export default function LearnThroughVideoAndText() {
     if (!selectedLesson || !selectedLesson.attachedFile) return
 
     try {
-      const fileUrl = await downloadFileLesson(selectedLesson.attachedFile)
-      console.log("Download URL:", fileUrl)
+      const fileUrl = await downloadFileLesson(apiCall, selectedLesson.attachedFile)
       const link = document.createElement("a")
       link.href = fileUrl
       link.download = selectedLesson.attachedFile.replace("lessons/", "") || "document"
@@ -210,7 +195,7 @@ export default function LearnThroughVideoAndText() {
         }))
       )
 
-      const updatedCourse = await getCourse(id)
+      const updatedCourse = await getCourse(apiCall, id)
       const apiProgress = updatedCourse.progress
       if (apiProgress !== null && apiProgress !== undefined) {
         setProgress(apiProgress)
@@ -341,12 +326,24 @@ export default function LearnThroughVideoAndText() {
   const nextLesson = findNextLesson()
   const prevLesson = findPreviousLesson()
 
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty.toUpperCase()) {
+    case "EASY":
+      return "bg-green-500 hover:bg-green-600"
+    case "MEDIUM":
+      return "bg-yellow-500 hover:bg-yellow-600"
+    case "HARD":
+      return "bg-red-500 hover:bg-red-600"
+    default:
+      return "bg-gray-500 hover:bg-gray-600"
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-bg-primary from-gray-900 to-gray-950 text-white">
-      <HeaderSection currentActive="courses"/>
+    <div className="min-h-screen bg-bg-primary text-white">
+      <HeaderSection currentActive="courses" />
       <div className="mx-36">
         <div className="mb-8 top-0 z-10 bg-bg-primary">
-          <div className="absolute inset-x-0 -bottom-4 h-4 bg-gradient-to-b from-primary-bg to-transparent pointer-events-none" />
           <Button
             variant="ghost"
             className="my-3 text-primary hover:bg-primary transition group"
@@ -357,7 +354,7 @@ export default function LearnThroughVideoAndText() {
           </Button>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-bg-card/50">
+              <h1 className="text-3xl font-bold bg-clip-text text-text-primary to-bg-card/50">
                 {course?.title || "Course"}
               </h1>
               <div className="w-full md:w-96 mt-2">
@@ -437,20 +434,24 @@ export default function LearnThroughVideoAndText() {
                     </div>
                   </div>
 
+                  {selectedLesson.problems && selectedLesson.problems.length > 0 &&
+                    <div className="space-y-4">
+                      <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                        {selectedLesson.problems.map((problem) => (
+                          <a href={`/problem/${problem.problemLink}`} target="_blank" key={problem.problemLink} className="block">
+                            <Button variant="outline" className="w-full justify-between h-auto p-2 text-left text-bg-card">
+                              <span className="font-medium">{problem.title}</span>
+                              <Badge className={getDifficultyColor(problem.difficulty)}>{problem.difficulty}</Badge>
+                            </Button>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  }
+
                   {selectedLesson.description && (
                     <div className="prose prose-invert max-w-none mt-4 text-gray-300">
                       <RenderMarkdown content={selectedLesson.description} />
-                    </div>
-                  )}
-
-                  {selectedLesson.problems && selectedLesson.problems.length > 0 && (
-                    <div className="mt-6">
-                      <h3 className="text-lg font-semibold mb-2">Problems</h3>
-                      <div className="space-y-2">
-                        {selectedLesson.problems.map((problem) => (
-                          <LessonProblemButton key={problem.id} problem={problem} />
-                        ))}
-                      </div>
                     </div>
                   )}
 

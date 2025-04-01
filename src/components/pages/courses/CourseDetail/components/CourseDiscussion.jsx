@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardFooter, CardHeader } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { formatDistanceToNow } from "date-fns"
+import { useAuth } from "@/providers/AuthProvider"
 
 export default function CourseDiscussion({ courseId, title = "Course Discussion", onClose }) {
   const params = useParams()
@@ -30,6 +31,8 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
   const [sortBy, setSortBy] = useState("noUpvote")
   const [sortDirection, setSortDirection] = useState("desc")
 
+  const { apiCall } = useAuth()
+
   useEffect(() => {
     document.title = `${title} - ${GLOBALS.APPLICATION_NAME}`
   }, [title])
@@ -42,11 +45,11 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
     if (!id) return
     try {
       setLoading(true)
-      const courseData = await getCourse(id)
+      const courseData = await getCourse(apiCall, id)
       setCourse(courseData)
-      const discussionData = await getCourseDiscussion(id, { page, size: 5, sortBy, sortDirection })
+      const discussionData = await getCourseDiscussion(apiCall, id, { page, size: 5, sortBy, sortDirection })
       const replyPromises = discussionData.content.map(comment =>
-        getDiscussionReply(comment.id).catch(() => [])
+        getDiscussionReply(apiCall, comment.id).catch(() => [])
       )
       const repliesData = await Promise.all(replyPromises)
       const allReplies = repliesData.flat()
@@ -149,9 +152,9 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
       )
 
       if (!message.liked) {
-        await upvoteDiscussion(messageId)
+        await upvoteDiscussion(apiCall, messageId)
       } else {
-        await unUpvoteDiscussion(messageId)
+        await unUpvoteDiscussion(apiCall, messageId)
       }
     } catch (error) {
       setMessages(prevMessages =>

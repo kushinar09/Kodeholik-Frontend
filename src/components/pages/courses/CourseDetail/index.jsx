@@ -20,7 +20,7 @@ export default function CourseDetailPage() {
   const [showChat, setShowChat] = useState(false)
   const { id } = useParams()
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuth() // Get authentication status
+  const { isAuthenticated, apiCall } = useAuth() // Get authentication status
   const [course, setCourse] = useState(null)
   const [chapters, setChapters] = useState([])
   const [expandedChapters, setExpandedChapters] = useState({})
@@ -42,7 +42,7 @@ export default function CourseDetailPage() {
         setLoading(true)
 
         // Fetch course data (always needed, even if not logged in)
-        const courseData = await getCourse(id)
+        const courseData = await getCourse(apiCall, id)
         if (!courseData) {
           throw new Error("Course not found")
         }
@@ -52,7 +52,7 @@ export default function CourseDetailPage() {
         // Only check enrollment if authenticated
         if (isAuthenticated) {
           try {
-            const enrolled = await checkEnrollCourse(id)
+            const enrolled = await checkEnrollCourse(apiCall, id)
             setIsEnrolled(enrolled)
           } catch (enrollError) {
             console.warn("Failed to check enrollment:", enrollError.message)
@@ -75,8 +75,8 @@ export default function CourseDetailPage() {
   const handleEnroll = async () => {
     setProcessing(true)
     try {
-      await enrollCourse(id)
-      const updatedCourse = await getCourse(id)
+      await enrollCourse(apiCall,id)
+      const updatedCourse = await getCourse(apiCall, id)
       setCourse(updatedCourse)
       setChapters(updatedCourse.chapters || [])
       setIsEnrolled(true)
@@ -102,8 +102,8 @@ export default function CourseDetailPage() {
   const handleUnenroll = async () => {
     setProcessing(true)
     try {
-      await unEnrollCourse(id)
-      const updatedCourse = await getCourse(id)
+      await unEnrollCourse(apiCall, id)
+      const updatedCourse = await getCourse(apiCall, id)
       setCourse(updatedCourse)
       setChapters(updatedCourse.chapters || [])
       setIsEnrolled(false)

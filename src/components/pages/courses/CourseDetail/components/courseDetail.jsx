@@ -160,6 +160,7 @@ export default function CourseDetail({
   }
 
   const formatLastUpdated = (updatedAt) => {
+    console.log(updatedAt)
     if (!updatedAt) return "Unknown"
     const [datePart, timePart] = updatedAt.split(", ")
     const [day, month, year] = datePart.split("/").map(Number)
@@ -171,8 +172,8 @@ export default function CourseDetail({
 
     if (diffDays === 0) return "Today"
     if (diffDays === 1) return "Yesterday"
-    if (diffDays < 7) return `${diffDays} days ago`
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
+    if (diffDays < 7 && diffDays > 0) return `${diffDays} days ago`
+    if (diffDays < 30 && diffDays > 0) return `${Math.floor(diffDays / 7)} weeks ago`
     return updatedDate.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })
   }
 
@@ -231,11 +232,10 @@ export default function CourseDetail({
                       </ScrollArea>
                       {descriptionOverflows && (
                         <div
-                          className={`${
-                            !showFullDescription
-                              ? "absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-gray-900/90 to-transparent flex items-end justify-center pb-2"
-                              : "mt-4 text-center"
-                          }`}
+                          className={`${!showFullDescription
+                            ? "absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-gray-900/90 to-transparent flex items-end justify-center pb-2"
+                            : "mt-4 text-center"
+                            }`}
                         >
                           <Button
                             variant="ghost"
@@ -256,7 +256,7 @@ export default function CourseDetail({
 
               {/* Show progress only if authenticated and enrolled */}
               {isAuthenticated && isEnrolled && (
-                <Card className="bg-gray-900/50 border-gray-700/50 mb-6">
+                <Card className="bg-gray-900/50 border-gray-700/50 mt-2">
                   <CardHeader className="pb-2">
                     <h3 className="text-lg font-semibold text-white flex items-center">
                       <CheckCircle className="h-5 w-5 mr-2 text-primary" /> Your Progress
@@ -384,10 +384,9 @@ export default function CourseDetail({
                                 </DialogHeader>
                                 <DialogFooter className="flex justify-end gap-2 mt-6">
                                   <Button
-                                    variant="outline"
                                     onClick={() => setOpen(false)}
                                     disabled={processing}
-                                    className="border-gray-600 hover:bg-gray-700 hover:text-primary"
+                                    className="bg-primary text-black hover:bg-primary/90"
                                   >
                                     Cancel
                                   </Button>

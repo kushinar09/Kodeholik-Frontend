@@ -47,7 +47,6 @@ const ENDPOINTS = {
   ROTATE_TOKEN: `${API_URL}/auth/rotate-token`,
   POST_LOGOUT: `${API_URL}/auth/logout`,
   PUT_CHANGE_PASSWORD: `${API_URL}/auth/change-password`,
-
   POST_FORGOT_PASSWORD: `${API_URL}/auth/reset-password-init?username=:gmail`,
   GET_CHECK_RESET_TOKEN: `${API_URL}/auth/reset-password-check?token=:token`,
   POST_RESET_PASSWORD: `${API_URL}/auth/reset-password-finish?token=:token`,
@@ -58,22 +57,15 @@ const ENDPOINTS = {
   GET_PROBLEM_EDITORIAL: `${API_URL}/problem/editorial/:id`,
   GET_PROBLEM_INIT_CODE: `${API_URL}/problem/compile-information/:id`,
   GET_PROBLEM_LANGUAGES_SUPPORT: `${API_URL}/problem/language-support/:id`,
-
   GET_PROBLEM_COMMENTS: `${API_URL}/comment/problem/:id`,
   POST_COMMENT: `${API_URL}/comment/post`,
   GET_COMMENTS_REPLY: `${API_URL}/comment/list-reply/`,
   UPVOTE_COMMENT: `${API_URL}/comment/upvote/`,
   UNUPVOTE_COMMENT: `${API_URL}/comment/unupvote/`,
   EDIT_COMMENT: `${API_URL}/comment/edit/`,
-
   GET_PROBLEM_SOLUTIONS: `${API_URL}/problem-solution/list/:id`,
   GET_PROBLEM_SUBMISSIONS: `${API_URL}/problem-submission/list/:id`,
   GET_SUBMISSION_DETAIL: `${API_URL}/problem-submission/detail/`,
-  GET_SEARCH_PROBLEM: `${API_URL}/problem/search`,
-  POST_CREATE_PROBLEM: `${API_URL}/problem/add-problem`,
-  POST_UPDATE_PROBLEM: `${API_URL}/problem/update/:id`,
-  POST_DELETE_PROBLEM: `${API_URL}/problem/delete/:id`,
-
   GET_TOPICS_PROBLEM: `${API_URL}/tag/all-topic`,
   GET_SKILLS_PROBLEM: `${API_URL}/tag/all-skill`,
   GET_STATS_PROBLEM: `${API_URL}/problem/no-achieved-info`,
@@ -85,6 +77,7 @@ const ENDPOINTS = {
   UPVOTE_SOLUTION: `${API_URL}/problem-solution/upvote/`,
   UNUPVOTE_SOLUTION: `${API_URL}/problem-solution/unupvote/`,
   EDIT_SOLUTION: `${API_URL}/problem-solution/edit-solution/`,
+
   // Submissions
   GET_SUCCESS_SUBMISSION: `${API_URL}/problem-submission/success-list/`,
 
@@ -93,11 +86,7 @@ const ENDPOINTS = {
 
   // courses
   GET_COURSES_LIST: `${API_URL}/course/search`,
-  GET_COURSES: `${API_URL}/course/list`,
   GET_COURSE: `${API_URL}/course/detail/:id`,
-  CREATE_COURSE: `${API_URL}/course/add`,
-  UPDATE_COURSE: `${API_URL}/course/update/:id`,
-  DELETE_COURSE: `${API_URL}/course/delete/:id`,
   ENROLL_COURSE: `${API_URL}/course/enroll/:id`,
   UNENROLL_COURSE: `${API_URL}/course/unenroll/:id`,
   RATE_COMMENT_COURSE: `${API_URL}/course/rate`,
@@ -106,26 +95,15 @@ const ENDPOINTS = {
   GET_TOP_COURSES: `${API_URL}/course/top-popular`,
   COURSE_REGISTER_IN: `${API_URL}/course/register-start/:id`,
   COURSE_REGISTER_OUT: `${API_URL}/course/register-end/:id`,
-
   GET_COURSE_DISCUSSION: `${API_URL}/course/discussion/:id`,
   GET_DISCUSSION_REPLY: `${API_URL}/course/list-reply/:id`,
   POST_COURSE_DISCUSSION: `${API_URL}/course/comment`,
   UPVOTE_COURSE_DISCUSSION: `${API_URL}/comment/upvote/:id`,
   UN_UPVOTE_COURSE_DISCUSSION: `${API_URL}/comment/unupvote/:id`,
 
-  //Chapter
-  GET_CHAPTERS: `${API_URL}/chapter/list`,
-  GET_CHAPTER_BY_COURSE_ID: `${API_URL}/chapter/by-course/:id`,
-  GET_CHAPTER_DETAIL: `${API_URL}/chapter/detail/:id`,
-  CREATE_CHAPTER: `${API_URL}/chapter/add`,
-  UPDATE_CHAPTER: `${API_URL}/chapter/update/:id`,
-
   //Lesson
-  GET_LESSONS: `${API_URL}/lesson/list`,
-  GET_LESSON_BY_CHAPTERID: `${API_URL}/lesson/by-chapter/:id`,
   GET_LESSON_DETAIL: `${API_URL}/lesson/detail/:id`,
   CREATE_LESSON: `${API_URL}/lesson/add`,
-  UPDATE_LESSON: `${API_URL}/lesson/update/:id`,
   COMPLETED_LESSON: `${API_URL}/lesson/complete/:id`,
 
   //Topic
@@ -147,8 +125,6 @@ const ENDPOINTS = {
   GET_MY_FAVOURITE: `${API_URL}/problem/list-favourite`,
   TAG_FAVOURITE: `${API_URL}/problem/tag-favourite/`,
   UNTAG_FAVOURITE: `${API_URL}/problem/untag-favourite/`,
-  //video
-  GET_VIDEO_URL: `${API_URL}/:videoUrl/signed-url`,
 
   //DownloadFile lesson
   DOWNLOAD_FILE_LESSON: (fileKey) => `${API_URL}/lesson/download-file?key=${encodeURIComponent(fileKey)}`,

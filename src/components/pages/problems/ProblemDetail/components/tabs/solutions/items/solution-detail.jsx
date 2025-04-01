@@ -10,9 +10,9 @@ import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 import DiscussionSection from "../../description/problem-comments"
 import { Button } from "@/components/ui/button"
 import { unupvoteSolution, upvoteSolution } from "@/lib/api/problem_api"
-import { toast } from "@/hooks/use-toast"
 import { copyToClipboard } from "@/lib/utils/format-utils"
 import { CodeHighlighter } from "@/components/common/editor-code/code-highlighter"
+import { toast } from "sonner"
 
 export default function SolutionDetail({ solutionId, handleBack, setIsEditMode, setCurrentSolution }) {
   const [solution, setSolution] = useState(null)
@@ -50,10 +50,8 @@ export default function SolutionDetail({ solutionId, handleBack, setIsEditMode, 
       if (!solution.currentUserVoted) {
         const response = await upvoteSolution(apiCall, id)
         if (response.status) {
-          toast({
-            title: "Upvote Solution",
-            description: "Upvote solution successful",
-            variant: "default" // destructive
+          toast.success("Upvote Solution", {
+            description: "Upvote solution successful"
           })
           setSolution((prevSolution) => ({
             ...prevSolution, // Giữ nguyên các thuộc tính cũ
@@ -64,10 +62,8 @@ export default function SolutionDetail({ solutionId, handleBack, setIsEditMode, 
       } else {
         const response = await unupvoteSolution(apiCall, id)
         if (response.status) {
-          toast({
-            title: "Unupvote Solution",
-            description: "Unupvote solution successful",
-            variant: "default" // destructive
+          toast.success("Unupvote Solution", {
+            description: "Unupvote solution successful"
           })
           setSolution((prevSolution) => ({
             ...prevSolution, // Giữ nguyên các thuộc tính cũ
