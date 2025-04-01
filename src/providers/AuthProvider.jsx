@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }) => {
       const response = await fetch(ENDPOINTS.GET_INFOR, {
         credentials: "include",
         headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5174",
+          "Access-Control-Allow-Origin": "http://kodeholik.site",
           "Access-Control-Allow-Credentials": "true"
         }
       })
@@ -179,7 +179,7 @@ export const AuthProvider = ({ children }) => {
         method: "POST",
         credentials: "include",
         headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5174",
+          "Access-Control-Allow-Origin": "http://kodeholik.site",
           "Access-Control-Allow-Credentials": "true"
         }
       })
@@ -212,7 +212,7 @@ export const AuthProvider = ({ children }) => {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:5174",
+        "Access-Control-Allow-Origin": "http://kodeholik.site",
         "Access-Control-Allow-Credentials": "true"
       }
     })
@@ -275,7 +275,7 @@ export const AuthProvider = ({ children }) => {
     }
     options.headers = {
       ...(options.headers || {}),
-      "Access-Control-Allow-Origin": "http://localhost:5174",
+      "Access-Control-Allow-Origin": "http://kodeholik.site",
       "Access-Control-Allow-Credentials": "true"
     }
     options.credentials = "include"
@@ -411,7 +411,7 @@ export const AuthProvider = ({ children }) => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "http://localhost:5174",
+          "Access-Control-Allow-Origin": "http://kodeholik.site",
           "Access-Control-Allow-Credentials": "true"
         },
         body: JSON.stringify(credentials)
