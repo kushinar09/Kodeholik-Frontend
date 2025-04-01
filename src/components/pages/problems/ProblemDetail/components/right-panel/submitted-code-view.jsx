@@ -10,36 +10,32 @@ import { formatValue, copyToClipboard } from "@/lib/utils/format-utils"
 import hljs from "highlight.js"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useNavigate } from "react-router-dom"
+import { CodeHighlighter } from "@/components/common/editor-code/code-highlighter"
 
-/**
- * Component to display submitted code and results
- * @param {Object} props - Component props
- * @param {Object} props.submitted - Submission results
- * @param {string} props.code - Submitted code
- */
-export default function SubmittedCodeView({ submitted, code, setActiveTab, problemLink, selectedSubmissionId}) {
+export default function SubmittedCodeView({ submitted, setActiveTab, problemLink, selectedSubmissionId }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  useEffect(() => {
-    document.querySelectorAll("pre code").forEach((block) => {
-      if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") == "yes"))
-        hljs.highlightBlock(block)
-    })
-  }, [])
+  // useEffect(() => {
+  //   document.querySelectorAll("pre code").forEach((block) => {
+  //     if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") == "yes"))
+  //       hljs.highlightElement(block)
+  //   })
+  // }, [])
 
   useEffect(() => {
     setCopied(false)
   }, [])
 
   const handleCopyClipBoard = async () => {
-    const success = await copyToClipboard(code)
+    const success = await copyToClipboard(submitted.code)
     setCopied(success)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 space-y-4">
+    <div className="w-full p-4 space-y-4 overflow-y-auto no-scrollbar">
       {/* Status Bar */}
       <div className="flex justify-between">
         <div className="flex items-center justify-between">
@@ -231,12 +227,17 @@ export default function SubmittedCodeView({ submitted, code, setActiveTab, probl
               </Button>
             </div>
           </div>
-          <div className={cn("overflow-hidden transition-all duration-300", isExpanded ? "h-auto" : "max-h-[230px]")}>
+          {/* <div className={cn("overflow-hidden transition-all duration-300", isExpanded ? "h-auto" : "max-h-[230px]")}>
             <pre className="text-sm">
               <code>{code}</code>
             </pre>
-          </div>
-          {code && code.split("\n").length > 10 && (
+          </div> */}
+          <CodeHighlighter
+            className={cn("overflow-hidden transition-all duration-300", isExpanded ? "h-auto" : "max-h-[230px]")}
+            code={submitted.code}
+            language={submitted.languageName}
+          />
+          {submitted.code && submitted.code.split("\n").length > 10 && (
             <div className="border-t border-border p-2 text-center">
               <Button
                 variant="ghost"

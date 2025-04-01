@@ -29,15 +29,17 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 
-// highlight.js
-import hljs from "highlight.js"
-import "highlight.js/styles/default.css"
+import Prism from "prismjs"
+import "prismjs/components/prism-java"
+// Import styles
+// import "@/components/common/editor-code/css/prism-darcula.css"
+import "@/components/common/editor-code/css/prism-atom-dark.css"
+
 import { getCookie, setCookie } from "@/lib/utils"
 import { toast } from "sonner"
 import { ENDPOINTS } from "@/lib/constants"
 import { useAuth } from "@/providers/AuthProvider"
 import RenderMarkdown from "./RenderMarkdown"
-
 
 // Cache for storing image URLs
 const imageUrlCache = new Map()
@@ -49,8 +51,8 @@ const MarkdownEditor = ({ canDelete = null, setCanDelete = null, value = "", onC
   const [imageAlt, setImageAlt] = useState("")
   const fileInputRef = useRef(null)
   const cursorPositionRef = useRef(null)
-  const [debouncedValue, setDebouncedValue] = useState(value);
-  const prevValueRef = useRef(value);
+  const [debouncedValue, setDebouncedValue] = useState(value)
+  const prevValueRef = useRef(value)
   const editorRef = useRef(null)
 
   const { apiCall } = useAuth()
@@ -95,10 +97,13 @@ const MarkdownEditor = ({ canDelete = null, setCanDelete = null, value = "", onC
 
   useEffect(() => {
     document.querySelectorAll("pre code").forEach((block) => {
-      if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") == "yes"))
-        hljs.highlightBlock(block)
+      if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") === "yes")) {
+        block.classList.add("language-java", "font-code")
+        Prism.highlightElement(block)
+        block.setAttribute("data-highlighted", "yes")
+      }
     })
-    if (onChange) onChange(markdownContent)
+
   }, [markdownContent])
 
   useEffect(() => {
@@ -110,27 +115,27 @@ const MarkdownEditor = ({ canDelete = null, setCanDelete = null, value = "", onC
   }, [markdownContent, cookieDraft])
 
   const lockProtectedText = (oldText, newText) => {
-    const lockedRegex = /LOCKED-CODE\s([\s\S]*?)\sLOCKED-CODE/g;
+    const lockedRegex = /LOCKED-CODE\s([\s\S]*?)\sLOCKED-CODE/g
 
     // Trích xuất danh sách các đoạn LOCKED-CODE trước và sau khi chỉnh sửa
-    const oldLockedMatches = [...oldText.matchAll(lockedRegex)].map(match => match[1].trim());
-    const newLockedMatches = [...newText.matchAll(lockedRegex)].map(match => match[1].trim());
+    const oldLockedMatches = [...oldText.matchAll(lockedRegex)].map(match => match[1].trim())
+    const newLockedMatches = [...newText.matchAll(lockedRegex)].map(match => match[1].trim())
     // Kiểm tra xem có đoạn nào bị xóa hoặc chỉnh sửa không
     for (let oldLocked of oldLockedMatches) {
       if (!newLockedMatches.includes(oldLocked)) {
-        return false; // Chặn thao tác nếu một đoạn LOCKED bị xóa hoặc sửa đổi
+        return false // Chặn thao tác nếu một đoạn LOCKED bị xóa hoặc sửa đổi
       }
     }
 
-    return true; // Cho phép thay đổi nếu vùng LOCKED không bị xóa hoặc chỉnh sửa
-  };
-  let previousContent = "";
+    return true // Cho phép thay đổi nếu vùng LOCKED không bị xóa hoặc chỉnh sửa
+  }
+  let previousContent = ""
 
-  const canDeleteRef = useRef(canDelete);
+  const canDeleteRef = useRef(canDelete)
 
   useEffect(() => {
-    canDeleteRef.current = canDelete;
-  }, [canDelete]);
+    canDeleteRef.current = canDelete
+  }, [canDelete])
 
   useEffect(() => {
     const state = EditorState.create({
@@ -140,17 +145,17 @@ const MarkdownEditor = ({ canDelete = null, setCanDelete = null, value = "", onC
         keymap.of([indentWithTab]),
         markdown(),
         EditorView.updateListener.of((update) => {
-          const newContent = update.state.doc.toString(); // Nội dung sau khi chỉnh sửa
+          const newContent = update.state.doc.toString() // Nội dung sau khi chỉnh sửa
           if (!canDeleteRef.current && !lockProtectedText(previousContent, newContent)) {
             // Nếu vi phạm vùng LOCKED, khôi phục nội dung cũ
             update.view.dispatch({
               changes: { from: 0, to: newContent.length, insert: previousContent }
-            });
+            })
           } else {
-            previousContent = newContent;
-            setMarkdownContent(newContent);
+            previousContent = newContent
+            setMarkdownContent(newContent)
             if (canDeleteRef.current) {
-              setCanDelete(false);
+              setCanDelete(false)
             }
           }
 
@@ -218,144 +223,144 @@ const MarkdownEditor = ({ canDelete = null, setCanDelete = null, value = "", onC
     let linkRegex
     let lines
     switch (syntax) {
-      case "**":
-        if (from === to) {
-          text = "Bold"
-        }
-        if (text.startsWith("**") && text.endsWith("**")) {
-          newText = text.slice(2, -2)
-        } else if (/^#+\s/.test(text)) {
-          let pre
-          let heading = text.replace(/^#+\s/, (match) => {
-            pre = match
-            return ""
-          })
-          if (heading.startsWith("**") && heading.endsWith("**")) {
-            heading = heading.slice(2, -2)
-            newText = pre + heading
-          } else {
-            newText = pre + `**${heading}**`
-          }
+    case "**":
+      if (from === to) {
+        text = "Bold"
+      }
+      if (text.startsWith("**") && text.endsWith("**")) {
+        newText = text.slice(2, -2)
+      } else if (/^#+\s/.test(text)) {
+        let pre
+        let heading = text.replace(/^#+\s/, (match) => {
+          pre = match
+          return ""
+        })
+        if (heading.startsWith("**") && heading.endsWith("**")) {
+          heading = heading.slice(2, -2)
+          newText = pre + heading
         } else {
-          newText = `**${text}**`
+          newText = pre + `**${heading}**`
         }
-        break
-      case "#":
-        if (from === to) {
-          text = "Heading"
+      } else {
+        newText = `**${text}**`
+      }
+      break
+    case "#":
+      if (from === to) {
+        text = "Heading"
+      }
+      if (text.startsWith("#")) {
+        newText = `#${text}`
+      } else {
+        newText = `# ${text}`
+        if (from > 0 && state.doc.sliceString(from - 1, from) !== "\n") {
+          newText = "\n" + newText
         }
-        if (text.startsWith("#")) {
-          newText = `#${text}`
+      }
+      break
+    case "*":
+      if (from === to) {
+        text = "Italic"
+      }
+      if (text.startsWith("*") && text.endsWith("*")) {
+        newText = text.slice(1, -1)
+      } else {
+        newText = `*${text}*`
+      }
+      break
+    case "`":
+      if (from === to) {
+        text = "code"
+      }
+      if (text.startsWith("`") && text.endsWith("`")) {
+        newText = text.slice(1, -1)
+      } else {
+        newText = `\`${text}\``
+      }
+      break
+    case "```":
+      if (from === to) {
+        text = "public static void main(String[] args) {\n  System.out.println(\"Hello, World!\");\n}"
+      }
+      if (text.startsWith("```\n") && text.endsWith("\n```")) {
+        newText = text.slice(4, -4)
+      } else {
+        newText = `\`\`\`\n${text}\n\`\`\``
+        if (from > 0 && state.doc.sliceString(from - 1, from) !== "\n") {
+          newText = "\n" + newText
+        }
+        newText = newText + "\n"
+      }
+      break
+    case "[]()":
+      if (from === to) {
+        text = "link"
+      }
+      linkRegex = /^\[(.+)\]$$(.+)$$$/
+      if (linkRegex.test(text)) {
+        newText = text.match(linkRegex)[1]
+      } else {
+        newText = `[${text}](url)`
+      }
+      break
+    case ">":
+      if (from === to) {
+        text = "Quote"
+      }
+      if (text.startsWith("> ")) {
+        newText = text.slice(2)
+      } else {
+        newText = `> ${text}`
+        if (from > 0 && state.doc.sliceString(from - 1, from) !== "\n") {
+          newText = "\n" + newText
+        }
+      }
+      break
+    case "1.":
+      lines = text.split("\n")
+      if (lines.length > 1) {
+        const numberMatch = lines[0].match(/^\d+\.\s/)
+        if (numberMatch) {
+          newText = lines.map((line) => line.replace(/^\d+\.\s/, "")).join("\n")
         } else {
-          newText = `# ${text}`
+          newText = lines.map((line, index) => `${index + 1}. ${line}`).join("\n")
           if (from > 0 && state.doc.sliceString(from - 1, from) !== "\n") {
             newText = "\n" + newText
           }
         }
-        break
-      case "*":
-        if (from === to) {
-          text = "Italic"
-        }
-        if (text.startsWith("*") && text.endsWith("*")) {
-          newText = text.slice(1, -1)
+      } else {
+        const numberMatch = text.match(/^\d+\.\s/)
+        if (numberMatch) {
+          newText = text.replace(/^\d+\.\s/, "")
         } else {
-          newText = `*${text}*`
-        }
-        break
-      case "`":
-        if (from === to) {
-          text = "code"
-        }
-        if (text.startsWith("`") && text.endsWith("`")) {
-          newText = text.slice(1, -1)
-        } else {
-          newText = `\`${text}\``
-        }
-        break
-      case "```":
-        if (from === to) {
-          text = "public static void main(String[] args) {\n  System.out.println(\"Hello, World!\");\n}"
-        }
-        if (text.startsWith("```\n") && text.endsWith("\n```")) {
-          newText = text.slice(4, -4)
-        } else {
-          newText = `\`\`\`\n${text}\n\`\`\``
-          if (from > 0 && state.doc.sliceString(from - 1, from) !== "\n") {
-            newText = "\n" + newText
-          }
-          newText = newText + "\n"
-        }
-        break
-      case "[]()":
-        if (from === to) {
-          text = "link"
-        }
-        linkRegex = /^\[(.+)\]$$(.+)$$$/
-        if (linkRegex.test(text)) {
-          newText = text.match(linkRegex)[1]
-        } else {
-          newText = `[${text}](url)`
-        }
-        break
-      case ">":
-        if (from === to) {
-          text = "Quote"
-        }
-        if (text.startsWith("> ")) {
-          newText = text.slice(2)
-        } else {
-          newText = `> ${text}`
+          newText = `1. ${text}`
           if (from > 0 && state.doc.sliceString(from - 1, from) !== "\n") {
             newText = "\n" + newText
           }
         }
-        break
-      case "1.":
-        lines = text.split("\n")
-        if (lines.length > 1) {
-          const numberMatch = lines[0].match(/^\d+\.\s/)
-          if (numberMatch) {
-            newText = lines.map((line) => line.replace(/^\d+\.\s/, "")).join("\n")
-          } else {
-            newText = lines.map((line, index) => `${index + 1}. ${line}`).join("\n")
-            if (from > 0 && state.doc.sliceString(from - 1, from) !== "\n") {
-              newText = "\n" + newText
-            }
-          }
-        } else {
-          const numberMatch = text.match(/^\d+\.\s/)
-          if (numberMatch) {
-            newText = text.replace(/^\d+\.\s/, "")
-          } else {
-            newText = `1. ${text}`
-            if (from > 0 && state.doc.sliceString(from - 1, from) !== "\n") {
-              newText = "\n" + newText
-            }
-          }
+      }
+      break
+    case "-":
+      if (text.startsWith("- ")) {
+        newText = text.slice(2)
+      } else {
+        newText = `- ${text}`
+        if (from > 0 && state.doc.sliceString(from - 1, from) !== "\n") {
+          newText = "\n" + newText
         }
-        break
-      case "-":
-        if (text.startsWith("- ")) {
-          newText = text.slice(2)
-        } else {
-          newText = `- ${text}`
-          if (from > 0 && state.doc.sliceString(from - 1, from) !== "\n") {
-            newText = "\n" + newText
-          }
-        }
-        break
-      case "---":
-        newText = "\n---\n"
-        break
-      case "![]()":
-        if (from === to) {
-          text = "Image description"
-        }
-        newText = `\n![${text}](url)\n`
-        break
-      default:
-        newText = text
+      }
+      break
+    case "---":
+      newText = "\n---\n"
+      break
+    case "![]()":
+      if (from === to) {
+        text = "Image description"
+      }
+      newText = `\n![${text}](url)\n`
+      break
+    default:
+      newText = text
     }
 
     const transaction = state.update({
@@ -480,35 +485,35 @@ const MarkdownEditor = ({ canDelete = null, setCanDelete = null, value = "", onC
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, 300); // Chỉ cập nhật sau 300ms
+      setDebouncedValue(value)
+    }, 300) // Chỉ cập nhật sau 300ms
 
-    return () => clearTimeout(handler);
-  }, [value]);
+    return () => clearTimeout(handler)
+  }, [value])
 
   useEffect(() => {
     if (debouncedValue !== prevValueRef.current) {
-      const currentContent = editorViewRef.current.state.doc.toString();
+      const currentContent = editorViewRef.current.state.doc.toString()
       if (debouncedValue !== currentContent) {
         const transaction = editorViewRef.current.state.update({
           changes: {
             from: 0,
             to: editorViewRef.current.state.doc.length,
-            insert: debouncedValue || "",
-          },
-        });
+            insert: debouncedValue || ""
+          }
+        })
 
-        editorViewRef.current.dispatch(transaction);
-        setMarkdownContent(debouncedValue || "");
+        editorViewRef.current.dispatch(transaction)
+        setMarkdownContent(debouncedValue || "")
       }
     }
 
-    prevValueRef.current = debouncedValue;
-  }, [debouncedValue]);
+    prevValueRef.current = debouncedValue
+  }, [debouncedValue])
 
 
   return (
-    <div className="flex flex-col bg-background h-full w-full">
+    <div className="flex flex-col bg-background min-h-full max-h-full w-full">
       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
 
       <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
@@ -690,7 +695,7 @@ const MarkdownEditor = ({ canDelete = null, setCanDelete = null, value = "", onC
       <div className="flex-1 grid grid-cols-2 divide-x min-h-0">
         <div id="editor" ref={editorRef} className="h-full w-full overflow-auto focus-within:ring-1 focus-within:ring-ring" />
         <div className="h-full overflow-auto">
-          <RenderMarkdown content={markdownContent} className="p-4"/>
+          <RenderMarkdown content={markdownContent} className="p-4" />
         </div>
       </div>
     </div>

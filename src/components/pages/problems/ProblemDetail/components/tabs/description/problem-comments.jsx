@@ -17,11 +17,11 @@ import { ENDPOINTS } from "@/lib/constants"
 import { useAuth } from "@/providers/AuthProvider"
 import { Separator } from "@/components/ui/separator"
 import { postComment } from "@/lib/api/problem_api"
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"
 import { editComment, unupvoteComment, upvoteComment } from "@/lib/api/comment_api"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
-export default function DiscussionSection({ id, locationId, type, activeTab}) {
+export default function DiscussionSection({ id, locationId, type, activeTab }) {
   const [isCollapsed, setIsCollapsed] = useState(true)
   const [comment, setComment] = useState("")
   const [comments, setComments] = useState([])
@@ -43,9 +43,9 @@ export default function DiscussionSection({ id, locationId, type, activeTab}) {
   const fetchComments = async () => {
     try {
       const response = await apiCall(
-        type == "PROBLEM" 
-        ? `${ENDPOINTS.GET_PROBLEM_COMMENTS.replace(":id", id)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
-        : `${ENDPOINTS.GET_SOLUTION_COMMENTS.replace(":id", locationId)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
+        type == "PROBLEM"
+          ? `${ENDPOINTS.GET_PROBLEM_COMMENTS.replace(":id", id)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
+          : `${ENDPOINTS.GET_SOLUTION_COMMENTS.replace(":id", locationId)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
       )
       if (!response.ok) throw new Error("Failed to fetch comments")
       const data = await response.json()
@@ -57,7 +57,7 @@ export default function DiscussionSection({ id, locationId, type, activeTab}) {
           }))
         }
       }
-      console.log(page);
+      console.log(page)
       setComments(data.content.filter(c => c.replyId === null))
       setTotalPages(data.totalPages)
       setTotalComments(data.totalElements)
@@ -67,7 +67,7 @@ export default function DiscussionSection({ id, locationId, type, activeTab}) {
   }
 
   useEffect(() => {
-    fetchComments();
+    fetchComments()
   }, [id, page, sortBy, ascending, activeTab])
 
   function toggleCollapsed() {
@@ -175,91 +175,91 @@ export default function DiscussionSection({ id, locationId, type, activeTab}) {
 
   const handleUpvoteUnupvoteComment = (comment) => {
     if (comment.voted) {
-      toggleUnupvoteComment(comment);
+      toggleUnupvoteComment(comment)
     }
     else {
-      toggleUpvoteComment(comment);
+      toggleUpvoteComment(comment)
     }
   }
 
   const toggleUpvoteComment = async (comment) => {
     try {
-      upvoteComment(apiCall, comment.id);
+      upvoteComment(apiCall, comment.id)
       setComments((prevList) =>
         prevList.map((item) =>
           item.id === comment.id ? { ...item, voted: !item.voted, noUpvote: item.noUpvote + 1 } : item
         )
-      );
+      )
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
   }
 
   const toggleUnupvoteComment = async (comment) => {
     try {
-      unupvoteComment(apiCall, comment.id);
+      unupvoteComment(apiCall, comment.id)
       setComments((prevList) =>
         prevList.map((item) =>
           item.id === comment.id ? { ...item, voted: !item.voted, noUpvote: item.noUpvote - 1 > 0 ? item.noUpvote - 1 : 0 } : item
         )
-      );
+      )
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
   }
 
   const updateUpvoted = (loadedReplies, comment) => {
-    const replyId = comment.replyId;
+    const replyId = comment.replyId
 
     if (loadedReplies[replyId]) {
       loadedReplies[replyId] = loadedReplies[replyId].map(reply =>
         reply.id === comment.id ? { ...reply, voted: true, noUpvote: reply.noUpvote + 1 } : reply
-      );
+      )
     }
 
-    return { ...loadedReplies }; // Trả về một object mới để React nhận diện thay đổi
-  };
+    return { ...loadedReplies } // Trả về một object mới để React nhận diện thay đổi
+  }
 
   const updateUnupvoted = (loadedReplies, comment) => {
-    const replyId = comment.replyId;
+    const replyId = comment.replyId
     if (loadedReplies[replyId]) {
       loadedReplies[replyId] = loadedReplies[replyId].map(reply =>
         reply.id === comment.id ? { ...reply, voted: false, noUpvote: reply.noUpvote - 1 > 0 ? reply.noUpvote - 1 : 0 } : reply
-      );
+      )
     }
 
-    return { ...loadedReplies }; // Trả về một object mới để React nhận diện thay đổi
-  };
+    return { ...loadedReplies } // Trả về một object mới để React nhận diện thay đổi
+  }
 
   const handleUpvoteUnupvoteReply = (comment) => {
     if (comment.voted) {
-      toggleUnupvoteReply(comment);
+      toggleUnupvoteReply(comment)
     }
     else {
-      toggleUpvoteReply(comment);
+      toggleUpvoteReply(comment)
     }
   }
 
   const toggleUpvoteReply = async (comment) => {
     try {
-      upvoteComment(apiCall, comment.id);
-      setLoadedReplies(updateUpvoted(loadedReplies, comment));
+      upvoteComment(apiCall, comment.id)
+      setLoadedReplies(updateUpvoted(loadedReplies, comment))
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
   }
 
   const toggleUnupvoteReply = async (comment) => {
     try {
-      unupvoteComment(apiCall, comment.id);
-      for (let i = 0; i < loadedReplies.length; i++) {
-        if (comment.replyId = loadedReplies[i]) {
+      unupvoteComment(apiCall, comment.id)
+      // for (let i = 0; i < loadedReplies.length; i++) {
+      //   if (comment.replyId = loadedReplies[i]) {
 
-        }
-      }
-      setLoadedReplies(updateUnupvoted(loadedReplies, comment));
+      //   }
+      // }
+      setLoadedReplies(updateUnupvoted(loadedReplies, comment))
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
   }
 
@@ -304,7 +304,7 @@ export default function DiscussionSection({ id, locationId, type, activeTab}) {
       if (response.status) {
         setTotalComments(totalComments + 1)
       }
-      newReply.id = response.data.id;
+      newReply.id = response.data.id
     } catch (error) {
       console.error("Error posting comment:", error)
     }
@@ -339,14 +339,12 @@ export default function DiscussionSection({ id, locationId, type, activeTab}) {
   const toggleEditComment = (id, status, newComment) => {
     if (status == "SAVE") {
       if (newComment === "") {
-        toast({
-          title: "Error",
-          description: "Please enter a comment",
-          variant: "destructive" // destructive
+        toast.error("Error", {
+          description: "Please enter a comment"
         })
       }
       else {
-        editNewComment(id, newComment);
+        editNewComment(id, newComment)
         setIsEditOpen((prev) => ({
           ...prev,
           [id]: status == "EDIT" ? true : false
@@ -363,19 +361,17 @@ export default function DiscussionSection({ id, locationId, type, activeTab}) {
 
   const editNewComment = async (id, comment) => {
     try {
-      await editComment(apiCall, id, comment);
-      toast({
-        title: "Edit Comment",
-        description: "Edit comment successful",
-        variant: "default" // destructive
+      await editComment(apiCall, id, comment)
+      toast.success("Edit Comment", {
+        description: "Edit comment successful"
       })
       setComments((prevList) =>
         prevList.map((item) =>
           item.id === id ? { ...item, comment: comment } : item
         )
-      );
+      )
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
   }
 
@@ -384,7 +380,7 @@ export default function DiscussionSection({ id, locationId, type, activeTab}) {
       prevList.map((item) =>
         item.id === id ? { ...item, comment: newComment } : item
       )
-    );
+    )
   }
 
   const setNewReply = (newComment, reply) => {
@@ -392,15 +388,15 @@ export default function DiscussionSection({ id, locationId, type, activeTab}) {
   }
 
   const updateReply = (loadedReplies, comment, newComment) => {
-    const replyId = comment.replyId;
+    const replyId = comment.replyId
     if (loadedReplies[replyId]) {
       loadedReplies[replyId] = loadedReplies[replyId].map(reply =>
         reply.id === comment.id ? { ...reply, comment: newComment } : reply
-      );
+      )
     }
 
-    return { ...loadedReplies }; // Trả về một object mới để React nhận diện thay đổi
-  };
+    return { ...loadedReplies } // Trả về một object mới để React nhận diện thay đổi
+  }
 
   if (isAuthenticated) {
     return (
@@ -410,336 +406,352 @@ export default function DiscussionSection({ id, locationId, type, activeTab}) {
             <MessageCircle className="w-5 h-5" />
             Discussion ({totalComments})
           </h2>
-          {totalComments > 0 && <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm">
             {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-          </Button>}
+          </Button>
         </div>
 
-        {<motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: !isCollapsed ? 1 : 0, height: !isCollapsed ? "auto" : 0 }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="overflow-hidden">
-          <div className="space-y-4">
-            <div>
-              <Textarea
-                placeholder="Type comment here"
-                className="min-h-[50px] resize-none border-0 bg-background ring-1"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-              />
-              <div className="flex flex-col items-end justify-center">
-                {!isAuthenticated && <p className="text-red-500 text-sm mt-2">Login to push comment</p>}
-                <Button
-                  onClick={UploadComment}
-                  className="bg-primary text-black font-semibold mt-4"
-                  disabled={!isAuthenticated || comment === ""}
-                  title={`${!isAuthenticated ? "Login to pust your comment" : "Comment"}`}
-                >
-                  Comment
-                </Button>
-              </div>
-            </div>
-
-            {comments.length > 4 &&
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Sort by:</span>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-[100px]">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="createdAt">Date</SelectItem>
-                    <SelectItem value="noUpvote">Upvotes</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button variant="ghost" onClick={() => setAscending(!ascending)}>
-                  {ascending ? "Ascending" : "Descending"}
-                </Button>
-              </div>
-            }
-
+        {
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: !isCollapsed ? 1 : 0, height: !isCollapsed ? "auto" : 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
             <div className="space-y-4">
-              {comments &&
-                comments.map((comment) => (
-                  <div key={comment.id} className="space-y-4">
-                    {/* Main comment */}
-                    <div className="flex gap-4">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-muted">
-                        <img
-                          src={comment.createdBy.avatar || "/placeholder.svg?height=40&width=40"}
-                          alt={comment.createdBy.username}
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      </div>
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            {user && user.username === comment.createdBy.username ? (
-                              <span className="font-bold">You</span>
-                            ) : (
-                              <span className="font-medium">{comment.createdBy.username}</span>
-                            )}
-                            <span className="text-sm text-muted-foreground">{comment.createdAt}</span>
-                          </div>
-                        </div>
-                        <div className="text-sm">
-                          <p>
-                            {isEditOpen[comment.id]
-                              ? <Textarea required
-                                style={{ width: "95%" }}
-                                placeholder="Type comment here"
-                                className="min-h-[50px] resize-none border-0 bg-background ring-1"
-                                value={comment.comment}
-                                onChange={(e) => setNewComment(e.target.value, comment.id)}
-                              />
-                              : comment.comment}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-4 pt-2">
-                          <div className="flex items-center gap-1">
-                            <Button onClick={() => handleUpvoteUnupvoteComment(comment)} variant="ghost" size="icon" className="h-8 w-8">
-                              {comment.voted ? <svg className="h-4 w-4 text-yellow-500" fill="currentColor" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>
-                                : <svg className="h-4 w-4 text-black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>}
-                            </Button>
-                            <span className="text-sm">{comment.noUpvote}</span>
-                          </div>
-                          {isAuthenticated &&
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-sm"
-                              onClick={() => toggleReplyBox(comment.id)}
-                            >
-                              <MessageSquare className="h-4 w-4 mr-1" />
-                              Reply
-                            </Button>
-                          }
-                          {comment.user && comment.canEdit && !isEditOpen[comment.id] && <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-sm"
-                            onClick={() => toggleEditComment(comment.id, "EDIT", comment.comment)}
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                          </Button>}
+              <div>
+                <div className="pt-4 px-2">
+                  <Textarea
+                    placeholder="Type comment here"
+                    className="min-h-[50px] resize-none border-0 bg-background ring-1"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col items-end justify-center">
+                  {!isAuthenticated && <p className="text-red-500 text-sm mt-2">Login to push comment</p>}
+                  <Button
+                    onClick={UploadComment}
+                    className="bg-primary text-black font-semibold mt-4"
+                    disabled={!isAuthenticated || comment === ""}
+                    title={`${!isAuthenticated ? "Login to pust your comment" : "Comment"}`}
+                  >
+                    Comment
+                  </Button>
+                </div>
+              </div>
 
-                          {comment.user && comment.canEdit && isEditOpen[comment.id] && <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-sm bg-green-500 text-white font-bold hover:bg-green-500 hover:text-white "
-                            onClick={() => toggleEditComment(comment.id, "SAVE", comment.comment)}
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Save
-                          </Button>}
-                          {comment.noReply > 0 && (
-                            <>
-                              <Separator orientation="vertical" />
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-sm text-muted-foreground hover:text-foreground hover:bg-transparent relative"
-                                onClick={() => {
-                                  toggleReplies(comment.id)
-                                }}
-                              >
-                                <div className="absolute -left-6 top-1/2 h-px w-6 bg-gray-200 dark:bg-gray-700" />
-                                {visibleReplies[comment.id] ? "Hide" : "Show"} {comment.noReply}{" "}
-                                {comment.noReply === 1 ? "reply" : "replies"}
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+              {comments.length > 4 &&
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Sort by:</span>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-[100px]">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="createdAt">Date</SelectItem>
+                      <SelectItem value="noUpvote">Upvotes</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="ghost" onClick={() => setAscending(!ascending)}>
+                    {ascending ? "Ascending" : "Descending"}
+                  </Button>
+                </div>
+              }
 
-                    {/* Reply box */}
-                    {replyBoxes[comment.id] && (
-                      <div className="ml-14 mt-2">
-                        <div className="flex gap-2">
-                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted overflow-hidden">
-                            <img
-                              src={user?.avatar || "/placeholder.svg?height=32&width=32"}
-                              alt="Your avatar"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <Textarea
-                              placeholder={`Reply to ${comment.createdBy.username}...`}
-                              className="min-h-[40px] resize-none text-sm p-2"
-                              value={replyTexts[comment.id] || ""}
-                              onChange={(e) => handleReplyTextChange(comment.id, e.target.value)}
-                            />
-                            <div className="flex justify-end mt-2">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => toggleReplyBox(comment.id)}
-                                className="mr-2"
-                              >
-                                Cancel
-                              </Button>
-                              <Button
-                                size="sm"
-                                onClick={() => submitReply(comment.id)}
-                                disabled={!isAuthenticated || !replyTexts[comment.id]?.trim()}
-                                className="bg-primary text-primary-foreground"
-                              >
-                                <Send className="h-3 w-3 mr-1" />
-                                Reply
-                              </Button>
+              <div className="space-y-4">
+                {comments &&
+                  comments.map((comment) => (
+                    <div key={comment.id} className="space-y-4">
+                      {/* Main comment */}
+                      <div className="flex gap-4">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-muted">
+                          <img
+                            src={comment.createdBy.avatar || "/placeholder.svg?height=40&width=40"}
+                            alt={comment.createdBy.username}
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              {user && user.username === comment.createdBy.username ? (
+                                <span className="font-bold">You</span>
+                              ) : (
+                                <span className="font-medium">{comment.createdBy.username}</span>
+                              )}
+                              <span className="text-sm text-muted-foreground">{comment.createdAt}</span>
+                              {comment.updatedAt && comment.updatedAt !== comment.createdAt &&
+                                <span className="text-sm text-muted-foreground">(edited)</span>
+                              }
                             </div>
                           </div>
+                          <div className="text-sm">
+                            <p>
+                              {isEditOpen[comment.id]
+                                ? <Textarea required
+                                  style={{ width: "95%" }}
+                                  placeholder="Type comment here"
+                                  className="min-h-[50px] resize-none border-0 bg-background ring-1"
+                                  value={comment.comment}
+                                  onChange={(e) => setNewComment(e.target.value, comment.id)}
+                                />
+                                : comment.comment}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-4 pt-2">
+                            <div className="flex items-center gap-1">
+                              <Button onClick={() => handleUpvoteUnupvoteComment(comment)} variant="ghost" size="icon" className="h-8 w-8">
+                                {comment.voted ? <svg className="h-4 w-4 text-yellow-500" fill="currentColor" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>
+                                  : <svg className="h-4 w-4 text-black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>}
+                              </Button>
+                              <span className="text-sm">{comment.noUpvote}</span>
+                            </div>
+                            {isAuthenticated &&
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-sm"
+                                onClick={() => toggleReplyBox(comment.id)}
+                              >
+                                <MessageSquare className="h-4 w-4 mr-1" />
+                                Reply
+                              </Button>
+                            }
+                            {comment.user && comment.canEdit && !isEditOpen[comment.id] &&
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-sm"
+                                onClick={() => toggleEditComment(comment.id, "EDIT", comment.comment)}
+                              >
+                                <Edit className="h-4 w-4 mr-1" />
+                                Edit
+                              </Button>
+                            }
+
+                            {comment.user && comment.canEdit && isEditOpen[comment.id] &&
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-sm bg-green-500 text-white font-bold hover:bg-green-500 hover:text-white "
+                                onClick={() => toggleEditComment(comment.id, "SAVE", comment.comment)}
+                              >
+                                <Edit className="h-4 w-4 mr-1" />
+                                Save
+                              </Button>
+                            }
+                            {comment.noReply > 0 && (
+                              <>
+                                <Separator orientation="vertical" />
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-sm text-muted-foreground hover:text-foreground hover:bg-transparent relative"
+                                  onClick={() => {
+                                    toggleReplies(comment.id)
+                                  }}
+                                >
+                                  <div className="absolute -left-6 top-1/2 h-px w-6 bg-gray-200 dark:bg-gray-700" />
+                                  {visibleReplies[comment.id] ? "Hide" : "Show"} {comment.noReply}{" "}
+                                  {comment.noReply === 1 ? "reply" : "replies"}
+                                </Button>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    )}
 
-                    {/* Replies */}
-                    {visibleReplies[comment.id] && loadedReplies[comment.id] && (
-                      <div className="ml-10 space-y-4 border-l-2 border-gray-200 dark:border-gray-700 pl-4">
-                        {loadedReplies[comment.id].map((reply) => (
-                          <div key={reply.id} className="flex gap-4">
+                      {/* Reply box */}
+                      {replyBoxes[comment.id] && (
+                        <div className="ml-14 mt-2">
+                          <div className="flex gap-2">
                             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted overflow-hidden">
                               <img
-                                src={reply.createdBy.avatar || "/placeholder.svg?height=32&width=32"}
-                                alt={reply.createdBy.username}
+                                src={user?.avatar || "/placeholder.svg?height=32&width=32"}
+                                alt="Your avatar"
                                 className="w-full h-full object-cover"
                               />
                             </div>
-                            <div className="flex-1 space-y-1">
-                              <div className="flex items-center gap-2">
-                                {user && user.username === reply.createdBy.username ? (
-                                  <span className="font-bold text-sm">You</span>
-                                ) : (
-                                  <span className="font-medium text-sm">{reply.createdBy.username}</span>
-                                )}
-                                <span className="text-xs text-muted-foreground">{reply.createdAt}</span>
+                            <div className="flex-1">
+                              <Textarea
+                                placeholder={`Reply to ${comment.createdBy.username}...`}
+                                className="min-h-[40px] resize-none text-sm p-2"
+                                value={replyTexts[comment.id] || ""}
+                                onChange={(e) => handleReplyTextChange(comment.id, e.target.value)}
+                              />
+                              <div className="flex justify-end mt-2">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => toggleReplyBox(comment.id)}
+                                  className="mr-2"
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={() => submitReply(comment.id)}
+                                  disabled={!isAuthenticated || !replyTexts[comment.id]?.trim()}
+                                  className="bg-primary text-primary-foreground"
+                                >
+                                  <Send className="h-3 w-3 mr-1" />
+                                  Reply
+                                </Button>
                               </div>
-                              <div className="text-sm">
-                                <p>
-                                  {isEditOpen[reply.id]
-                                    ? <Textarea
-                                      style={{ width: "95%" }}
-                                      placeholder="Type comment here"
-                                      className="min-h-[50px] resize-none border-0 bg-background ring-1"
-                                      value={reply.comment}
-                                      onChange={(e) => setNewReply(e.target.value, reply)}
-                                    />
-                                    : reply.comment}
-                                </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Replies */}
+                      {visibleReplies[comment.id] && loadedReplies[comment.id] && (
+                        <div className="ml-10 space-y-4 border-l-2 border-gray-200 dark:border-gray-700 pl-4">
+                          {loadedReplies[comment.id].map((reply) => (
+                            <div key={reply.id} className="flex gap-4">
+                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted overflow-hidden">
+                                <img
+                                  src={reply.createdBy.avatar || "/placeholder.svg?height=32&width=32"}
+                                  alt={reply.createdBy.username}
+                                  className="w-full h-full object-cover"
+                                />
                               </div>
-                              <div className="flex items-center gap-4 pt-1">
-                                <div className="flex items-center gap-1">
-                                  <Button onClick={() => handleUpvoteUnupvoteReply(reply)} variant="ghost" size="icon" className="h-6 w-6">
-                                    {reply.voted ? <svg className="h-4 w-4 text-yellow-500" fill="currentColor" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>
-                                      : <svg className="h-4 w-4 text-black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>}
-                                  </Button>
-                                  <span className="text-xs">{reply.noUpvote}</span>
+                              <div className="flex-1 space-y-1">
+                                <div className="flex items-center gap-2">
+                                  {user && user.username === reply.createdBy.username ? (
+                                    <span className="font-bold text-sm">You</span>
+                                  ) : (
+                                    <span className="font-medium text-sm">{reply.createdBy.username}</span>
+                                  )}
+                                  <span className="text-xs text-muted-foreground">{reply.createdAt}</span>
                                 </div>
-                                {reply.user && reply.canEdit && !isEditOpen[reply.id] && <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-sm"
-                                  onClick={() => toggleEditComment(reply.id, "EDIT", reply.comment)}
-                                >
-                                  <Edit className="h-4 w-4 mr-1" />
-                                  Edit
-                                </Button>}
-
-                                {reply.user && reply.canEdit && isEditOpen[reply.id] && <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-sm bg-green-500 text-white font-bold hover:bg-green-500 hover:text-white "
-                                  onClick={() => toggleEditComment(reply.id, "SAVE", reply.comment)}
-                                >
-                                  <Edit className="h-4 w-4 mr-1" />
-                                  Save
-                                </Button>}
-                              </div>
-
-
-                              {/* Nested reply box */}
-                              {replyBoxes[reply.id] && (
-                                <div className="mt-2">
-                                  <div className="flex gap-2">
-                                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted overflow-hidden">
-                                      <img
-                                        src={user?.avatar || "/placeholder.svg?height=24&width=24"}
-                                        alt="Your avatar"
-                                        className="w-full h-full object-cover"
+                                <div className="text-sm">
+                                  <p>
+                                    {isEditOpen[reply.id]
+                                      ? <Textarea
+                                        style={{ width: "95%" }}
+                                        placeholder="Type comment here"
+                                        className="min-h-[50px] resize-none border-0 bg-background ring-1"
+                                        value={reply.comment}
+                                        onChange={(e) => setNewReply(e.target.value, reply)}
                                       />
-                                    </div>
-                                    <div className="flex-1">
-                                      <Textarea
-                                        placeholder={`Reply to ${reply.createdBy.username}...`}
-                                        className="min-h-[40px] resize-none text-sm p-2"
-                                        value={replyTexts[reply.id] || ""}
-                                        onChange={(e) => handleReplyTextChange(reply.id, e.target.value)}
-                                      />
-                                      <div className="flex justify-end mt-2">
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          onClick={() => toggleReplyBox(reply.id)}
-                                          className="mr-2 h-6 text-xs"
-                                        >
-                                          Cancel
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          onClick={() => submitReply(reply.id)}
-                                          disabled={!replyTexts[reply.id]?.trim()}
-                                          className="bg-primary text-primary-foreground h-6 text-xs"
-                                        >
-                                          <Send className="h-3 w-3 mr-1" />
-                                          Reply
-                                        </Button>
+                                      : reply.comment}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-4 pt-1">
+                                  <div className="flex items-center gap-1">
+                                    <Button onClick={() => handleUpvoteUnupvoteReply(reply)} variant="ghost" size="icon" className="h-6 w-6">
+                                      {reply.voted ? <svg className="h-4 w-4 text-yellow-500" fill="currentColor" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>
+                                        : <svg className="h-4 w-4 text-black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M192 82.4L334.7 232.3c.8 .8 1.3 2 1.3 3.2c0 2.5-2 4.6-4.6 4.6H248c-13.3 0-24 10.7-24 24V432H160V264c0-13.3-10.7-24-24-24H52.6c-2.5 0-4.6-2-4.6-4.6c0-1.2 .5-2.3 1.3-3.2L192 82.4zm192 153c0-13.5-5.2-26.5-14.5-36.3L222.9 45.2C214.8 36.8 203.7 32 192 32s-22.8 4.8-30.9 13.2L14.5 199.2C5.2 208.9 0 221.9 0 235.4c0 29 23.5 52.6 52.6 52.6H112V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V288h59.4c29 0 52.6-23.5 52.6-52.6z"></path></svg>}
+                                    </Button>
+                                    <span className="text-xs">{reply.noUpvote}</span>
+                                  </div>
+                                  {reply.user && reply.canEdit && !isEditOpen[reply.id] &&
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-sm"
+                                      onClick={() => toggleEditComment(reply.id, "EDIT", reply.comment)}
+                                    >
+                                      <Edit className="h-4 w-4 mr-1" />
+                                      Edit
+                                    </Button>
+                                  }
+
+                                  {reply.user && reply.canEdit && isEditOpen[reply.id] &&
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-sm bg-green-500 text-white font-bold hover:bg-green-500 hover:text-white "
+                                      onClick={() => toggleEditComment(reply.id, "SAVE", reply.comment)}
+                                    >
+                                      <Edit className="h-4 w-4 mr-1" />
+                                      Save
+                                    </Button>
+                                  }
+                                </div>
+
+
+                                {/* Nested reply box */}
+                                {replyBoxes[reply.id] && (
+                                  <div className="mt-2">
+                                    <div className="flex gap-2">
+                                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted overflow-hidden">
+                                        <img
+                                          src={user?.avatar || "/placeholder.svg?height=24&width=24"}
+                                          alt="Your avatar"
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                      <div className="flex-1">
+                                        <Textarea
+                                          placeholder={`Reply to ${reply.createdBy.username}...`}
+                                          className="min-h-[40px] resize-none text-sm p-2"
+                                          value={replyTexts[reply.id] || ""}
+                                          onChange={(e) => handleReplyTextChange(reply.id, e.target.value)}
+                                        />
+                                        <div className="flex justify-end mt-2">
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => toggleReplyBox(reply.id)}
+                                            className="mr-2 h-6 text-xs"
+                                          >
+                                            Cancel
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            onClick={() => submitReply(reply.id)}
+                                            disabled={!replyTexts[reply.id]?.trim()}
+                                            className="bg-primary text-primary-foreground h-6 text-xs"
+                                          >
+                                            <Send className="h-3 w-3 mr-1" />
+                                            Reply
+                                          </Button>
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-            </div>
-
-            {totalPages >= 2 &&
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href="#"
-                      onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-                      disabled={page === 0}
-                    />
-                  </PaginationItem>
-                  {Array.from({ length: totalPages }).map((_, index) => (
-                    <PaginationItem key={index}>
-                      <PaginationLink href="#" isActive={page === index} onClick={() => setPage(index)}>
-                        {index + 1}
-                      </PaginationLink>
-                    </PaginationItem>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ))}
-                  <PaginationItem>
-                    <PaginationNext
-                      href="#"
-                      onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
-                      disabled={page === totalPages - 1}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            }
-          </div>
-        </motion.div>}
+              </div>
+
+              {totalPages >= 2 &&
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+                        disabled={page === 0}
+                      />
+                    </PaginationItem>
+                    {Array.from({ length: totalPages }).map((_, index) => (
+                      <PaginationItem key={index}>
+                        <PaginationLink href="#" isActive={page === index} onClick={() => setPage(index)}>
+                          {index + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
+                        disabled={page === totalPages - 1}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              }
+            </div>
+          </motion.div>
+        }
       </div>
     )
   } else return <div></div>

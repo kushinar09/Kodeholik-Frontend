@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAuth } from "@/providers/AuthProvider"
-import { format } from "date-fns"
+import { format, parse } from "date-fns"
 import { ArrowDownAZ, ArrowUpAZ } from "lucide-react"
 import { useEffect, useState } from "react"
 
@@ -15,11 +15,15 @@ const SubmissionStatus = {
   MEMORY_LIMIT_EXCEEDED: "MEMORY_LIMIT_EXCEEDED",
   RUNTIME_ERROR: "RUNTIME_ERROR",
   COMPILATION_ERROR: "COMPILATION_ERROR",
-  PENDING: "PENDING"
+  PENDING: "PENDING",
 }
 
-export default function ProblemSubmissions({ submissionsData, selectedSubmissionId, setSelectedSubmissionId }) {
-
+export default function ProblemSubmissions({
+  submissionsData,
+  selectedSubmissionId,
+  setSelectedSubmissionId,
+  isLoadingSubmission,
+}) {
   const { isAuthenticated } = useAuth()
 
   const [sortField, setSortField] = useState(null)
@@ -27,7 +31,7 @@ export default function ProblemSubmissions({ submissionsData, selectedSubmission
   const [submissions, setSubmissions] = useState(submissionsData)
 
   useEffect(() => {
-    setSubmissions(submissionsData);
+    setSubmissions(submissionsData)
   }, [submissionsData])
   const handleSort = (field) => {
     const newDirection = sortField === field && sortDirection === "asc" ? "desc" : "asc"
@@ -88,16 +92,73 @@ export default function ProblemSubmissions({ submissionsData, selectedSubmission
           </svg>
           Please login to view this content
         </div>
-        <Button className="mt-2 w-fit" variant="outline" onClick={() => window.location.href = "/login"}>
+        <Button className="mt-2 w-fit" variant="outline" onClick={() => (window.location.href = "/login")}>
           Sign In
         </Button>
       </div>
     )
   }
 
-  return (
+  return isLoadingSubmission ? (
     <>
-
+      <div className="h-8 w-48 bg-gray-200 animate-pulse rounded mb-4"></div>
+      <Card className="w-full">
+        <CardContent className="p-0">
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">
+                    <div className="h-4 w-4 bg-gray-200 animate-pulse rounded"></div>
+                  </TableHead>
+                  <TableHead>
+                    <div className="h-4 w-16 bg-gray-200 animate-pulse rounded"></div>
+                  </TableHead>
+                  <TableHead>
+                    <div className="h-4 w-20 bg-gray-200 animate-pulse rounded"></div>
+                  </TableHead>
+                  <TableHead>
+                    <div className="h-4 w-16 bg-gray-200 animate-pulse rounded"></div>
+                  </TableHead>
+                  <TableHead>
+                    <div className="h-4 w-16 bg-gray-200 animate-pulse rounded"></div>
+                  </TableHead>
+                  <TableHead>
+                    <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[...Array(5)].map((_, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <div className="h-4 w-4 bg-gray-200 animate-pulse rounded"></div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-4 w-20 bg-gray-200 animate-pulse rounded"></div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-4 w-16 bg-gray-200 animate-pulse rounded"></div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-4 w-16 bg-gray-200 animate-pulse rounded"></div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-4 w-32 bg-gray-200 animate-pulse rounded"></div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </>
+  ) : (
+    <>
       <h2 className="text-xl font-bold mb-4">Your Submissions</h2>
       {submissions && submissions.length > 0 ? (
         <Card className="w-full">
@@ -122,19 +183,26 @@ export default function ProblemSubmissions({ submissionsData, selectedSubmission
                 </TableHeader>
                 <TableBody>
                   {submissions.map((submission, index) => (
-                    <TableRow className={`cursor-pointer ${selectedSubmissionId == submission.id ? 'bg-gray-300 hover:bg-gray-300' : ''}`} onClick={() => setSelectedSubmissionId(submission.id)} key={submission.id}>
+                    <TableRow
+                      className={`cursor-pointer ${selectedSubmissionId == submission.id ? "bg-gray-300 hover:bg-gray-300" : ""}`}
+                      onClick={() => setSelectedSubmissionId(submission.id)}
+                      key={submission.id}
+                    >
                       <TableCell className="font-medium">{index + 1}</TableCell>
                       <TableCell className={getTextColorClass(submission.status)}>
                         {formatStatus(submission.status)}
                       </TableCell>
                       <TableCell>{submission.languageName}</TableCell>
                       <TableCell>
-                        {submission.executionTime > 0 ? `${submission.executionTime.toFixed(1)} ms` : "-"}
+                        {submission.executionTime > 0 ? `${submission.executionTime.toFixed(2)} ms` : "-"}
                       </TableCell>
-                      <TableCell>{submission.memoryUsage > 0 ? `${submission.memoryUsage.toFixed(1)} MB` : "-"}</TableCell>
                       <TableCell>
-                        {submission.createdAt && !isNaN(new Date(submission.createdAt).getTime())
-                          ? format(new Date(submission.createdAt), "MMM d, yyyy HH:mm")
+                        {submission.memoryUsage > 0 ? `${submission.memoryUsage.toFixed(1)} MB` : "-"}
+                      </TableCell>
+                      <TableCell>
+                        {submission.createdAt &&
+                          !isNaN(parse(submission.createdAt, "dd/MM/yyyy, HH:mm", new Date()).getTime())
+                          ? format(parse(submission.createdAt, "dd/MM/yyyy, HH:mm", new Date()), "dd/MM/yyyy HH:mm")
                           : "N/A"}
                       </TableCell>
                     </TableRow>
@@ -148,7 +216,6 @@ export default function ProblemSubmissions({ submissionsData, selectedSubmission
         <div className="text-muted-foreground">No submissions yet</div>
       )}
     </>
-
   )
 }
 

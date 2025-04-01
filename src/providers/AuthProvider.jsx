@@ -294,7 +294,7 @@ export const AuthProvider = ({ children }) => {
         if (refreshStatus === 200) {
           // Retry the original request after token refresh
           response = await fetch(url, options)
-        } else {
+        } else if (refreshStatus !== 400 && refreshStatus !== 500) {
           // Handle different error statuses
           pendingApiCalls.current.delete(requestId)
           addApiError(url, "auth", { status: refreshStatus })
@@ -320,7 +320,7 @@ export const AuthProvider = ({ children }) => {
           } else {
             pendingApiCalls.current.delete(requestId)
           }
-        } else if (!inEndpointList(notThrowErrorEndpoint, url)) {
+        } else if (!inEndpointList(notThrowErrorEndpoint, url) && response.status !== 400 && response.status !== 500) {
           // Wait a small delay to ensure the response is fully processed
           setTimeout(() => {
             pendingApiCalls.current.delete(requestId)
@@ -345,9 +345,9 @@ export const AuthProvider = ({ children }) => {
       console.error("API call error:", error)
       pendingApiCalls.current.delete(requestId)
 
-      if (!inEndpointList(notThrowErrorEndpoint, url)) {
-        addApiError(url, "network", { status: 500 })
-      }
+      // if (!inEndpointList(notThrowErrorEndpoint, url)) {
+      //   addApiError(url, "network", { status: 500 })
+      // }
       throw error
     } finally {
       if (inEndpointList(notThrowErrorEndpoint, url)) {
@@ -366,7 +366,7 @@ export const AuthProvider = ({ children }) => {
   // Get the most severe error to display
   const getMostSevereError = useCallback(() => {
     // Priority: 500 > 403 > 401 > 404
-    if (Object.values(apiErrors).some((err) => err.status === 500)) return "500"
+    // if (Object.values(apiErrors).some((err) => err.status === 500)) return "500"
     if (Object.values(apiErrors).some((err) => err.status === 403)) return "403"
     if (Object.values(apiErrors).some((err) => err.status === 401)) return "401"
     if (Object.values(apiErrors).some((err) => err.status === 404)) return "404"

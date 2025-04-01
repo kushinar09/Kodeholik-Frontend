@@ -233,7 +233,7 @@ export default function ShareSolution({ solution, setIsEditMode }) {
               <span>
                 <ArrowLeft className="w-4 h-4" />
               </span>
-                            Back
+              Back
             </div>
             <h1 className="text-2xl font-bold text-green-500">{!isEdit ? "Share Your Solution" : "Edit Your Solution"}</h1>
             <p className="text-muted-foreground">Share your approach to solving this problem with the community</p>
@@ -244,7 +244,7 @@ export default function ShareSolution({ solution, setIsEditMode }) {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label htmlFor="title" className="text-base font-semibold">
-                                    Solution Title
+                  Solution Title
                 </label>
                 <span className="text-xs text-red-500 font-bold text-muted-foreground">Required</span>
               </div>
@@ -267,14 +267,14 @@ export default function ShareSolution({ solution, setIsEditMode }) {
                   </Button>
                   <div>
                     {solutionSkills.length > 0 &&
-                    <div>
-                      {solutionSkills.map((skill) => (
-                        <Badge key={skill} variant="outline" className="bg-gray-300 py-1.5 mb-2 mt-2 text-black ml-2">
-                          {skill}
-                          <X className="h-3 w-3 ml-2 mt-1 cursor-pointer" onClick={() => handleDeleteSkill(skill)} />
-                        </Badge>
-                      ))}
-                    </div>}
+                      <div>
+                        {solutionSkills.map((skill) => (
+                          <Badge key={skill} variant="outline" className="bg-gray-300 py-1.5 mb-2 mt-2 text-black ml-2">
+                            {skill}
+                            <X className="h-3 w-3 ml-2 mt-1 cursor-pointer" onClick={() => handleDeleteSkill(skill)} />
+                          </Badge>
+                        ))}
+                      </div>}
                   </div>
                 </div>
                 {/* Dropdown Menu */}
@@ -308,14 +308,14 @@ export default function ShareSolution({ solution, setIsEditMode }) {
                     </Button>
                     <div>
                       {selectedSubmissionId.length > 0 &&
-                                                <div>
-                                                  {selectedSubmissionId.map((submission) => (
-                                                    <Badge key={submission} variant="outline" className="bg-gray-300 py-1.5 mb-2 mt-2 text-black ml-2">
-                                                      {submission}
-                                                      <X className="h-3 w-3 ml-2 mt-1 cursor-pointer" onClick={() => handleDeleteSubmission(submission)} />
-                                                    </Badge>
-                                                  ))}
-                                                </div>}
+                        <div>
+                          {selectedSubmissionId.map((submission) => (
+                            <Badge key={submission} variant="outline" className="bg-gray-300 py-1.5 mb-2 mt-2 text-black ml-2">
+                              {submission}
+                              <X className="h-3 w-3 ml-2 mt-1 cursor-pointer" onClick={() => handleDeleteSubmission(submission)} />
+                            </Badge>
+                          ))}
+                        </div>}
                     </div>
                   </div>
                   {/* Dropdown Menu */}
@@ -350,14 +350,14 @@ export default function ShareSolution({ solution, setIsEditMode }) {
                   <span>Explain your approach</span>
                 </div>
                 {markdownValue != null &&
-                                    <div className="h-fit">
-                                      <MarkdownEditor value={markdownValue} setCanDelete={setCanDelete} canDelete={canDelete} onChange={handleOnChange} />
-                                    </div>
+                  <div className="h-fit">
+                    <MarkdownEditor value={markdownValue} setCanDelete={setCanDelete} canDelete={canDelete} onChange={handleOnChange} />
+                  </div>
                 }
               </div>
 
               <p className="text-xs text-muted-foreground">
-                                Use markdown to format your solution. You can add code blocks, lists, and more.
+                Use markdown to format your solution. You can add code blocks, lists, and more.
               </p>
             </div>
           </CardContent>
@@ -366,7 +366,7 @@ export default function ShareSolution({ solution, setIsEditMode }) {
             <Button variant="outline">Cancel</Button>
             <Button type="button" className={`gap-2 bg-primary ${canSubmit ? "" : "disabled"}`} disabled={!canSubmit} onClick={() => submitSolution()}>
               <Send className="h-4 w-4" />
-                            Post
+              Post
             </Button>
           </CardFooter>
         </Card>

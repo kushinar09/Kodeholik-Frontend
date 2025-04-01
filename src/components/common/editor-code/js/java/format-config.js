@@ -24,7 +24,7 @@ function formatJavaCode(code) {
     lastNonEmptyLine: ""
   }
 
-  const INDENT_SIZE = 2
+  const INDENT_SIZE = 4
   const INDENT = " ".repeat(INDENT_SIZE)
 
   for (let i = 0; i < lines.length; i++) {
@@ -100,8 +100,8 @@ function formatLine(line, state) {
 
   // Format spacce for operators [==, ++, --, +=, -=]
   formattedLine = formattedLine.replace(/\s*=\s*=\s*/g, " == ")
-  formattedLine = formattedLine.replace(/\s*\+\s*\+\s*/g, " ++ ")
-  formattedLine = formattedLine.replace(/\s*-\s*-\s*/g, " -- ")
+  formattedLine = formattedLine.replace(/\s*\+\s*\+\s*/g, "++")
+  formattedLine = formattedLine.replace(/\s*-\s*-\s*/g, "--")
   formattedLine = formattedLine.replace(/\s*\+\s*=\s*/g, " += ")
   formattedLine = formattedLine.replace(/\s*-\s*=\s*/g, " -= ")
 

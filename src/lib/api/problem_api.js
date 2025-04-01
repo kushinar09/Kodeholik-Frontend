@@ -143,12 +143,18 @@ export async function getProblemInitCode(id, language) {
   return { status: false }
 }
 
-export async function getCourseList() {
-  const response = await fetch(ENDPOINTS.GET_COURSES)
-  if (!response.ok) {
-    throw new Error("Failed to fetch courses")
+export async function getProblemAvailableLanguages(id) {
+  const response = await fetch(ENDPOINTS.GET_PROBLEM_LANGUAGES_SUPPORT.replace(":id", id),
+    {
+      method: "GET",
+      credentials: "include"
+    }
+  )
+  if (response.ok) {
+    return { status: true, data: await response.json() }
   }
-  return response.json()
+
+  return { status: false, message: "Error when get languages supported: " + response.status }
 }
 
 export async function getSubmissionDetail(apiCall, submissionId) {

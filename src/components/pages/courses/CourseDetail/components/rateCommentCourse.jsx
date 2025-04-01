@@ -9,8 +9,7 @@ import { rateCommentCourse, getRateCommentCourse, getCourse, checkEnrollCourse }
 import { cn } from "@/lib/utils"
 import { useNavigate } from "react-router-dom"
 
-export default function RateCommentCourse({ courseId, setCourse }) {
-  const { isAuthenticated } = useAuth()
+export default function RateCommentCourse({ courseId, setCourse, isAuthenticated, isEnrolled }) {
   const navigate = useNavigate()
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState("")
@@ -23,7 +22,6 @@ export default function RateCommentCourse({ courseId, setCourse }) {
   const [submitSuccess, setSubmitSuccess] = useState("")
   const [hoverRating, setHoverRating] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
-  const [isEnrolled, setIsEnrolled] = useState(false)
 
   const ITEMS_PER_PAGE = 3
 
@@ -39,18 +37,13 @@ export default function RateCommentCourse({ courseId, setCourse }) {
         console.log("Successfully fetched comments:", fetchedComments)
         setComments(Array.isArray(fetchedComments) ? fetchedComments : [])
         setCurrentPage(1)
-
         if (isAuthenticated) {
           const enrolled = await checkEnrollCourse(courseId)
           console.log("Enrollment status for course", courseId, ":", enrolled)
-          setIsEnrolled(enrolled)
-        } else {
-          setIsEnrolled(false)
         }
       } catch (error) {
         console.error("Failed to fetch data:", error.message)
         setComments([])
-        setIsEnrolled(false)
       } finally {
         setLoadingComments(false)
       }
@@ -286,16 +279,24 @@ export default function RateCommentCourse({ courseId, setCourse }) {
                         <CardContent className="p-5">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                             <div className="flex items-center gap-3">
-                              <div className="flex gap-0.5">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star
-                                    key={star}
-                                    className={cn("h-4 w-4", star <= item.rating ? "text-yellow-400" : "text-gray-600")}
-                                    fill={star <= item.rating ? "currentColor" : "none"}
-                                  />
-                                ))}
+                              {/* User Avatar */}
+                              <img
+                                src={item.user?.avatar || "https://via.placeholder.com/40"} // Fallback to placeholder if no avatar
+                                alt={`${item.user?.username || "Anonymous"}'s avatar`}
+                                className="w-10 h-10 rounded-full object-cover border border-gray-600"
+                              />
+                              <div>
+                                <div className="flex gap-0.5">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={cn("h-4 w-4", star <= item.rating ? "text-yellow-400" : "text-gray-600")}
+                                      fill={star <= item.rating ? "currentColor" : "none"}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="font-medium text-gray-200">{item.user?.username || "Anonymous"}</span>
                               </div>
-                              <span className="font-medium text-gray-200">{item.user?.username || "Anonymous"}</span>
                             </div>
                             <p className="text-xs text-gray-400">
                               {item.createdAt} {item.updatedAt !== item.createdAt && `(Updated: ${item.updatedAt})`}
