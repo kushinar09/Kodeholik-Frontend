@@ -2,10 +2,8 @@
 
 import { useAuth } from "@/providers/AuthProvider"
 
-import hljs from "highlight.js"
-import "highlight.js/styles/default.css"
 import { useEffect, useState } from "react"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Check, Copy } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { ENDPOINTS } from "@/lib/constants"
 import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
@@ -13,6 +11,8 @@ import DiscussionSection from "../../description/problem-comments"
 import { Button } from "@/components/ui/button"
 import { unupvoteSolution, upvoteSolution } from "@/lib/api/problem_api"
 import { toast } from "@/hooks/use-toast"
+import { copyToClipboard } from "@/lib/utils/format-utils"
+import { CodeHighlighter } from "@/components/common/editor-code/code-highlighter"
 
 export default function SolutionDetail({ solutionId, handleBack, setIsEditMode, setCurrentSolution }) {
   const [solution, setSolution] = useState(null)
@@ -26,6 +26,10 @@ export default function SolutionDetail({ solutionId, handleBack, setIsEditMode, 
   useEffect(() => {
     fetchSolutionDetail(solutionId)
   }, [])
+
+  useEffect(() => {
+    setCurrentCode(solution?.solutionCodes[0]?.solutionCode)
+  }, [solution])
 
   async function fetchSolutionDetail(id) {
     setLoading(true)
@@ -41,13 +45,6 @@ export default function SolutionDetail({ solutionId, handleBack, setIsEditMode, 
     }
   }
 
-  useEffect(() => {
-    document.querySelectorAll("pre code").forEach((block) => {
-      if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") == "yes"))
-        hljs.highlightElement(block)
-    })
-  }, [solution])
-
   const toggleUpvote = async (id) => {
     try {
       if (!solution.currentUserVoted) {
@@ -56,12 +53,12 @@ export default function SolutionDetail({ solutionId, handleBack, setIsEditMode, 
           toast({
             title: "Upvote Solution",
             description: "Upvote solution successful",
-            variant: "default", // destructive
+            variant: "default" // destructive
           })
           setSolution((prevSolution) => ({
             ...prevSolution, // Giữ nguyên các thuộc tính cũ
             noUpvote: prevSolution.noUpvote + 1, // Tăng giá trị
-            currentUserVoted: true, // Cập nhật giá trị mới
+            currentUserVoted: true // Cập nhật giá trị mới
           }))
         }
       } else {
@@ -70,18 +67,27 @@ export default function SolutionDetail({ solutionId, handleBack, setIsEditMode, 
           toast({
             title: "Unupvote Solution",
             description: "Unupvote solution successful",
-            variant: "default", // destructive
+            variant: "default" // destructive
           })
           setSolution((prevSolution) => ({
             ...prevSolution, // Giữ nguyên các thuộc tính cũ
             noUpvote: prevSolution.noUpvote - 1 > 0 ? prevSolution.noUpvote - 1 : 0, // Tăng giá trị
-            currentUserVoted: false, // Cập nhật giá trị mới
+            currentUserVoted: false // Cập nhật giá trị mới
           }))
         }
       }
     } catch (error) {
       console.log(error)
     }
+  }
+
+  const [copied, setCopied] = useState(false)
+  const [currentCode, setCurrentCode] = useState("")
+
+  const handleCopyClipBoard = async () => {
+    const success = await copyToClipboard(currentCode)
+    setCopied(success)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   const { isAuthenticated } = useAuth()
@@ -221,46 +227,52 @@ export default function SolutionDetail({ solutionId, handleBack, setIsEditMode, 
               <div className="mt-6">
                 <h3 className="text-lg font-semibold mb-3">Solution Code</h3>
                 <div className="border rounded-lg overflow-hidden">
-                  <div className="flex border-b">
-                    {solution.solutionCodes.map((s, index) => (
-                      <button
-                        key={index}
-                        className={`px-4 py-2 text-sm font-medium text-gray-500 ${index == 0 ? "bg-gray-100 dark:bg-gray-800 font-semibold text-gray-800" : ""}`}
-                        onClick={(e) => {
-                          // Set all tabs to inactive
-                          e.currentTarget.parentElement
-                            .querySelectorAll("button")
-                            .forEach((btn) =>
-                              btn.classList.remove("bg-gray-100", "dark:bg-gray-800", "font-semibold", "text-gray-800"),
+                  <div className="flex border-b justify-between">
+                    <div>
+                      {solution.solutionCodes.map((s, index) => (
+                        <button
+                          key={index}
+                          className={`px-4 py-2 text-sm font-medium text-gray-500 ${index == 0 ? "bg-gray-100 dark:bg-gray-800 font-semibold text-gray-800" : ""}`}
+                          onClick={(e) => {
+                            // Set all tabs to inactive
+                            e.currentTarget.parentElement
+                              .querySelectorAll("button")
+                              .forEach((btn) =>
+                                btn.classList.remove("bg-gray-100", "dark:bg-gray-800", "font-semibold", "text-gray-800")
+                              )
+                            // Set clicked tab to active
+                            e.currentTarget.classList.add(
+                              "bg-gray-100",
+                              "dark:bg-gray-800",
+                              "font-semibold",
+                              "text-gray-800"
                             )
-                          // Set clicked tab to active
-                          e.currentTarget.classList.add(
-                            "bg-gray-100",
-                            "dark:bg-gray-800",
-                            "font-semibold",
-                            "text-gray-800",
-                          )
 
-                          // Hide all code blocks
-                          const codeBlocks = e.currentTarget.closest(".border").querySelectorAll(".code-block")
-                          codeBlocks.forEach((block) => block.classList.add("hidden"))
+                            // Hide all code blocks
+                            const codeBlocks = e.currentTarget.closest(".border").querySelectorAll(".code-block")
+                            codeBlocks.forEach((block) => block.classList.add("hidden"))
 
-                          // Show selected code block
-                          codeBlocks[index].classList.remove("hidden")
-                        }}
-                      >
-                        {s.solutionLanguage}
-                      </button>
-                    ))}
+                            // Show selected code block
+                            codeBlocks[index].classList.remove("hidden")
+                            setCurrentCode(s.solutionCode)
+                          }}
+                        >
+                          {s.solutionLanguage}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="icon" onClick={handleCopyClipBoard}>
+                        {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </div>
                   </div>
                   {solution.solutionCodes.map((s, index) => (
                     <div
                       key={index}
-                      className={`code-block bg-gray-50 dark:bg-gray-900 overflow-auto ${index === 0 ? "" : "hidden"}`}
+                      className={`code-block dark:bg-gray-900 overflow-auto ${index === 0 ? "" : "hidden"}`}
                     >
-                      <pre className="text-sm">
-                        <code className="font-code">{s.solutionCode}</code>
-                      </pre>
+                      <CodeHighlighter code={s.solutionCode} language={s.solutionLanguage} />
                     </div>
                   ))}
                 </div>

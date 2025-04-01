@@ -61,7 +61,7 @@ export default function ShareSolution({ solution, setIsEditMode }) {
       }
       setDropdownItems(arr)
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -100,24 +100,21 @@ export default function ShareSolution({ solution, setIsEditMode }) {
       fetchSuccessSubmissionList()
       setIsEdit(false)
     }
-    else {
-      if (solution != null) {
-        setIsEdit(true)
-        setCurrentSolutionId(solution?.id)
-        fetchSuccessSubmissionListByLink(solution?.problem.link)
-        setProblemLink(solution?.problem.link)
-        setTitle(solution?.title)
-        setSolutionSkills(solution?.skills.map((skill) => skill) || [])
-        setSelectedSubmissionId(
-          solution?.solutionCodes.map((solution) => solution.submissionId) || []
-        )
-        let value = solution.textSolution
-        for (let i = 0; i < solution?.solutionCodes.length; i++) {
-          value += "\nLOCKED-CODE \n//Submission " + solution?.solutionCodes[i].submissionId + " \n " + solution?.solutionCodes[i].solutionCode + "\nLOCKED-CODE"
-        }
-        setMarkdownValue(value)
+    else if (solution != null) {
+      setIsEdit(true)
+      setCurrentSolutionId(solution?.id)
+      fetchSuccessSubmissionListByLink(solution?.problem.link)
+      setProblemLink(solution?.problem.link)
+      setTitle(solution?.title)
+      setSolutionSkills(solution?.skills.map((skill) => skill) || [])
+      setSelectedSubmissionId(
+        solution?.solutionCodes.map((solution) => solution.submissionId) || []
+      )
+      let value = solution.textSolution
+      for (let i = 0; i < solution?.solutionCodes.length; i++) {
+        value += "\nLOCKED-CODE \n//Submission " + solution?.solutionCodes[i].submissionId + " \n " + solution?.solutionCodes[i].solutionCode + "\nLOCKED-CODE"
       }
-      console.log(solution)
+      setMarkdownValue(value)
     }
   }, [])
 
@@ -206,14 +203,13 @@ export default function ShareSolution({ solution, setIsEditMode }) {
       }
       else {
         const response = await editSolution(apiCall, requestData, currentSolutionId)
-        console.log(response)
         if (response.status == true) {
           toast.success("Edit solution successful", { duration: 2000 })
           window.location.href = ("/problem-solution/" + problemLink + "/" + response.data.id)
         }
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 

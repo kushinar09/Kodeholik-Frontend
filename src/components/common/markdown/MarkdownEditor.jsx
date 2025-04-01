@@ -29,12 +29,6 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 
-import Prism from "prismjs"
-import "prismjs/components/prism-java"
-// Import styles
-// import "@/components/common/editor-code/css/prism-darcula.css"
-import "@/components/common/editor-code/css/prism-atom-dark.css"
-
 import { getCookie, setCookie } from "@/lib/utils"
 import { toast } from "sonner"
 import { ENDPOINTS } from "@/lib/constants"
@@ -83,6 +77,10 @@ const MarkdownEditor = ({ canDelete = null, setCanDelete = null, value = "", onC
     }
   }, [])
 
+  useEffect(() => {
+    onChange(markdownContent)
+  }, [markdownContent])
+
   const shortcuts = {
     b: { key: "B", action: "**", label: "Bold" },
     i: { key: "I", action: "*", label: "Italic" },
@@ -94,17 +92,6 @@ const MarkdownEditor = ({ canDelete = null, setCanDelete = null, value = "", onC
     q: { key: "Q", action: ">", label: "Quote" },
     s: { key: "S", action: "save", label: "Save" }
   }
-
-  useEffect(() => {
-    document.querySelectorAll("pre code").forEach((block) => {
-      if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") === "yes")) {
-        block.classList.add("language-java", "font-code")
-        Prism.highlightElement(block)
-        block.setAttribute("data-highlighted", "yes")
-      }
-    })
-
-  }, [markdownContent])
 
   useEffect(() => {
     const saveInterval = setInterval(() => {
@@ -145,9 +132,8 @@ const MarkdownEditor = ({ canDelete = null, setCanDelete = null, value = "", onC
         keymap.of([indentWithTab]),
         markdown(),
         EditorView.updateListener.of((update) => {
-          const newContent = update.state.doc.toString() // Nội dung sau khi chỉnh sửa
+          const newContent = update.state.doc.toString()
           if (!canDeleteRef.current && !lockProtectedText(previousContent, newContent)) {
-            // Nếu vi phạm vùng LOCKED, khôi phục nội dung cũ
             update.view.dispatch({
               changes: { from: 0, to: newContent.length, insert: previousContent }
             })

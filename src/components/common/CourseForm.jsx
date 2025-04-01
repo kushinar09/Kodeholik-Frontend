@@ -34,7 +34,7 @@ function CourseForm({ course }) {
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const data = await getTopicList()
+        const data = await getTopicList(apiCall)
         const formattedTopics = Array.isArray(data)
           ? data.map((topic) => ({ id: topic.id || topic, name: topic.name || topic }))
           : []

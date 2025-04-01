@@ -341,7 +341,7 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
       {staticCode && <div ref={staticEditorRef} className="static-code-editor" />}
 
       {/* Main editor for editable code */}
-      <div ref={editorRef} className="main-code-editor min-h-[200px]" />
+      <div ref={editorRef} className="main-code-editor" />
 
       <style>
         {`
