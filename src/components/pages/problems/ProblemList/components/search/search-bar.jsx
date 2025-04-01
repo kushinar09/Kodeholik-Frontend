@@ -14,6 +14,10 @@ export function SearchBar({ search, setSearch, onSearchChange, isFiltersOpen, se
   const { apiCall } = useAuth()
 
   useEffect(() => {
+    setTempSearch(search)
+  }, [search])
+
+  useEffect(() => {
     if (!tempSearch) {
       setSuggestions([])
       return

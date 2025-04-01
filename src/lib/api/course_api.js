@@ -1,6 +1,6 @@
 import { ENDPOINTS } from "../constants"
 
-export const getCourseSearch = async ({ page, size, sortBy = "title", ascending = true, query, topic }) => {
+export const getCourseSearch = async ({ apiCall, page, size, sortBy = "title", ascending = true, query, topic }) => {
   const endpoint = ENDPOINTS.GET_COURSES_LIST
 
   const queryParams = `?page=${encodeURIComponent(page)}&size=${encodeURIComponent(size)}&sortBy=${encodeURIComponent(sortBy)}&ascending=${encodeURIComponent(ascending)}`
@@ -11,10 +11,8 @@ export const getCourseSearch = async ({ page, size, sortBy = "title", ascending 
   if (topic && topic !== "All") body.topics = [topic]
 
   try {
-    const response = await fetch(fullUrl, {
+    const response = await apiCall(fullUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify(body)
     })
 
@@ -40,8 +38,8 @@ export const getCourseSearch = async ({ page, size, sortBy = "title", ascending 
 }
 
 
-export async function getTopicList() {
-  const response = await fetch(ENDPOINTS.GET_TOPIC_LIST)
+export async function getTopicList(apiCall) {
+  const response = await apiCall(ENDPOINTS.GET_TOPIC_LIST)
   if (!response.ok) {
     throw new Error("Failed to fetch topic")
   }

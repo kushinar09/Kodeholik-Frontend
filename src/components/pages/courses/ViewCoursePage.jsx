@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { BookOpenCheck, BookText } from "lucide-react"
 import { StarFilledIcon } from "@radix-ui/react-icons"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useAuth } from "@/providers/AuthProvider"
 
 const ITEMS_PER_PAGE = 9
 
@@ -35,21 +36,24 @@ export default function CoursePage() {
   const [ascending, setAscending] = useState(true)
   const navigate = useNavigate()
 
+  const { apiCall } = useAuth()
+
   useEffect(() => {
     const fetchCourses = async () => {
       setIsLoading(true)
       try {
         const data = await getCourseSearch({
+          apiCall,
           page: currentPage - 1,
           size: ITEMS_PER_PAGE,
           sortBy,
           ascending,
           query: searchQuery || undefined,
-          topic: selectedTopics.length > 0 ? selectedTopics.join(",") : undefined,
+          topic: selectedTopics.length > 0 ? selectedTopics.join(",") : undefined
         })
         const filteredCourses = searchQuery
-          ? (data.content || []).filter((course) => 
-              course.title.toLowerCase().includes(searchQuery.toLowerCase()))
+          ? (data.content || []).filter((course) =>
+            course.title.toLowerCase().includes(searchQuery.toLowerCase()))
           : data.content || []
         setCourses(filteredCourses)
         setTotalPages(data.totalPages || 1)
@@ -67,7 +71,7 @@ export default function CoursePage() {
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const data = await getTopicList()
+        const data = await getTopicList(apiCall)
         setTopics(data || [])
       } catch (error) {
         console.error("Error fetching topics:", error)
@@ -84,7 +88,7 @@ export default function CoursePage() {
   }
 
   const handleTopicChange = (topic) => {
-    setSelectedTopics((prev) => 
+    setSelectedTopics((prev) =>
       prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic]
     )
     setCurrentPage(1)
@@ -98,7 +102,6 @@ export default function CoursePage() {
     setSearchQuery("")
     setSelectedTopics([])
     setCurrentPage(1)
-    setSortBy("title")
     setAscending(true)
   }
 
@@ -123,10 +126,10 @@ export default function CoursePage() {
           <div className="w-full md:w-64 shrink-0">
             <div className="flex justify-between">
               <h2 className="text-xl font-bold mb-6">Filter by</h2>
-              {(selectedTopics.length > 0 || sortBy !== "title" || !ascending) && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+              {(selectedTopics.length > 0 || searchQuery) && (
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={handleClearFilters}
                   className="text-sm bg-bg-card text-text-primary hover:text-text-primary border-none hover:bg-bg-card/90"
                 >
@@ -160,8 +163,8 @@ export default function CoursePage() {
                 })}
               </div>
               {topics.length > 5 && (
-                <button 
-                  onClick={toggleShowAllTopics} 
+                <button
+                  onClick={toggleShowAllTopics}
                   className="text-sm text-primary mt-2 hover:underline"
                 >
                   {showAllTopics ? "Show less" : "Show more"}
@@ -175,7 +178,7 @@ export default function CoursePage() {
               <h2 className="text-xl font-semibold">
                 {searchQuery ? `Results for "${searchQuery}"` : "All Courses"}
               </h2>
-              <Select 
+              <Select
                 onValueChange={handleSortChange}
                 defaultValue="title"
               >
@@ -257,7 +260,7 @@ export default function CoursePage() {
                 </svg>
                 <h3 className="text-xl font-semibold mb-2">No courses found</h3>
                 <p className="text-muted-foreground max-w-md">
-                  We couldn't find any courses matching your search criteria. Try adjusting your filters or search term.
+                  We couldn&apos;t find any courses matching your search criteria. Try adjusting your filters or search term.
                 </p>
                 <Button className="mt-4 text-bg-card" onClick={handleClearFilters}>
                   Clear filters
@@ -300,7 +303,7 @@ export default function CoursePage() {
                       </div>
                       <h3 className="font-bold line-clamp-2">{course.title}</h3>
                       {course.topics && course.topics.length > 0 && (
-                        <p className="text-sm">
+                        <p className="text-sm line-clamp-2">
                           <span className="font-semibold">Topics: </span>
                           {course.topics.join(", ")}
                         </p>

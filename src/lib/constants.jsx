@@ -155,6 +155,7 @@ const ENDPOINTS = {
 
   //image
   GET_IMAGE: (imageKey) => `${API_URL}/s3/presigned-url?key=${encodeURIComponent(imageKey)}`,
+  POST_UPLOAD_IMAGE: `${API_URL}/s3/upload`,
 
   // Exam
   GET_LIST_EXAM: `${API_URL}/exam/pending-list`,

@@ -159,7 +159,7 @@ export async function getProblemAvailableLanguages(id) {
 
 export async function getSubmissionDetail(apiCall, submissionId) {
   const url = `${ENDPOINTS.GET_SUBMISSION_DETAIL}${submissionId}`
-  console.log(url);
+  console.log(url)
   const response = await apiCall(url, {
     method: "GET",
     headers: {
@@ -231,30 +231,30 @@ export async function postSolution(apiCall, solution) {
     body: JSON.stringify(solution)
   })
   if (response.ok) {
-    console.log(response);
+    console.log(response)
     const text = await response.json()
     return { status: true, data: text }
   }
   else {
     if (response.status == 400) {
       try {
-        const errorData = await response.json();
-        let value = "";
+        const errorData = await response.json()
+        let value = ""
         if (Array.isArray(errorData.message)) {
           for (let i = 0; i < errorData.message.length; i++) {
-            value += errorData.message[i].field + ": " + errorData.message[i].error + "; ";
+            value += errorData.message[i].field + ": " + errorData.message[i].error + "; "
           }
         }
         else {
-          value += errorData.message;
+          value += errorData.message
         }
         toast({
           title: "Error",
           description: value,
           variant: "destructive" // destructive
-        });
+        })
       } catch (error) {
-        console.error("Error parsing error response:", error);
+        console.error("Error parsing error response:", error)
       }
     }
     else if (response.status == 500) {
@@ -262,12 +262,12 @@ export async function postSolution(apiCall, solution) {
         title: "Error",
         description: MESSAGES.MSG01,
         variant: "destructive" // destructive
-      });
+      })
     }
     else if (response.status === 404) {
       return { status: false, message: "Problem not found" }
     }
-    throw new Error("Failed to add user");
+    throw new Error("Failed to add user")
 
   }
 
@@ -283,30 +283,30 @@ export async function editSolution(apiCall, solution, id) {
     body: JSON.stringify(solution)
   })
   if (response.ok) {
-    console.log(response);
+    console.log(response)
     const text = await response.json()
     return { status: true, data: text }
   }
   else {
     if (response.status == 400) {
       try {
-        const errorData = await response.json();
-        let value = "";
+        const errorData = await response.json()
+        let value = ""
         if (Array.isArray(errorData.message)) {
           for (let i = 0; i < errorData.message.length; i++) {
-            value += errorData.message[i].field + ": " + errorData.message[i].error + "; ";
+            value += errorData.message[i].field + ": " + errorData.message[i].error + "; "
           }
         }
         else {
-          value += errorData.message;
+          value += errorData.message
         }
         toast({
           title: "Error",
           description: value,
           variant: "destructive" // destructive
-        });
+        })
       } catch (error) {
-        console.error("Error parsing error response:", error);
+        console.error("Error parsing error response:", error)
       }
     }
     else if (response.status == 500) {
@@ -314,9 +314,9 @@ export async function editSolution(apiCall, solution, id) {
         title: "Error",
         description: MESSAGES.MSG01,
         variant: "destructive" // destructive
-      });
+      })
     }
-    throw new Error("Failed to edit solution");
+    throw new Error("Failed to edit solution")
 
   }
 

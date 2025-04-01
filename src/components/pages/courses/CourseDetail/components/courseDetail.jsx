@@ -12,7 +12,7 @@ import {
   BookmarkCheck,
   Users,
   AlertCircle,
-  ChevronLeft
+  ChevronLeft,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -25,7 +25,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogHeader
+  DialogHeader,
 } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -46,19 +46,48 @@ export default function CourseDetail({
   totalLessons,
   completedLessons,
   completionPercentage,
-  isEnrolled
+  isEnrolled,
 }) {
   const { isAuthenticated } = useAuth()
 
   const [showFullDescription, setShowFullDescription] = useState(false)
   const descriptionRef = useRef(null)
   const [descriptionOverflows, setDescriptionOverflows] = useState(false)
+  const [contentHeight, setContentHeight] = useState(0)
 
   useEffect(() => {
-    if (descriptionRef.current) {
-      setDescriptionOverflows(descriptionRef.current.scrollHeight > 500)
+    const checkContentHeight = () => {
+      if (descriptionRef.current) {
+        const height = descriptionRef.current.scrollHeight
+        setContentHeight(height)
+        setDescriptionOverflows(height > 500)
+      }
     }
-  }, [course.description])
+
+    // Initial check
+    checkContentHeight()
+
+    // Set up a resize observer to detect content changes
+    const resizeObserver = new ResizeObserver(() => {
+      checkContentHeight()
+    })
+
+    if (descriptionRef.current) {
+      resizeObserver.observe(descriptionRef.current)
+    }
+
+    // Add a small delay to check again after content might have rendered
+    const timer = setTimeout(() => {
+      checkContentHeight()
+    }, 100)
+
+    return () => {
+      if (descriptionRef.current) {
+        resizeObserver.unobserve(descriptionRef.current)
+      }
+      clearTimeout(timer)
+    }
+  }, [course?.description])
 
   if (loading) {
     return (
@@ -190,33 +219,38 @@ export default function CourseDetail({
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              <Card className="bg-gray-900 border-gray-700/50">
+              <Card className="bg-gray-900/50 border-gray-700/50">
                 <CardContent>
-                  <div className="relative">
-                    <ScrollArea
-                      ref={descriptionRef}
-                      className={`pr-4 pt-4 ${!showFullDescription ? "max-h-[400px] overflow-hidden" : ""}`}
-                    >
-                      <RenderMarkdown className="text-text-primary leading-relaxed" content={course.description} />
-                    </ScrollArea>
-                    {descriptionRef.current && descriptionRef.current.scrollHeight > 400 && (
-                      <div
-                        className={`${!showFullDescription
-                          ? "absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-gray-900 to-transparent flex items-end justify-center pb-2"
-                          : "mt-4 text-center"
-                        }`}
+                  {course?.description ? (
+                    <div className="relative">
+                      <ScrollArea
+                        ref={descriptionRef}
+                        className={`pr-4 pt-4 ${!showFullDescription ? "max-h-[500px] overflow-hidden" : ""}`}
                       >
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setShowFullDescription(!showFullDescription)}
-                          className="text-primary hover:text-bg-card"
+                        <RenderMarkdown className="text-text-primary leading-relaxed" content={course.description} />
+                      </ScrollArea>
+                      {descriptionOverflows && (
+                        <div
+                          className={`${
+                            !showFullDescription
+                              ? "absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-gray-900/90 to-transparent flex items-end justify-center pb-2"
+                              : "mt-4 text-center"
+                          }`}
                         >
-                          {showFullDescription ? "View Less" : "View More"}
-                        </Button>
-                      </div>
-                    )}
-                  </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowFullDescription(!showFullDescription)}
+                            className="text-primary hover:text-primary/80"
+                          >
+                            {showFullDescription ? "View Less" : "View More"}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="py-4 text-gray-400 italic text-center">No description available</div>
+                  )}
                 </CardContent>
               </Card>
 

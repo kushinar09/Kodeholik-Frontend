@@ -1,7 +1,6 @@
 "use client"
 
 import { useAuth } from "@/providers/AuthProvider"
-import "highlight.js/styles/default.css"
 import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 import { Button } from "@/components/ui/button"
 import { CodeHighlighter } from "@/components/common/editor-code/code-highlighter"

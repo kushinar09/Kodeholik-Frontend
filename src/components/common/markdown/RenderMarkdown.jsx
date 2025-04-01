@@ -1,27 +1,32 @@
 "use client"
 
 import { marked } from "marked"
-import { useMemo } from "react"
+import { useMemo, useEffect, useRef } from "react"
 import { ENDPOINTS } from "@/lib/constants"
 import "./styles.css"
 
-// // Import styles
-// import "@/components/common/editor-code/css/prism-darcula.css"
-// import "@/components/common/editor-code/css/prism-atom-dark.css"
+// Import ReactDOM for client-side rendering
+import { createRoot } from "react-dom/client"
+import { CodeHighlighter } from "../editor-code/code-highlighter"
 
 const imageUrlCache = new Map()
 
 export default function RenderMarkdown({ content, className = "" }) {
-
   const markdownContent = content || ""
+  const containerRef = useRef(null)
 
   const renderMarkdown = (content) => {
     const customRenderer = new marked.Renderer()
     const lockedCodeRegex = /LOCKED-CODE\s*([\s\S]*?)\s*LOCKED-CODE/g
 
     content = content.replace(lockedCodeRegex, (match, codeContent) => {
-      return `<div class="locked-code"><pre><code class="language-java font-code">${codeContent.trim()}</code></pre></div>`
+      return `<div 
+      class="locked-code code-highlighter-placeholder"
+      data-code="${encodeURIComponent(codeContent.trim())}" 
+        data-language="${"java"}"
+      ></div>`
     })
+
     customRenderer.image = (href) => {
       const title = href.title || ""
       const text = href.text || ""
@@ -74,12 +79,23 @@ export default function RenderMarkdown({ content, className = "" }) {
       return `<img src="${href.href}" alt="${text}" title="${title || ""}" />`
     }
 
-    marked.use(
-      {
-        renderer: customRenderer
+    // For code blocks, create a placeholder with data attributes
+    customRenderer.code = (code) => {
+      // Create a unique ID for this code block
+      const id = `code-${Math.random().toString(36).substring(2, 11)}`
 
-      }
-    )
+      // Return a placeholder div with data attributes
+      return `<div 
+        id="${id}" 
+        class="code-highlighter-placeholder" 
+        data-code="${encodeURIComponent(code.text)}" 
+        data-language="${"java"}"
+      ></div>`
+    }
+
+    marked.use({
+      renderer: customRenderer
+    })
 
     return marked(content)
   }
@@ -87,15 +103,34 @@ export default function RenderMarkdown({ content, className = "" }) {
   // Memoize the rendered markdown
   const renderedMarkdown = useMemo(() => renderMarkdown(markdownContent), [markdownContent])
 
+  // After the component renders, replace placeholders with React components
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    // Find all code block placeholders
+    const placeholders = containerRef.current.querySelectorAll(".code-highlighter-placeholder")
+
+    // Replace each placeholder with the CodeHighlighter component
+    placeholders.forEach((placeholder) => {
+      const code = decodeURIComponent(placeholder.getAttribute("data-code"))
+      const language = placeholder.getAttribute("data-language")
+
+      // Create a root for this placeholder
+      const root = createRoot(placeholder)
+
+      // Render the CodeHighlighter component
+      root.render(<CodeHighlighter code={code} language={language} showLineNumbers={true} className="rounded-md my-2" />)
+    })
+  }, [renderedMarkdown])
+
   return (
-    <>
-      <div>
-        <div
-          className={`markdown prose prose-sm dark:prose-invert max-w-none ${className}`}
-          dangerouslySetInnerHTML={{ __html: renderedMarkdown }}
-        />
-      </div>
-    </>
+    <div>
+      <div
+        ref={containerRef}
+        className={`markdown prose prose-sm dark:prose-invert max-w-none ${className}`}
+        dangerouslySetInnerHTML={{ __html: renderedMarkdown }}
+      />
+    </div>
   )
 }
 
