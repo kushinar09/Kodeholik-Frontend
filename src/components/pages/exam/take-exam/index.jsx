@@ -28,7 +28,7 @@ export default function TakeExam({
   onPenalty = null,
   onRun,
   onCodeChange,
-  handleChangeProblem,
+  handleChangeProblem
 }) {
   // Panel state
   const [leftSize, setLeftSize] = useState(50)
@@ -39,6 +39,7 @@ export default function TakeExam({
   const [isRunning, setIsRunning] = useState(false)
   // Code state
   const [code, setCode] = useState(codeStore || compileInformation[0]?.template || "")
+  const [staticCode, setStaticCode] = useState(compileInformation[0]?.importCommands.join("\n") || "")
   const [language, setLanguage] = useState(languageStore || compileInformation[0]?.language || "")
   const [availableLanguages, setAvailableLanguages] = useState([])
   const [testCases, setTestCases] = useState(compileInformation[0]?.testCases || [])
@@ -198,6 +199,7 @@ export default function TakeExam({
                 <CodePanel
                   isCompact={isCompactRight}
                   code={code}
+                  staticCode={staticCode}
                   onCodeChange={handleCodeChange}
                   language={language || ""}
                   onLanguageChange={handleLanguageChange}
