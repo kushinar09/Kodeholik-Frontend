@@ -175,7 +175,7 @@ export default function CoursePage() {
               <h2 className="text-xl font-semibold">
                 {searchQuery ? `Results for "${searchQuery}"` : "All Courses"}
               </h2>
-              <Select 
+              <Select
                 onValueChange={handleSortChange}
                 defaultValue="title"
               >
@@ -257,7 +257,7 @@ export default function CoursePage() {
                 </svg>
                 <h3 className="text-xl font-semibold mb-2">No courses found</h3>
                 <p className="text-muted-foreground max-w-md">
-                  We couldn't find any courses matching your search criteria. Try adjusting your filters or search term.
+                  We couldn&apos;t find any courses matching your search criteria. Try adjusting your filters or search term.
                 </p>
                 <Button className="mt-4 text-bg-card" onClick={handleClearFilters}>
                   Clear filters
