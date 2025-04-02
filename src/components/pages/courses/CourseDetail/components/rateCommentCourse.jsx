@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { rateCommentCourse, getRateCommentCourse, getCourse, checkEnrollCourse } from "@/lib/api/course_api"
 import { cn } from "@/lib/utils"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 
 export default function RateCommentCourse({ courseId, setCourse, isAuthenticated, isEnrolled }) {
   const navigate = useNavigate()
@@ -23,6 +24,8 @@ export default function RateCommentCourse({ courseId, setCourse, isAuthenticated
   const [hoverRating, setHoverRating] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
 
+  const { apiCall } = useAuth()
+
   const ITEMS_PER_PAGE = 3
 
   useEffect(() => {
@@ -33,12 +36,12 @@ export default function RateCommentCourse({ courseId, setCourse, isAuthenticated
           throw new Error("Invalid courseId provided")
         }
 
-        const fetchedComments = await getRateCommentCourse(courseId)
+        const fetchedComments = await getRateCommentCourse(apiCall, courseId)
         console.log("Successfully fetched comments:", fetchedComments)
         setComments(Array.isArray(fetchedComments) ? fetchedComments : [])
         setCurrentPage(1)
         if (isAuthenticated) {
-          const enrolled = await checkEnrollCourse(courseId)
+          const enrolled = await checkEnrollCourse(apiCall, courseId)
           console.log("Enrollment status for course", courseId, ":", enrolled)
         }
       } catch (error) {
@@ -116,41 +119,34 @@ export default function RateCommentCourse({ courseId, setCourse, isAuthenticated
       }
       console.log("Submitting payload:", JSON.stringify(data))
 
-      const apiCall = async (url, options) => {
-        console.log("Request URL:", url)
-        console.log("Request Options:", options)
-        const response = await fetch(url, options)
-        console.log("Raw Response Status:", response.status)
-        if (!response.ok) {
-          const errorText = await response.text()
-          console.error("Server error response:", errorText)
-          throw new Error(`Failed to submit rating and comment: ${response.status} - ${errorText}`)
-        }
-        const responseData = await response.json()
-        console.log("Server success response:", responseData)
-        return responseData
-      }
-
       const submittedData = await rateCommentCourse(data, apiCall)
-      setSubmitSuccess("Rating and comment submitted successfully!")
+      if (submittedData.ok) {
+        setSubmitSuccess("Rating and comment submitted successfully!")
 
-      setComments((prev) => [submittedData, ...prev])
-      setCurrentPage(1)
+        setComments((prev) => [submittedData, ...prev])
+        setCurrentPage(1)
 
-      const updatedCourse = await getCourse(courseId)
-      setCourse(updatedCourse)
+        const updatedCourse = await getCourse(apiCall, courseId)
+        setCourse(updatedCourse)
 
-      setRating(0)
-      setComment("")
-      setRatingError("")
-      setCommentError("")
+        setRating(0)
+        setComment("")
+        setRatingError("")
+        setCommentError("")
 
-      const fetchedComments = await getRateCommentCourse(courseId)
-      console.log("Refetched comments after submission:", fetchedComments)
-      setComments(Array.isArray(fetchedComments) ? fetchedComments : [submittedData])
+        const fetchedComments = await getRateCommentCourse(apiCall, courseId)
+        setComments(Array.isArray(fetchedComments) ? fetchedComments : [submittedData])
+      } else {
+        const response = await submittedData.json()
+        toast.error("Error when comment", {
+          description: response.message
+        })
+      }
     } catch (error) {
       setSubmitError(error.message)
-      console.error("Submission error:", error)
+      toast.error("Error when comment", {
+        description: error.message
+      })
     } finally {
       setSubmitLoading(false)
     }

@@ -1,4 +1,4 @@
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { ENDPOINTS } from "../constants"
 import { MESSAGES } from "../messages"
 
@@ -248,20 +248,16 @@ export async function postSolution(apiCall, solution) {
         else {
           value += errorData.message
         }
-        toast({
-          title: "Error",
-          description: value,
-          variant: "destructive" // destructive
+        toast.error("Error", {
+          description: value
         })
       } catch (error) {
         console.error("Error parsing error response:", error)
       }
     }
     else if (response.status == 500) {
-      toast({
-        title: "Error",
-        description: MESSAGES.MSG01,
-        variant: "destructive" // destructive
+      toast.error("Error", {
+        description: MESSAGES.MSG01
       })
     }
     else if (response.status === 404) {
@@ -300,20 +296,16 @@ export async function editSolution(apiCall, solution, id) {
         else {
           value += errorData.message
         }
-        toast({
-          title: "Error",
-          description: value,
-          variant: "destructive" // destructive
+        toast.error("Error", {
+          description: value
         })
       } catch (error) {
         console.error("Error parsing error response:", error)
       }
     }
     else if (response.status == 500) {
-      toast({
-        title: "Error",
-        description: MESSAGES.MSG01,
-        variant: "destructive" // destructive
+      toast.error("Error", {
+        description: MESSAGES.MSG01
       })
     }
     throw new Error("Failed to edit solution")

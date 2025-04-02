@@ -8,14 +8,15 @@ export default function DocumentLesson({ attachedFile, onDownload, resourceError
 
   return (
     <>
-      <div className="flex flex-col items-center justify-center h-64 bg-gray-900/50 p-6">
+      <div className="relative flex flex-col items-center justify-center h-64 bg-gray-900/50 p-6">
         <FileText className="h-16 w-16 text-blue-400 mb-4" />
         <p className="text-gray-300 mb-4 text-center">{getDisplayFileName(attachedFile)}</p>
         <Button
           onClick={onDownload}
-          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-all"
+          size="icon"
+          className="absolute top-2 right-2 bg-transparent hover:text-bg-card transition-all"
         >
-          <Download className="h-4 w-4 mr-2" /> Download Document
+          <Download />
         </Button>
       </div>
       {resourceError && (

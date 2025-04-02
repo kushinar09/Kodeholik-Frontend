@@ -22,8 +22,6 @@ const NotFoundError = lazy(() => import("./components/pages/errors/not-found-err
 const GeneralError = lazy(() => import("./components/pages/errors/general-error"))
 const MaintenanceError = lazy(() => import("./components/pages/errors/maintenance-error"))
 const WaitingRoom = lazy(() => import("./components/pages/exam/waiting-room"))
-const CreateCourse = lazy(() => import("./components/pages/courses/CreateCourse"))
-const UpdateCourse = lazy(() => import("./components/pages/courses/UpdateCourse"))
 const ExamList = lazy(() => import("./components/pages/exam/list"))
 const Profile = lazy(() => import("./components/pages/profile"))
 const ShareSolution = lazy(() => import("./components/pages/problems/ShareSolution"))
@@ -75,8 +73,6 @@ function App() {
                   {/* course */}
                   <Route path="/courses" element={<CoursePage />} />
                   <Route path="/courses/:id" element={<CourseDetail />} />
-                  <Route path="/courses/add" element={<CreateCourse />} />
-                  <Route path="/courses/update/:id" element={<UpdateCourse />} />
                   <Route path="/learn" element={<LearnThroughVideoAndText />} />
 
                   {/* profile */}

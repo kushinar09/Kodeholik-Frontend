@@ -3,8 +3,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { MessageCircle} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { unupvoteSolution, upvoteSolution } from "@/lib/api/problem_api"
-import { toast } from "@/hooks/use-toast"
 import { useAuth } from "@/providers/AuthProvider"
+import { toast } from "sonner"
 
 export default function SolutionCard({ infor, solutions, setSolutions, handleClickSolution }) {
   const { apiCall } = useAuth()
@@ -15,15 +15,12 @@ export default function SolutionCard({ infor, solutions, setSolutions, handleCli
     .toUpperCase()
 
   const toggleUpvote = async (id) => {
-    console.log(solutions)
     try {
       if (!infor.currentUserVoted) {
         const response = await upvoteSolution(apiCall, infor.id)
         if (response.status) {
-          toast({
-            title: "Upvote Solution",
-            description: "Upvote solution successful",
-            variant: "default" // destructive
+          toast.success("Upvote Solution", {
+            description: "Upvote solution successful"
           })
           setSolutions((prevSolution) => ({
             ...prevSolution,
@@ -37,10 +34,8 @@ export default function SolutionCard({ infor, solutions, setSolutions, handleCli
       else {
         const response = await unupvoteSolution(apiCall, infor.id)
         if (response.status) {
-          toast({
-            title: "Unupvote Solution",
-            description: "Unupvote solution successful",
-            variant: "default" // destructive
+          toast.success("Unupvote Solution", {
+            description: "Unupvote solution successful"
           })
           setSolutions((prevSolution) => ({
             ...prevSolution,
@@ -74,11 +69,6 @@ export default function SolutionCard({ infor, solutions, setSolutions, handleCli
             </div>
             <div className="cursor-pointer">
               <p className="text-lg font-semibold mb-3" onClick={() => handleClickSolution(infor.id)}>{infor.title}</p>
-              {/* <div className="flex flex-wrap gap-2 mb-4">
-                <Badge variant="secondary">Java</Badge>
-                <Badge variant="secondary">Easy</Badge>
-                <Badge variant="secondary">Solution</Badge>
-              </div> */}
               <div className="flex items-center gap-6 text-muted-foreground text-sm">
                 <div className="flex items-center gap-2">
                   <Button onClick={() => toggleUpvote(infor.id)} variant="ghost" size="icon" className="h-3 w-3">

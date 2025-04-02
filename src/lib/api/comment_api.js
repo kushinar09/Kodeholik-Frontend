@@ -1,6 +1,6 @@
-import { toast } from "@/hooks/use-toast";
-import { ENDPOINTS } from "../constants";
-import { MESSAGES } from "../messages";
+import { toast } from "sonner"
+import { ENDPOINTS } from "../constants"
+import { MESSAGES } from "../messages"
 
 export async function upvoteComment(apiCall, id) {
   const url = `${ENDPOINTS.UPVOTE_COMMENT}${id}`
@@ -13,24 +13,20 @@ export async function upvoteComment(apiCall, id) {
   if (!response.ok) {
     if (response.status == 400) {
       try {
-        const errorData = await response.json();
-        toast({
-          title: "Error",
-          description: errorData.message,
-          variant: "destructive" // destructive
+        const errorData = await response.json()
+        toast.error("Error", {
+          description: errorData.message
         })
       } catch (error) {
-        console.error("Error parsing error response:", error);
+        console.error("Error parsing error response:", error)
       }
     }
     else if (response.status == 500) {
-      toast({
-        title: "Error",
-        description: MESSAGES.MSG01,
-        variant: "destructive" // destructive
+      toast.error("Error", {
+        description: MESSAGES.MSG01
       })
     }
-    throw new Error("Failed to upvote");
+    throw new Error("Failed to upvote")
   }
   else {
     const text = await response.text()
@@ -50,24 +46,20 @@ export async function unupvoteComment(apiCall, id) {
   if (!response.ok) {
     if (response.status == 400) {
       try {
-        const errorData = await response.json();
-        toast({
-          title: "Error",
-          description: errorData.message,
-          variant: "destructive" // destructive
+        const errorData = await response.json()
+        toast.error("Error", {
+          description: errorData.message
         })
       } catch (error) {
-        console.error("Error parsing error response:", error);
+        console.error("Error parsing error response:", error)
       }
     }
     else if (response.status == 500) {
-      toast({
-        title: "Error",
-        description: MESSAGES.MSG01,
-        variant: "destructive" // destructive
+      toast.error("Error", {
+        description: MESSAGES.MSG01
       })
     }
-    throw new Error("Failed to unupvote");
+    throw new Error("Failed to unupvote")
   }
   else {
     const text = await response.text()
@@ -88,24 +80,20 @@ export async function editComment(apiCall, id, comment) {
   if (!response.ok) {
     if (response.status == 400) {
       try {
-        const errorData = await response.json();
-        toast({
-          title: "Error",
-          description: errorData.message,
-          variant: "destructive" // destructive
+        const errorData = await response.json()
+        toast.error("Error", {
+          description: errorData.message
         })
       } catch (error) {
-        console.error("Error parsing error response:", error);
+        console.error("Error parsing error response:", error)
       }
     }
     else if (response.status == 500) {
-      toast({
-        title: "Error",
-        description: MESSAGES.MSG01,
-        variant: "destructive" // destructive
+      toast.error("Error", {
+        description: MESSAGES.MSG01
       })
     }
-    throw new Error("Failed to unupvote");
+    throw new Error("Failed to unupvote")
   }
   else {
     const text = await response.text()

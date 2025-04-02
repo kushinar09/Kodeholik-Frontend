@@ -8,6 +8,7 @@ import { useState } from "react"
 export default function CodePanel({
   isCompact,
   code,
+  staticCode,
   onCodeChange,
   language,
   onLanguageChange,
@@ -57,7 +58,7 @@ export default function CodePanel({
         </div>
       </div>
       <div className={cn("overflow-auto flex-1", isCompact ? "justify-center hidden" : "")}>
-        <div className="min-w-[420px] h-full">
+        <div className="min-w-[420px] h-full flex flex-col">
           {code && (
             <>
               <div className={cn("m-1", isCompact ? "w-full mt-4" : "flex-shrink-0")}>
@@ -76,7 +77,7 @@ export default function CodePanel({
                   </SelectContent>
                 </Select>
               </div>
-              <CodeEditor initialCode={code} onChange={onCodeChange} language={selectedLanguage} />
+              <CodeEditor className="flex-1" initialCode={code} staticCode={staticCode} onChange={onCodeChange} language={selectedLanguage} />
             </>
           )}
         </div>
