@@ -73,12 +73,12 @@ function App() {
                   {/* course */}
                   <Route path="/courses" element={<CoursePage />} />
                   <Route path="/courses/:id" element={<CourseDetail />} />
+                  <Route path="/learn/:id" element={<LearnThroughVideoAndText />} />
+                  <Route path="/course/discusdion" element={<CourseDiscussion />} />
                   <Route path="/learn" element={<LearnThroughVideoAndText />} />
 
                   {/* profile */}
                   <Route path="/profile" element={<Profile />} />
-                  <Route path="/learn/:id" element={<LearnThroughVideoAndText />} />
-                  <Route path="/course/discusdion" element={<CourseDiscussion />} />
 
                   {/* error */}
                   <Route path="/401" element={<UnauthorisedError />} />
