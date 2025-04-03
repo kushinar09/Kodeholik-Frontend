@@ -18,10 +18,10 @@ self.MonacoEnvironment = {
       html: "html.worker.js",
       typescript: "ts.worker.js",
       javascript: "ts.worker.js",
-      java: "editor.worker.js",
+      java: "editor.worker.js"
     }
     return `/monaco-editor-worker/${workerMap[label] || "editor.worker.js"}`
-  },
+  }
 }
 
 export default function CodeEditor({ initialCode, staticCode = "", onChange, className = "", language = "java" }) {
@@ -34,6 +34,7 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
   const previousInitialCodeRef = useRef("")
   const previousStaticCodeRef = useRef("")
   const resizeObserverRef = useRef(null)
+  const [staticEditorHeight, setStaticEditorHeight] = useState(0) // Track static editor height
 
   // Create or update static editor
   const setupStaticEditor = (code) => {
@@ -67,14 +68,14 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
         lineNumbers: "off",
         scrollbar: {
           vertical: "hidden",
-          horizontal: "hidden",
+          horizontal: "hidden"
         },
         glyphMargin: false,
         folding: false,
         lineDecorationsWidth: 0,
         lineNumbersMinChars: 0,
         language: language.toLowerCase(),
-        wordWrap: "on", // Enable word wrap for better display
+        wordWrap: "on" // Enable word wrap for better display
       })
 
       return staticEditorInstance
@@ -92,12 +93,20 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
       // Get the content height directly from the editor
       const contentHeight = staticEditor.getContentHeight()
 
+      // Update state with the new height
+      setStaticEditorHeight(contentHeight)
+
       // Set the height of the container
       if (staticEditorRef.current) {
         staticEditorRef.current.style.height = `${contentHeight}px`
 
         // Force layout update
         staticEditor.layout()
+
+        // Also update the main editor layout to ensure proper coordination
+        if (editor) {
+          editor.layout()
+        }
       }
     } catch (error) {
       console.error("Error adjusting editor heights:", error)
@@ -118,6 +127,11 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
         glyphMargin: true,
         scrollBeyondLastLine: true,
         language: language.toLowerCase(),
+        scrollbar: {
+          // Configure scrollbars to work with container
+          vertical: "auto",
+          horizontal: "auto"
+        }
       })
 
       if (!isCompletionProviderRegistered) {
@@ -151,6 +165,11 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
       if (newStaticEditor) {
         setStaticEditor(newStaticEditor)
         previousStaticCodeRef.current = staticCode
+
+        // Initial height adjustment after a short delay
+        setTimeout(() => {
+          adjustEditorHeights()
+        }, 50)
       }
     }
 
@@ -211,8 +230,8 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
         {
           range: model.getFullModelRange(),
           text: initialCode || INITIAL_CODE_DEFAULT,
-          forceMoveMarkers: true,
-        },
+          forceMoveMarkers: true
+        }
       ])
 
       // Restore cursor position and selections if possible
@@ -323,10 +342,10 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
             {
               range: new monaco.Range(lineNumber, 1, lineNumber, 1),
               options: {
-                glyphMarginClassName: "breakpoint-icon",
-              },
-            },
-          ],
+                glyphMarginClassName: "breakpoint-icon"
+              }
+            }
+          ]
         )
         updatedBreakpoints.set(lineNumber, newDecorations[0])
       }
@@ -336,12 +355,18 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
   }
 
   return (
-    <div ref={containerRef} className={`code-editor-container w-full ${className}`}>
-      {/* Static code editor (read-only with syntax highlighting) */}
-      {staticCode && <div ref={staticEditorRef} className="static-code-editor" />}
+    <div ref={containerRef} className={`code-editor-container w-full ${className} no-scrollbar`}>
+      {/* Wrapper div to control the layout */}
+      <div className="editors-wrapper">
+        {/* Static code editor (read-only with syntax highlighting) */}
+        {staticCode && <div ref={staticEditorRef} className="static-code-editor" />}
 
-      {/* Main editor for editable code */}
-      <div ref={editorRef} className="main-code-editor" />
+        {/* Divider between editors */}
+        {staticCode && <div className="static-code-divider" />}
+
+        {/* Main editor for editable code */}
+        <div ref={editorRef} className="main-code-editor" />
+      </div>
 
       <style>
         {`
@@ -350,23 +375,34 @@ export default function CodeEditor({ initialCode, staticCode = "", onChange, cla
             flex-direction: column;
             border: 1px solid #e0e0e0;
             overflow: auto;
+            height: 100%;
+          }
+          
+          .editors-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
           }
           
           .static-code-editor {
             background-color: rgba(0, 0, 0, 0.03);
-            border-bottom: none;
             margin-left: 43px;
+            min-height: 20px;
+            flex-shrink: 0; /* Prevent shrinking */
           }
           
           .static-code-divider {
             height: 1px;
             background-color: #e0e0e0;
             width: 100%;
+            flex-shrink: 0; /* Prevent shrinking */
           }
           
           .main-code-editor {
             width: 100%;
-            flex-grow: 1;
+            flex: 1 1 0%;
+            min-height: 100px; /* Ensure minimum height */
           }
           
           .breakpoint-icon::after {

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { CodeHighlighter } from "@/components/common/editor-code/code-highlighter"
 import { copyToClipboard } from "@/lib/utils/format-utils"
 import { useEffect, useState } from "react"
-import { Check, Copy, RotateCcw } from "lucide-react"
+import { Check, Copy } from "lucide-react"
 
 export default function ProblemEditorial({ editorial, isLoadingEditorial }) {
   const { isAuthenticated } = useAuth()

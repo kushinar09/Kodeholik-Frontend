@@ -5,9 +5,8 @@ import { cn } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Check, Clock, Copy, Cpu, Info, RotateCcw, Sparkles, TrendingUp } from "lucide-react"
+import { Check, Clock, Copy, Cpu, Info, RotateCcw } from "lucide-react"
 import { formatValue, copyToClipboard } from "@/lib/utils/format-utils"
-import hljs from "highlight.js"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useNavigate } from "react-router-dom"
 import { CodeHighlighter } from "@/components/common/editor-code/code-highlighter"
@@ -16,13 +15,6 @@ export default function SubmittedCodeView({ submitted, setActiveTab, problemLink
   const [isExpanded, setIsExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
   const navigate = useNavigate()
-
-  // useEffect(() => {
-  //   document.querySelectorAll("pre code").forEach((block) => {
-  //     if (!(block.hasAttribute("data-highlighted") && block.getAttribute("data-highlighted") == "yes"))
-  //       hljs.highlightElement(block)
-  //   })
-  // }, [])
 
   useEffect(() => {
     setCopied(false)
