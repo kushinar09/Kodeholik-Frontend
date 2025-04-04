@@ -17,7 +17,7 @@ import {
   BookOpen,
   MessageSquare
 } from "lucide-react"
-import { getCourse, courseRegisterIn, courseRegisterOUT } from "@/lib/api/course_api"
+import { getCourse, courseRegisterIn, courseRegisterOUT, completedAndSendMail } from "@/lib/api/course_api"
 import { getLessonById, completedLesson, downloadFileLesson } from "@/lib/api/lesson_api"
 import VideoLesson from "./components/videoLesson"
 import DocumentLesson from "./components/documentLesson"
@@ -27,7 +27,6 @@ import FooterSection from "@/components/common/shared/footer"
 import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 import CourseDiscussion from "@/components/pages/courses/CourseDetail/components/CourseDiscussion"
 import HeaderSection from "@/components/common/shared/header"
-import { useAuth } from "@/providers/AuthProvider"
 
 export default function LearnThroughVideoAndText() {
   const { id } = useParams()
@@ -70,18 +69,19 @@ export default function LearnThroughVideoAndText() {
       }
     }
 
+    // Add event listener for page unload
+    console.log("[Registration] Adding beforeunload event listener")
     window.addEventListener("beforeunload", () => {
       registerOut()
     })
 
-    // Cleanup function for navigation or unmount
     return () => {
       registerOut()
       window.removeEventListener("beforeunload", registerOut)
     }
   }, [id])
 
-  // Existing useEffect for fetching course data (unchanged, but keeping for completeness)
+  // useEffect for fetching course data
   useEffect(() => {
     const fetchCourseData = async () => {
       if (!id) {
@@ -197,15 +197,30 @@ export default function LearnThroughVideoAndText() {
 
       const updatedCourse = await getCourse(apiCall, id)
       const apiProgress = updatedCourse.progress
+      let newProgress
+
       if (apiProgress !== null && apiProgress !== undefined) {
-        setProgress(apiProgress)
+        newProgress = apiProgress
+        setProgress(newProgress)
       } else {
         const totalLessons = chapters.reduce((sum, chapter) => sum + (chapter.lessons?.length || 0), 0)
         const completedLessons = chapters.reduce(
           (sum, chapter) => sum + (chapter.lessons?.filter(l => l.completed || l.id === selectedLesson.id).length || 0),
           0
         )
-        setProgress(totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0)
+        newProgress = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0
+        setProgress(newProgress)
+      }
+
+      // Check if progress is 100% and call completedAndSendMail
+      if (newProgress >= 100) {
+        console.log(`[Course Completion] Progress reached 100% for course ID: ${id}, calling completedAndSendMail`)
+        try {
+          await completedAndSendMail(id)
+          console.log(`[Course Completion] Successfully called completedAndSendMail for course ID: ${id}`)
+        } catch (error) {
+          console.error(`[Course Completion] Failed to call completedAndSendMail for course ID: ${id}:`, error)
+        }
       }
     } catch (err) {
       console.error("Failed to mark lesson as complete:", err)

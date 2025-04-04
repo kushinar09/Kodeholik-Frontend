@@ -100,6 +100,7 @@ const ENDPOINTS = {
   POST_COURSE_DISCUSSION: `${API_URL}/course/comment`,
   UPVOTE_COURSE_DISCUSSION: `${API_URL}/comment/upvote/:id`,
   UN_UPVOTE_COURSE_DISCUSSION: `${API_URL}/comment/unupvote/:id`,
+  COMPLETED_COURSE: `${API_URL}/course/completed/:id`,
 
   //Lesson
   GET_LESSON_DETAIL: `${API_URL}/lesson/detail/:id`,
