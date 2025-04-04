@@ -112,6 +112,7 @@ const ENDPOINTS = {
   POST_COURSE_DISCUSSION: `${API_URL}/course/comment`,
   UPVOTE_COURSE_DISCUSSION: `${API_URL}/comment/upvote/:id`,
   UN_UPVOTE_COURSE_DISCUSSION: `${API_URL}/comment/unupvote/:id`,
+  COMPLETED_COURSE: `${API_URL}/course/completed/:id`,
 
   //Chapter
   GET_CHAPTERS: `${API_URL}/chapter/list`,

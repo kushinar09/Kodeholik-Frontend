@@ -17,7 +17,7 @@ import {
   BookOpen,
   MessageSquare
 } from "lucide-react"
-import { getCourse, courseRegisterIn, courseRegisterOUT } from "@/lib/api/course_api"
+import { getCourse, courseRegisterIn, courseRegisterOUT, completedAndSendMail } from "@/lib/api/course_api"
 import { getLessonById, completedLesson, downloadFileLesson } from "@/lib/api/lesson_api"
 import VideoLesson from "./components/videoLesson"
 import DocumentLesson from "./components/documentLesson"
@@ -27,6 +27,39 @@ import FooterSection from "@/components/common/shared/footer"
 import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 import CourseDiscussion from "@/components/pages/courses/CourseDetail/components/CourseDiscussion"
 import HeaderSection from "@/components/common/shared/header"
+
+export async function completedAndSendMail(id) {
+  const url = ENDPOINTS.COMPLETED_COURSE.replace(":id", id)
+  console.log(`[courseCompleted] Starting for course ID: ${id}, URL: ${url}`)
+
+  try {
+    console.log(`[courseCompleted] Sending POST request to ${url}`)
+    const response = await fetch(url, {
+      method: "POST",
+      credentials: "include"
+    })
+
+    console.log(`[courseCompleted] Response status: ${response.status}`)
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`[courseCompleted] Failed with status: ${response.status}, Error: ${errorText}`)
+      throw new Error(`Failed to register-out: ${response.status} - ${errorText}`)
+    }
+
+    if (response.status === 204) {
+      console.log(`[courseCompleted] Success - No content (204) for course ID: ${id}`)
+      return { success: true }
+    }
+
+    const responseData = await response.json()
+    console.log("[courseCompleted] Success - Response data:", responseData)
+    return responseData
+  } catch (error) {
+    console.error(`[courseCompleted] Error for course ID: ${id}:`, error.message)
+    throw error
+  }
+}
 
 export default function LearnThroughVideoAndText() {
   const { id } = useParams()
@@ -73,14 +106,12 @@ export default function LearnThroughVideoAndText() {
       }
     }
 
-    // Add event listener for page unload
     console.log("[Registration] Adding beforeunload event listener")
     window.addEventListener("beforeunload", () => {
       console.log("[Registration] beforeunload event triggered")
       registerOut()
     })
 
-    // Cleanup function for navigation or unmount
     return () => {
       console.log(`[Registration] Component unmounting or navigating away for course ID: ${id}`)
       registerOut()
@@ -89,7 +120,7 @@ export default function LearnThroughVideoAndText() {
     }
   }, [id])
 
-  // Existing useEffect for fetching course data (unchanged, but keeping for completeness)
+  // useEffect for fetching course data
   useEffect(() => {
     const fetchCourseData = async () => {
       if (!id) {
@@ -212,15 +243,30 @@ export default function LearnThroughVideoAndText() {
 
       const updatedCourse = await getCourse(id)
       const apiProgress = updatedCourse.progress
+      let newProgress
+
       if (apiProgress !== null && apiProgress !== undefined) {
-        setProgress(apiProgress)
+        newProgress = apiProgress
+        setProgress(newProgress)
       } else {
         const totalLessons = chapters.reduce((sum, chapter) => sum + (chapter.lessons?.length || 0), 0)
         const completedLessons = chapters.reduce(
           (sum, chapter) => sum + (chapter.lessons?.filter(l => l.completed || l.id === selectedLesson.id).length || 0),
           0
         )
-        setProgress(totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0)
+        newProgress = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0
+        setProgress(newProgress)
+      }
+
+      // Check if progress is 100% and call completedAndSendMail
+      if (newProgress >= 100) {
+        console.log(`[Course Completion] Progress reached 100% for course ID: ${id}, calling completedAndSendMail`)
+        try {
+          await completedAndSendMail(id)
+          console.log(`[Course Completion] Successfully called completedAndSendMail for course ID: ${id}`)
+        } catch (error) {
+          console.error(`[Course Completion] Failed to call completedAndSendMail for course ID: ${id}:`, error)
+        }
       }
     } catch (err) {
       console.error("Failed to mark lesson as complete:", err)
