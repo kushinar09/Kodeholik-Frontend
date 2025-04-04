@@ -529,7 +529,7 @@ export async function completedAndSendMail(id) {
   console.log(`[courseCompleted] Starting for course ID: ${id}, URL: ${url}`)
 
   try {
-    console.log(`[courseCompleted] Sending PUT request to ${url}`)
+    console.log(`[courseCompleted] Sending POST request to ${url}`)
     const response = await fetch(url, {
       method: "POST",
       credentials: "include"
