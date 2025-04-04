@@ -19,6 +19,12 @@ export const SocketProvider = ({ children }) => {
   const [hasMorePages, setHasMorePages] = useState(true)
   const [totalPages, setTotalPages] = useState(1)
   const [notiToken, setNotiToken] = useState(null)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  const updateDocumentTitle = (count) => {
+    const baseTitle = document.title.replace(/^\(\d+\) /, "")
+    document.title = count > 0 ? `(${count}) ${baseTitle}` : baseTitle
+  }
 
   // Fetch notification token
   useEffect(() => {
@@ -58,6 +64,11 @@ export const SocketProvider = ({ children }) => {
         setNotifications(data.content)
         setTotalPages(data.totalPages)
         setHasMorePages(data.totalPages > 1)
+
+        // Count unread notifications and update title
+        const count = data.content.filter((n) => n.unread).length
+        setUnreadCount(count)
+        updateDocumentTitle(count)
       } catch (error) {
         console.error("Error fetching notifications:", error)
       }
@@ -74,7 +85,7 @@ export const SocketProvider = ({ children }) => {
       },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
+      heartbeatOutgoing: 4000
     })
 
     // Handle connection
@@ -83,19 +94,28 @@ export const SocketProvider = ({ children }) => {
 
       client.subscribe("/notification/" + user.username, (message) => {
         try {
-          const notification = JSON.parse(message.body)
-          // Add to notifications state
-          setNotifications((prev) => [notification, ...prev])
+          const notification = {
+            ...JSON.parse(message.body),
+            unread: true
+          }
+          setNotifications((prev) => {
+            const newNotifications = [notification, ...prev]
+            const newUnreadCount = newNotifications.filter((n) => n.unread).length
+            setUnreadCount(newUnreadCount)
+            updateDocumentTitle(newUnreadCount)
+            return newNotifications
+          })
+
           // Show toast notification
-          toast(notification.content, {
-            description: notification.date,
+          toast.info("Notification", {
+            description: notification.content,
             action:
               notification.link && notification.link !== ""
                 ? {
-                    label: "View",
-                    onClick: () => (window.location.href = notification.link),
-                  }
-                : undefined,
+                  label: "View",
+                  onClick: () => (window.location.href = notification.link)
+                }
+                : undefined
           })
         } catch (error) {
           console.error("Error parsing notification:", error)
@@ -144,7 +164,14 @@ export const SocketProvider = ({ children }) => {
       const data = JSON.parse(text)
 
       // Append new notifications to existing ones
-      setNotifications((prev) => [...prev, ...data.content])
+      setNotifications((prev) => {
+        const updatedNotifications = [...prev, ...data.content]
+        const newUnreadCount = updatedNotifications.filter((n) => n.unread).length
+        setUnreadCount(newUnreadCount)
+        updateDocumentTitle(newUnreadCount)
+        return updatedNotifications
+      })
+
       setCurrentPage(nextPage)
       setHasMorePages(nextPage < data.totalPages - 1)
     } catch (error) {
@@ -174,17 +201,22 @@ export const SocketProvider = ({ children }) => {
   // Mark notification as read
   const markAsRead = async (id) => {
     try {
-      const response = await apiCall(`${ENDPOINTS.MARK_NOTIFICATION_READ}/${id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
+      // const response = await apiCall(`${ENDPOINTS.MARK_NOTIFICATION_READ}/${id}`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      // })
 
-      if (!response.ok) throw new Error("Failed to mark notification as read")
+      // if (!response.ok) throw new Error("Failed to mark notification as read")
 
       // Update local state
-      setNotifications(notifications.map((n) => (n.id === id ? { ...n, read: true } : n)))
+      setNotifications(notifications.map((n) => (n.id === id ? { ...n, unread: false } : n)))
+
+      // Update unread count and document title
+      const newUnreadCount = notifications.filter((n) => n.id !== id && n.unread).length
+      setUnreadCount(newUnreadCount)
+      updateDocumentTitle(newUnreadCount)
     } catch (error) {
       console.error("Error marking notification as read:", error)
     }
@@ -193,17 +225,21 @@ export const SocketProvider = ({ children }) => {
   // Mark all notifications as read
   const markAllAsRead = async () => {
     try {
-      const response = await apiCall(ENDPOINTS.MARK_ALL_NOTIFICATIONS_READ, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
+      // const response = await apiCall(ENDPOINTS.MARK_ALL_NOTIFICATIONS_READ, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json"
+      //   }
+      // })
 
-      if (!response.ok) throw new Error("Failed to mark notifications as read")
+      // if (!response.ok) throw new Error("Failed to mark notifications as read")
 
       // Update local state
-      setNotifications(notifications.map((n) => ({ ...n, read: true })))
+      setNotifications(notifications.map((n) => ({ ...n, unread: false })))
+
+      // Update unread count and document title
+      setUnreadCount(0)
+      updateDocumentTitle(0)
     } catch (error) {
       console.error("Error marking notifications as read:", error)
     }
@@ -222,6 +258,7 @@ export const SocketProvider = ({ children }) => {
         totalPages,
         currentPage,
         setCurrentPage,
+        unreadCount
       }}
     >
       {children}
