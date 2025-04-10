@@ -24,7 +24,6 @@ export default function VideoLesson({ videoUrl, lessonId, resourceError, onLesso
           const response = await fetch(url, options)
           return response
         })
-        console.log(`Lesson ${lessonId} marked as complete (90% watched)`)
         if (onLessonCompleted) onLessonCompleted(lessonId) // Notify parent
       } catch (err) {
         console.error("Failed to mark lesson as complete:", err)
@@ -39,7 +38,6 @@ export default function VideoLesson({ videoUrl, lessonId, resourceError, onLesso
         const response = await fetch(url, options)
         return response
       })
-      console.log(`Lesson ${lessonId} marked as complete (YouTube 90%)`)
       if (onLessonCompleted) onLessonCompleted(lessonId) // Notify parent
     } catch (err) {
       console.error("Failed to mark lesson as complete:", err)
@@ -60,8 +58,6 @@ export default function VideoLesson({ videoUrl, lessonId, resourceError, onLesso
       }
     }
   }, [videoUrl, lessonId, hasReachedNinetyPercent])
-
-  console.log("VideoLesson videoUrl:", videoUrl) // Debug videoUrl in component
 
   return (
     <>

@@ -8,6 +8,7 @@ import LoadingScreen from "./components/common/shared/other/loading"
 
 // Lazy load all components
 const ProblemDetail = lazy(() => import("./components/pages/problems/ProblemDetail"))
+const MyCourse = lazy(() => import("./components/pages/courses/MyCourse"))
 const ForgotPassword = lazy(() => import("./components/pages/authentications/forgot"))
 const LoginPage = lazy(() => import("./components/pages/authentications/login"))
 const ResetPassword = lazy(() => import("./components/pages/authentications/reset"))
@@ -69,6 +70,7 @@ function App() {
                   <Route path="/notifications" element={<NotificationsPage />} />
 
                   {/* course */}
+                  <Route path="/my-courses" element={<MyCourse />} />
                   <Route path="/courses" element={<CoursePage />} />
                   <Route path="/courses/:id" element={<CourseDetail />} />
                   <Route path="/learn/:id" element={<LearnThroughVideoAndText />} />

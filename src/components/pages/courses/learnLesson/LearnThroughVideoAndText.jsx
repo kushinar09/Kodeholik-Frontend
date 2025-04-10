@@ -22,11 +22,12 @@ import { getLessonById, completedLesson, downloadFileLesson } from "@/lib/api/le
 import VideoLesson from "./components/videoLesson"
 import DocumentLesson from "./components/documentLesson"
 import CourseOutline from "./components/courseOutline"
-import LessonProblemButton from "./components/lessonProblemButton"
 import FooterSection from "@/components/common/shared/footer"
 import RenderMarkdown from "@/components/common/markdown/RenderMarkdown"
 import CourseDiscussion from "@/components/pages/courses/CourseDetail/components/CourseDiscussion"
 import HeaderSection from "@/components/common/shared/header"
+import { useAuth } from "@/providers/AuthProvider"
+import { toast } from "sonner"
 
 export default function LearnThroughVideoAndText() {
   const { id } = useParams()
@@ -46,7 +47,6 @@ export default function LearnThroughVideoAndText() {
 
   // useEffect for course registration IN/OUT with debugging logs
   useEffect(() => {
-
     const registerIn = async () => {
       try {
         await courseRegisterIn(apiCall, id)
@@ -69,8 +69,6 @@ export default function LearnThroughVideoAndText() {
       }
     }
 
-    // Add event listener for page unload
-    console.log("[Registration] Adding beforeunload event listener")
     window.addEventListener("beforeunload", () => {
       registerOut()
     })
@@ -97,14 +95,32 @@ export default function LearnThroughVideoAndText() {
         setChapters(courseData.chapters || [])
 
         if (courseData.chapters && courseData.chapters.length > 0) {
-          const firstChapter = courseData.chapters[0]
-          setSelectedChapter(firstChapter)
-          setActiveAccordion(`chapter-${firstChapter.id}`)
+          // Try to find a chapter with lessons
+          let chapterWithLessons = null
 
-          if (firstChapter.lessons && firstChapter.lessons.length > 0) {
-            await handleLessonSelect(firstChapter.lessons[0], firstChapter)
+          // First check if the first chapter has lessons
+          // const firstChapter = courseData.chapters[0]
+          // if (firstChapter.lessons && firstChapter.lessons.length > 0) {
+          //   chapterWithLessons = firstChapter
+          // } else {
+          //   // If not, look for any chapter with lessons
+          //   chapterWithLessons = courseData.chapters.find((chapter) => chapter.lessons && chapter.lessons.length > 0)
+          // }
+          chapterWithLessons = courseData.chapters.find((chapter) => chapter.lessons && chapter.lessons.length > 0)
+          if (chapterWithLessons) {
+            // Found a chapter with lessons
+            setSelectedChapter(chapterWithLessons)
+            setActiveAccordion(`chapter-${chapterWithLessons.id}`)
+            await handleLessonSelect(chapterWithLessons.lessons[0], chapterWithLessons)
+          } else {
+            // No chapter has lessons
+            const firstChapter = courseData.chapters[0]
+            setSelectedChapter(firstChapter)
+            setActiveAccordion(`chapter-${firstChapter.id}`)
+            setSelectedLesson({ id: "empty", title: "No Content", type: "EMPTY" })
+            setResourceError("This course doesn't have any lesson content yet.")
           }
-        }
+        } else setSelectedLesson({ id: "empty", title: "No Content", type: "EMPTY" })
 
         const apiProgress = courseData.progress
         if (apiProgress !== null && apiProgress !== undefined) {
@@ -112,7 +128,7 @@ export default function LearnThroughVideoAndText() {
         } else {
           const totalLessons = courseData.chapters.reduce((sum, chapter) => sum + (chapter.lessons?.length || 0), 0)
           const completedLessons = courseData.chapters.reduce(
-            (sum, chapter) => sum + (chapter.lessons?.filter(l => l.completed).length || 0),
+            (sum, chapter) => sum + (chapter.lessons?.filter((l) => l.completed).length || 0),
             0
           )
           setProgress(totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0)
@@ -164,15 +180,24 @@ export default function LearnThroughVideoAndText() {
 
     try {
       const fileUrl = await downloadFileLesson(apiCall, selectedLesson.attachedFile)
-      const link = document.createElement("a")
-      link.href = fileUrl
-      link.download = selectedLesson.attachedFile.replace("lessons/", "") || "document"
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      if (!fileUrl.status) {
+        toast.error("Failed to download file", {
+          description: "Error status: " + fileUrl.data
+        })
+      } else {
+        const link = document.createElement("a")
+        link.href = fileUrl.data
+        link.download = selectedLesson.attachedFile.includes("lessons/")
+          ? selectedLesson.attachedFile.replace("lessons/", "")
+          : selectedLesson.attachedFile
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      }
     } catch (err) {
-      console.error("Failed to download file:", err)
-      setResourceError(`Failed to download file: ${err.message}`)
+      toast.error("Failed to download file", {
+        description: err.message
+      })
     }
   }
 
@@ -186,12 +211,10 @@ export default function LearnThroughVideoAndText() {
       const updatedLesson = { ...selectedLesson, completed: true }
       setSelectedLesson(updatedLesson)
 
-      setChapters(prevChapters =>
-        prevChapters.map(chapter => ({
+      setChapters((prevChapters) =>
+        prevChapters.map((chapter) => ({
           ...chapter,
-          lessons: chapter.lessons.map(lesson =>
-            lesson.id === selectedLesson.id ? updatedLesson : lesson
-          )
+          lessons: chapter.lessons.map((lesson) => (lesson.id === selectedLesson.id ? updatedLesson : lesson))
         }))
       )
 
@@ -205,7 +228,8 @@ export default function LearnThroughVideoAndText() {
       } else {
         const totalLessons = chapters.reduce((sum, chapter) => sum + (chapter.lessons?.length || 0), 0)
         const completedLessons = chapters.reduce(
-          (sum, chapter) => sum + (chapter.lessons?.filter(l => l.completed || l.id === selectedLesson.id).length || 0),
+          (sum, chapter) =>
+            sum + (chapter.lessons?.filter((l) => l.completed || l.id === selectedLesson.id).length || 0),
           0
         )
         newProgress = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0
@@ -232,18 +256,16 @@ export default function LearnThroughVideoAndText() {
     const updatedLesson = { ...selectedLesson, completed: true }
     setSelectedLesson(updatedLesson)
 
-    setChapters(prevChapters =>
-      prevChapters.map(chapter => ({
+    setChapters((prevChapters) =>
+      prevChapters.map((chapter) => ({
         ...chapter,
-        lessons: chapter.lessons.map(lesson =>
-          lesson.id === lessonId ? updatedLesson : lesson
-        )
+        lessons: chapter.lessons.map((lesson) => (lesson.id === lessonId ? updatedLesson : lesson))
       }))
     )
 
     const totalLessons = chapters.reduce((sum, chapter) => sum + (chapter.lessons?.length || 0), 0)
     const completedLessons = chapters.reduce(
-      (sum, chapter) => sum + (chapter.lessons?.filter(l => l.completed || l.id === lessonId).length || 0),
+      (sum, chapter) => sum + (chapter.lessons?.filter((l) => l.completed || l.id === lessonId).length || 0),
       0
     )
     setProgress(totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0)
@@ -343,14 +365,14 @@ export default function LearnThroughVideoAndText() {
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty.toUpperCase()) {
-    case "EASY":
-      return "bg-green-500 hover:bg-green-600"
-    case "MEDIUM":
-      return "bg-yellow-500 hover:bg-yellow-600"
-    case "HARD":
-      return "bg-red-500 hover:bg-red-600"
-    default:
-      return "bg-gray-500 hover:bg-gray-600"
+      case "EASY":
+        return "bg-green-500 hover:bg-green-600"
+      case "MEDIUM":
+        return "bg-yellow-500 hover:bg-yellow-600"
+      case "HARD":
+        return "bg-red-500 hover:bg-red-600"
+      default:
+        return "bg-gray-500 hover:bg-gray-600"
     }
   }
 
@@ -418,23 +440,37 @@ export default function LearnThroughVideoAndText() {
                       resourceError={resourceError}
                     />
                   )}
+                  {selectedLesson.type === "EMPTY" && (
+                    <div className="aspect-[5/2] bg-gray-900 flex items-center justify-center">
+                      <Card className="w-full max-w-md bg-gray-800 border-gray-700">
+                        <CardContent className="p-6 text-center">
+                          <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+                          <h3 className="text-xl font-bold text-white mb-2">No Content Available</h3>
+                          <p className="text-gray-400">
+                            {resourceError || "This course doesn't have any lesson content yet."}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                       <Badge className="mb-2 bg-gray-700 hover:bg-gray-700 text-gray-300">
                         {selectedChapter?.title} • Lesson{" "}
-                        {selectedChapter?.lessons.findIndex((l) => l.id === selectedLesson.id) + 1}
+                        {selectedLesson.type !== "EMPTY"
+                          ? selectedChapter?.lessons.findIndex((l) => l.id === selectedLesson.id) + 1
+                          : "N/A"}
                       </Badge>
-                      <h2 className="text-xl font-bold">{selectedLesson.title}</h2>
                     </div>
                     <div className="flex gap-2">
                       <Button
                         variant="ghost"
                         className="text-primary hover:bg-primary hover:text-black disabled:opacity-50 rounded-md px-4"
                         onClick={handlePreviousLesson}
-                        disabled={!prevLesson}
+                        disabled={!prevLesson || selectedLesson.type === "EMPTY"}
                       >
                         <ChevronLeft className="h-4 w-4 mr-1" /> Previous
                       </Button>
@@ -442,19 +478,41 @@ export default function LearnThroughVideoAndText() {
                         variant="ghost"
                         className="text-primary hover:bg-primary hover:text-black disabled:opacity-50 rounded-md px-4"
                         onClick={handleNextLesson}
-                        disabled={!nextLesson}
+                        disabled={!nextLesson || selectedLesson.type === "EMPTY"}
                       >
                         Next <ChevronRight className="h-4 w-4 ml-1" />
                       </Button>
                     </div>
                   </div>
 
-                  {selectedLesson.problems && selectedLesson.problems.length > 0 &&
+                  <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+                    <div>
+                      <h2 className="text-xl font-bold">{selectedLesson.title}</h2>
+                    </div>
+                    {selectedLesson.attachedFile &&
+                      <div className="flex gap-2">
+                        <button type="button" className="font-sm text-blue-500 dark:text-blue-500 hover:underline" onClick={handleDownload}>
+                          Download materials
+                        </button>
+                      </div>
+                    }
+                  </div>
+
+                  {selectedLesson.problems && selectedLesson.problems.length > 0 && (
                     <div className="space-y-4">
                       <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                         {selectedLesson.problems.map((problem) => (
-                          <a href={`/problem/${problem.problemLink}`} target="_blank" key={problem.problemLink} className="block">
-                            <Button variant="outline" className="w-full justify-between h-auto p-2 text-left text-bg-card">
+                          <a
+                            href={`/problem/${problem.problemLink}`}
+                            target="_blank"
+                            key={problem.problemLink}
+                            className="block"
+                            rel="noreferrer"
+                          >
+                            <Button
+                              variant="outline"
+                              className="w-full justify-between h-auto p-2 text-left text-bg-card"
+                            >
                               <span className="font-medium">{problem.title}</span>
                               <Badge className={getDifficultyColor(problem.difficulty)}>{problem.difficulty}</Badge>
                             </Button>
@@ -462,28 +520,30 @@ export default function LearnThroughVideoAndText() {
                         ))}
                       </div>
                     </div>
-                  }
+                  )}
 
-                  {selectedLesson.description && (
+                  {selectedLesson.description && selectedLesson.type !== "EMPTY" && (
                     <div className="prose prose-invert max-w-none mt-4 text-gray-300">
                       <RenderMarkdown content={selectedLesson.description} />
                     </div>
                   )}
 
-                  <div className="mt-6 flex justify-end">
-                    {!selectedLesson.completed ? (
-                      <Button
-                        className="bg-primary hover:bg-primary-button-hover text-bg-card"
-                        onClick={handleMarkComplete}
-                      >
-                        <CheckCircle2 className="h-4 w-4 mr-2" /> Mark as Complete
-                      </Button>
-                    ) : (
-                      <div className="text-green-500 flex items-center">
-                        <CheckCircle2 className="h-4 w-4 mr-2" /> Completed
-                      </div>
-                    )}
-                  </div>
+                  {selectedLesson.type !== "EMPTY" && (
+                    <div className="mt-6 flex justify-end">
+                      {!selectedLesson.completed ? (
+                        <Button
+                          className="bg-primary hover:bg-primary-button-hover text-bg-card"
+                          onClick={handleMarkComplete}
+                        >
+                          <CheckCircle2 className="h-4 w-4 mr-2" /> Mark as Complete
+                        </Button>
+                      ) : (
+                        <div className="text-green-500 flex items-center">
+                          <CheckCircle2 className="h-4 w-4 mr-2" /> Completed
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
