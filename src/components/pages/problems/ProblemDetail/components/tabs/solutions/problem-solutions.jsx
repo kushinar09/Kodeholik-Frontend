@@ -14,7 +14,7 @@ import {
   PaginationItem,
   PaginationLink,
   PaginationNext,
-  PaginationPrevious,
+  PaginationPrevious
 } from "@/components/ui/pagination"
 import SolutionCard from "./items/solution-card"
 import SolutionDetail from "./items/solution-detail"
@@ -24,18 +24,18 @@ const sortValue = {
   VOTE: {
     label: "Most Votes",
     value: "VOTE",
-    ascending: false,
+    ascending: false
   },
   DATA: {
     label: "Most Recent",
     value: "DATE",
-    ascending: false,
+    ascending: false
   },
   COMMENT: {
     label: "Hot",
     value: "COMMENT",
-    ascending: false,
-  },
+    ascending: false
+  }
 }
 
 export default function ProblemSolutions({
@@ -48,7 +48,7 @@ export default function ProblemSolutions({
   setIsEditMode,
   setCurrentSolution,
   onchangeFilter = null,
-  isLoadingSolutions,
+  isLoadingSolutions
 }) {
   const { isAuthenticated } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
@@ -104,7 +104,7 @@ export default function ProblemSolutions({
       languageName: "",
       sortBy: sortBy,
       ascending: asc,
-      topics: selectedTopics,
+      topics: selectedTopics
     }
     onchangeFilter(param)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -156,11 +156,11 @@ export default function ProblemSolutions({
         <div className="flex items-center space-x-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
+            <input
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 w-full"
+              className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-9 w-full"
             />
           </div>
           <DropdownMenu>

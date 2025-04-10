@@ -122,13 +122,9 @@ export async function postComment(apiCall, id, comment, commentReply = null, typ
   if (response.ok) {
     const text = await response.json()
     return { status: true, data: text }
+  } else {
+    return { status: false, message: "Error when post comment: " + response.message }
   }
-
-  if (response.status === 404) {
-    return { status: false, message: "Problem not found" }
-  }
-
-  return { status: false }
 }
 
 export async function getProblemInitCode(id, language) {

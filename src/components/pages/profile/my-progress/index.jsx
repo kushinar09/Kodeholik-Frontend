@@ -174,7 +174,7 @@ export default function MyProgress() {
                                 <TableCell className="text-primary-text">
                                     {progress.difficulty == "EASY" && <Badge variant="ghost" className="bg-green-500 py-1.5 text-black border-none">Easy</Badge>}
                                     {progress.difficulty == "MEDIUM" && <Badge variant="ghost" className="bg-yellow-500 py-1.5 text-black border-none">Medium</Badge>}
-                                    {progress.difficulty == "Hard" && <Badge variant="ghost" className="bg-red-500 py-1.5 text-black border-none">Hard</Badge>}
+                                    {progress.difficulty == "HARD" && <Badge variant="ghost" className="bg-red-500 py-1.5 text-black border-none">Hard</Badge>}
                                 </TableCell>
                                 <TableCell className="text-primary-text">
                                     {progress.progressType == "SOLVED" &&

@@ -12,7 +12,7 @@ import {
   PaginationNext,
   PaginationPrevious
 } from "@/components/ui/pagination"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { ENDPOINTS } from "@/lib/constants"
 import { useAuth } from "@/providers/AuthProvider"
 import { Separator } from "@/components/ui/separator"
@@ -57,7 +57,6 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
           }))
         }
       }
-      console.log(page)
       setComments(data.content.filter(c => c.replyId === null))
       setTotalPages(data.totalPages)
       setTotalComments(data.totalElements)
@@ -77,7 +76,6 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
   async function UploadComment() {
     try {
       const response = await postComment(apiCall, locationId, comment, null, type)
-      console.log(response.data.id)
       if (response.status) {
         setComment("")
         setTotalComments(totalComments + 1)
@@ -113,6 +111,10 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
           }
 
           return updatedComments
+        })
+      } else {
+        toast.error("Error", {
+          description: response.message || "Failed to post comment"
         })
       }
     } catch (error) {
@@ -168,10 +170,6 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
       }))
     }
   }
-
-  useEffect(() => {
-    console.log(isEditOpen)
-  }, [isEditOpen])
 
   const handleUpvoteUnupvoteComment = (comment) => {
     if (comment.voted) {
