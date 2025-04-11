@@ -164,7 +164,6 @@ export default function Profile() {
   }
 
   const handleChangePassword = (formPassword) => {
-    console.log(formPassword)
     changeUserPassword(formPassword)
   }
 
@@ -172,16 +171,18 @@ export default function Profile() {
   const editUserProfile = async (profile) => {
     try {
       const data = await editProfile(apiCall, profile)
-      console.log(data)
       setCurrentUser(data)
-      setProfile({
+      setProfile((prev) => ({
+        ...prev,
         avatarFile: null,
         avatarImg: data.avatar,
         username: data.username,
         fullname: data.fullname
-      })
+      }))
     } catch (error) {
-      console.log(error)
+      toast.error("Edit Profile", {
+        description: error.message || "Edit profile failed. Please try again"
+      })
     } finally {
       toast.success("Edit Profile", {
         description: "Edit profile successful"
