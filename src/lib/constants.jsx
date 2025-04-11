@@ -86,6 +86,7 @@ const ENDPOINTS = {
 
   // courses
   GET_COURSES_LIST: `${API_URL}/course/search`,
+  GET_MY_COURSES: `${API_URL}/course/my-course`,
   GET_COURSE: `${API_URL}/course/detail/:id`,
   ENROLL_COURSE: `${API_URL}/course/enroll/:id`,
   UNENROLL_COURSE: `${API_URL}/course/unenroll/:id`,
@@ -100,6 +101,7 @@ const ENDPOINTS = {
   POST_COURSE_DISCUSSION: `${API_URL}/course/comment`,
   UPVOTE_COURSE_DISCUSSION: `${API_URL}/comment/upvote/:id`,
   UN_UPVOTE_COURSE_DISCUSSION: `${API_URL}/comment/unupvote/:id`,
+  COMPLETED_COURSE: `${API_URL}/course/completed/:id`,
 
   //Lesson
   GET_LESSON_DETAIL: `${API_URL}/lesson/detail/:id`,

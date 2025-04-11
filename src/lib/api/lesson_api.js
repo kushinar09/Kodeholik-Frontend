@@ -39,20 +39,15 @@ export async function updateLesson(id, formData, apiCall) {
 
 export async function downloadFileLesson(apiCall, fileKey) {
   const fileUrl = ENDPOINTS.DOWNLOAD_FILE_LESSON(fileKey)
-  console.log("Fetching file from:", fileUrl)
 
   try {
-    const response = await apiCall(fileUrl, {
-      method: "GET",
-      credentials: "include"
-    })
-    console.log("Response Status:", response.status)
+    const response = await apiCall(fileUrl)
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch file. Status: ${response.status}`)
+      return { status: false, data: response.status }
     }
     const url = await response.text()
-    return url
+    return { status: true, data: url }
   } catch (error) {
     console.error("Error fetching file:", error)
     throw error

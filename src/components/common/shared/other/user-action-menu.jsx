@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { useNavigate } from "react-router-dom"
+import { Apple, Archive } from "lucide-react"
 
 /**
  * Reusable user action menu component that handles authentication state
@@ -62,7 +63,7 @@ export default function UserActionMenu() {
                 className="cursor-pointer"
               >
                 <svg
-                  className="h-4 w-4 mr-2"
+                  className="h-4 w-4 mr-2 text-blue-500"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -75,10 +76,16 @@ export default function UserActionMenu() {
                 </svg>
                 Profile
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/my-courses")}
+                className="cursor-pointer"
+              >
+                <Apple className="h-4 w-4 mr-2 text-yellow-500" />
+                My Courses
+              </DropdownMenuItem>
 
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
+            <DropdownMenuItem className="cursor-pointer text-red-500" onClick={handleLogout}>
               <svg
                 className="h-4 w-4 mr-2"
                 width="24"

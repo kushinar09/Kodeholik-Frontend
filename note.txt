@@ -1,0 +1,2 @@
+software architecture: https://drive.google.com/drive/u/1/folders/1T0hUiGdGceLsf8TcLOPzT7LRjknfF220
+thu gon sequence diagram: thay entity thanh database, thu gon thanh 1 page 

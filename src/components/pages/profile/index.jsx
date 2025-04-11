@@ -38,7 +38,6 @@ export default function Profile() {
   const [intermediateSkillSolved, setIntermediateSkillSolved] = useState(null)
   const [advancedSolved, setAdvancedSkillSolved] = useState(null)
   const { apiCall } = useAuth()
-  const { isAuthenticated, user, logout } = useAuth()
   const [isEditProfileDialogOpen, setIsEditProfileDialogOpen] = useState(false)
   const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] = useState(false)
   const [profile, setProfile] = useState({
