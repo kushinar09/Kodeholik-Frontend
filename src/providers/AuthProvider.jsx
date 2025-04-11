@@ -6,6 +6,7 @@ import UnauthorisedError from "@/components/pages/errors/unauthorized-error"
 import ForbiddenError from "@/components/pages/errors/forbidden"
 import NotFoundError from "@/components/pages/errors/not-found-error"
 import GeneralError from "@/components/pages/errors/general-error"
+import { toast } from "sonner"
 
 const AuthContext = createContext()
 
@@ -320,7 +321,13 @@ export const AuthProvider = ({ children }) => {
           } else {
             pendingApiCalls.current.delete(requestId)
           }
-        } else if (!inEndpointList(notThrowErrorEndpoint, url) && response.status !== 400 && response.status !== 500) {
+        } else if (response.status === 400) {
+          pendingApiCalls.current.delete(requestId)
+          toast.error("Bad request. Please try again.", {
+            description: response.message.error || response.message || "Error occurred",
+            duration: 3000
+          })
+        } else if (!inEndpointList(notThrowErrorEndpoint, url) && response.status !== 500) {
           // Wait a small delay to ensure the response is fully processed
           setTimeout(() => {
             pendingApiCalls.current.delete(requestId)
@@ -378,14 +385,14 @@ export const AuthProvider = ({ children }) => {
     const errorCode = getMostSevereError()
 
     switch (errorCode) {
-    case "401":
-      return <UnauthorisedError />
-    case "403":
-      return <ForbiddenError />
-    case "404":
-      return <NotFoundError />
-    default:
-      return <GeneralError />
+      case "401":
+        return <UnauthorisedError />
+      case "403":
+        return <ForbiddenError />
+      case "404":
+        return <NotFoundError />
+      default:
+        return <GeneralError />
     }
   }
 

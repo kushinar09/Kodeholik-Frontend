@@ -14,7 +14,7 @@ const LOGO = React.forwardRef(({ className, ...props }, ref) => {
   }
 
   return (
-    <img loading="lazy"
+    <img
       src={logo}
       loading="lazy"
       className={`
