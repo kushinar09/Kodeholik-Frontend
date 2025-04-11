@@ -347,7 +347,7 @@ export default function ShareSolution({ solution, setIsEditMode }) {
                   <span>Explain your approach</span>
                 </div>
                 {markdownValue != null &&
-                  <div className="h-fit">
+                  <div className="h-[400px]">
                     <MarkdownEditor value={markdownValue} setCanDelete={setCanDelete} canDelete={canDelete} onChange={handleOnChange} />
                   </div>
                 }

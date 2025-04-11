@@ -82,7 +82,7 @@ export default function SubmittedCodeView({ submitted, setActiveTab, problemLink
           )}
           {submitted && submitted.status && submitted.status.toLowerCase() === "success" && (
             <div>
-              <Button onClick={() => navigate("/share-solution/" + problemLink + "/" + selectedSubmissionId)} className="h-12 font-bold ml-4 hover:bg-green-400">
+              <Button onClick={() => navigate("/share-solution/" + problemLink + "/" + submitted.submissionId)} className="h-12 font-bold ml-4 hover:bg-green-400">
                 <svg
                   className="!h-6 !w-6 text-black mr-1"
                   viewBox="0 0 24 24"
