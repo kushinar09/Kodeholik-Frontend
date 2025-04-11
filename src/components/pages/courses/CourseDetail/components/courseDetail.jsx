@@ -287,7 +287,7 @@ export default function CourseDetail({
                   {course.image ? (
                     <div className="relative">
                       <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl opacity-70 group-hover:opacity-100 transition-opacity"></div>
-                      <img
+                      <img loading="lazy"
                         src={course.image || "/placeholder.svg"}
                         alt={course.title}
                         className="w-64 h-64 object-cover rounded-full border-4 border-primary/30 shadow-lg shadow-primary/20 relative transition-transform group-hover:scale-105 duration-300"

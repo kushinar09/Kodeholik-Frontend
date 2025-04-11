@@ -279,7 +279,7 @@ export default function DiscussionSection({ solutionId }) {
                     {/* Main comment */}
                     <div className="flex gap-4">
                       <div className="flex-shrink-0 w-10 h-10 rounded-full bg-muted">
-                        <img
+                        <img loading="lazy"
                           src={comment.createdBy.avatar || "/placeholder.svg?height=40&width=40"}
                           alt={comment.createdBy.username}
                           className="w-full h-full object-cover rounded-full"
@@ -349,7 +349,7 @@ export default function DiscussionSection({ solutionId }) {
                       <div className="ml-14 mt-2">
                         <div className="flex gap-2">
                           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted overflow-hidden">
-                            <img
+                            <img loading="lazy"
                               src={user?.avatar || "/placeholder.svg?height=32&width=32"}
                               alt="Your avatar"
                               className="w-full h-full object-cover"
@@ -392,7 +392,7 @@ export default function DiscussionSection({ solutionId }) {
                         {loadedReplies[comment.id].map((reply) => (
                           <div key={reply.id} className="flex gap-4">
                             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted overflow-hidden">
-                              <img
+                              <img loading="lazy"
                                 src={reply.createdBy.avatar || "/placeholder.svg?height=32&width=32"}
                                 alt={reply.createdBy.username}
                                 className="w-full h-full object-cover"
@@ -430,7 +430,7 @@ export default function DiscussionSection({ solutionId }) {
                                 <div className="mt-2">
                                   <div className="flex gap-2">
                                     <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted overflow-hidden">
-                                      <img
+                                      <img loading="lazy"
                                         src={user?.avatar || "/placeholder.svg?height=24&width=24"}
                                         alt="Your avatar"
                                         className="w-full h-full object-cover"

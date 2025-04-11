@@ -145,7 +145,7 @@ export default function MySubmission() {
             {!noContent &&
                 <Table>
                     <TableHeader>
-                        <TableRow>
+                        <TableRow className="hover:bg-gray-700/50">
                             <TableHead className="text-primary-text">Problem</TableHead>
                             <TableHead className="text-primary-text">Language</TableHead>
                             <TableHead onClick={() => { handleSort("executionTime") }} className="text-primary-text">
@@ -183,7 +183,7 @@ export default function MySubmission() {
                     </TableHeader>
                     <TableBody>
                         {mySubmission != null && mySubmission.map((submission) => (
-                            <TableRow key={submission.id}>
+                            <TableRow key={submission.id} className="hover:bg-gray-700/50">
                                 <TableCell onClick={() => navigate("/problem-submission/" + submission.problemLink + "/" + submission.id)} className="text-primary-text font-bold cursor-pointer">{submission.problemTitle}</TableCell>
                                 <TableCell className="text-primary-text">{submission.languageName}</TableCell>
                                 <TableCell className="text-primary-text">

@@ -49,7 +49,7 @@ export default function UserActionMenu() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Avatar className="cursor-pointer bg-white h-10 w-10 border-2 border-primary hover:border-primary/80 transition-colors">
-              <AvatarImage src={user.avatar} alt={user.fullname || "User"} />
+              <AvatarImage className="object-cover" src={user.avatar} alt={user.fullname || "User"} />
               <AvatarFallback className="bg-primary/10 text-bg-card font-semibold">
                 {getInitials(user.username)}
               </AvatarFallback>

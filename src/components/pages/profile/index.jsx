@@ -21,9 +21,10 @@ import MySubmission from "./my-submission"
 import MyFavourite from "./my-favourite"
 import Tabs from "./components/tabs"
 import { toast } from "sonner"
-import { Progress } from "@/components/ui/progress"
 
 export default function Profile() {
+  const { isAuthenticated, apiCall } = useAuth()
+
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const [currentUser, setCurrentUser] = useState(null)
@@ -37,7 +38,6 @@ export default function Profile() {
   const [fundamentalSkillSolved, setFundamentalSkillSolved] = useState(null)
   const [intermediateSkillSolved, setIntermediateSkillSolved] = useState(null)
   const [advancedSolved, setAdvancedSkillSolved] = useState(null)
-  const { apiCall } = useAuth()
   const [isEditProfileDialogOpen, setIsEditProfileDialogOpen] = useState(false)
   const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] = useState(false)
   const [profile, setProfile] = useState({
@@ -75,7 +75,7 @@ export default function Profile() {
         email: data.email
       })
     } catch (error) {
-      console.log(error)
+      toast.error(error.message)
     } finally {
       setIsLoading(false)
     }
@@ -87,7 +87,7 @@ export default function Profile() {
       const data = await getNumberLanguageSolved(apiCall)
       setLanguageSolved(data)
     } catch (error) {
-      console.log(error)
+      toast.error(error.message)
     } finally {
       setIsLoading(false)
     }
@@ -99,7 +99,7 @@ export default function Profile() {
       const data = await getNumberSkillSolved(apiCall, "ADVANCED")
       setAdvancedSkillSolved(data)
     } catch (error) {
-      console.log(error)
+      toast.error(error.message)
     } finally {
       setIsLoading(false)
     }
@@ -111,7 +111,7 @@ export default function Profile() {
       const data = await getNumberSkillSolved(apiCall, "INTERMEDIATE")
       setIntermediateSkillSolved(data)
     } catch (error) {
-      console.log(error)
+      toast.error(error.message)
     } finally {
       setIsLoading(false)
     }
@@ -123,7 +123,7 @@ export default function Profile() {
       const data = await getNumberSkillSolved(apiCall, "FUNDAMENTAL")
       setFundamentalSkillSolved(data)
     } catch (error) {
-      console.log(error)
+      toast.error(error.message)
     } finally {
       setIsLoading(false)
     }
@@ -136,13 +136,17 @@ export default function Profile() {
       console.log(data)
       setTopicSolved(data)
     } catch (error) {
-      console.log(error)
+      toast.error(error.message)
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login", { state: { redirectPath: window.location.pathname } })
+      return
+    }
     fetchCurrentUserProfile()
     fetchLanguageSolved()
     fetchAdvancedSkillSolved()
@@ -151,7 +155,7 @@ export default function Profile() {
     fetchTopicSolved()
     fetchStats()
     fetchAcceptanceRate()
-  }, [])
+  }, [isAuthenticated])
 
   const handleEditProfile = (profile) => {
     const formData = new FormData()
@@ -200,7 +204,7 @@ export default function Profile() {
       setIsChangePasswordDialogOpen(false)
       window.location.href = "/login"
     } catch (error) {
-      console.log(error)
+      toast.error(error.message)
     }
   }
   const getColorForLabel = (label) => {
@@ -264,7 +268,7 @@ export default function Profile() {
   return (
     <>
       {isLoading && <LoadingScreen />}
-      {!isLoading &&
+      {!isLoading && isAuthenticated &&
         <div className="min-h-screen bg-bg-primary">
           <HeaderSection />
           {/* Main Content */}
@@ -277,9 +281,9 @@ export default function Profile() {
                     <CardContent>
                       <div className="flex flex-col md:flex-row items-center gap-6">
                         <div className="relative">
-                          <Avatar className="w-24 h-24 border-2 rounded-full bg-white">
-                            <AvatarImage src={currentUser.avatar} alt={name} className="object-cover" />
-                            <AvatarFallback className="text-2xl font-bold">avatar</AvatarFallback>
+                          <Avatar className="w-24 h-24 border-2 border-primary rounded-full bg-white">
+                            <AvatarImage src={currentUser.avatar} alt={currentUser.username} className="object-cover" />
+                            <AvatarFallback className="text-2xl font-bold">U</AvatarFallback>
                           </Avatar>
                         </div>
 
@@ -519,9 +523,12 @@ export default function Profile() {
           </main >
           <FooterSection />
         </div >}
-      <EditProfileDialog open={isEditProfileDialogOpen} onOpenChange={setIsEditProfileDialogOpen} onSubmit={handleEditProfile} profile={profile} setProfile={setProfile} />
-      <ChangePasswordDialog open={isChangePasswordDialogOpen} onOpenChange={setIsChangePasswordDialogOpen} onSubmit={handleChangePassword} />
-
+      {isAuthenticated &&
+        <>
+          <EditProfileDialog open={isEditProfileDialogOpen} onOpenChange={setIsEditProfileDialogOpen} onSubmit={handleEditProfile} profile={profile} setProfile={setProfile} />
+          <ChangePasswordDialog open={isChangePasswordDialogOpen} onOpenChange={setIsChangePasswordDialogOpen} onSubmit={handleChangePassword} />
+        </>
+      }
     </>
   )
 }
