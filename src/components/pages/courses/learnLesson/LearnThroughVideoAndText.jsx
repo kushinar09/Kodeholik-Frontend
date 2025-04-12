@@ -188,14 +188,12 @@ export default function LearnThroughVideoAndText() {
     try {
       const fileUrl = await downloadFileLesson(apiCall, selectedLesson.attachedFile)
       if (!fileUrl.status) {
-        toast.error("Failed to download file", {
-          description: "Error status: " + fileUrl.data
-        })
+        throw new Error(fileUrl.data || "Unknown error")
       } else {
         const link = document.createElement("a")
         link.href = fileUrl.data
         link.download = selectedLesson.attachedFile.includes("lessons/")
-          ? selectedLesson.attachedFile.replace("lessons/", "")
+          ? selectedLesson.attachedFile.replace("lessons/", "").split("-").pop()
           : selectedLesson.attachedFile
         document.body.appendChild(link)
         link.click()
@@ -331,7 +329,7 @@ export default function LearnThroughVideoAndText() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 p-6">
-        <div className="container mx-auto">
+        <div className="mx-36">
           <Skeleton className="h-12 w-3/4 bg-gray-800 mb-8" />
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-3">

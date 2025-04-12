@@ -1,3 +1,4 @@
+import { toast } from "sonner"
 import { ENDPOINTS } from "../constants"
 
 export async function getLessonById(apiCall, id) {
@@ -38,21 +39,26 @@ export async function updateLesson(id, formData, apiCall) {
 }
 
 export async function downloadFileLesson(apiCall, fileKey) {
-  const fileUrl = ENDPOINTS.DOWNLOAD_FILE_LESSON(fileKey)
+  const fileUrl = ENDPOINTS.DOWNLOAD_FILE_LESSON.replace(":key", encodeURIComponent(fileKey))
 
   try {
     const response = await apiCall(fileUrl)
 
     if (!response.ok) {
-      return { status: false, data: response.status }
+      return { status: false, data: response.message || "Failed to download file" }
     }
-    const url = await response.text()
-    return { status: true, data: url }
+    const blob = await response.blob()
+    const downloadUrl = URL.createObjectURL(blob)
+
+    return { status: true, data: downloadUrl, blob }
   } catch (error) {
-    console.error("Error fetching file:", error)
-    throw error
+    toast.error("Error downloading file: ", {
+      description: error.message
+    })
+    return { status: false, data: error.message }
   }
 }
+
 
 export async function completedLesson(id, apiCall) {
   const completeUrl = ENDPOINTS.COMPLETED_LESSON.replace(":id", id)

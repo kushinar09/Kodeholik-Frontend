@@ -33,20 +33,20 @@ const notThrowErrorEndpoint = [
   ENDPOINTS.GET_TOKEN_EXAM,
   ENDPOINTS.POST_RUN_EXAM,
   ENDPOINTS.POST_ENROLL_EXAM,
-  ENDPOINTS.POST_UNENROLL_EXAM
+  ENDPOINTS.POST_UNENROLL_EXAM,
+  ENDPOINTS.DOWNLOAD_FILE_LESSON
 ]
 
 // List of endpoints that don't need token rotation
 const notCallRotateTokenEndpoints = [ENDPOINTS.ROTATE_TOKEN, ENDPOINTS.POST_LOGOUT, ENDPOINTS.POST_LOGIN]
 
 function convertToRegex(endpoint) {
-  return new RegExp(`^${endpoint.replace(/:[^/]+/g, "([^/]+)").replace(/\//g, "\\/")}$`)
+  const path = endpoint.split("?")[0]
+  return new RegExp(`^${path.replace(/:[^/]+/g, "([^/]+)").replace(/\//g, "\\/")}$`)
 }
 
 function inEndpointList(endpointList, requestedUrl) {
-  // Remove query parameters from requested URL
   const baseUrl = requestedUrl.split("?")[0]
-
   return endpointList.some((endpoint) => convertToRegex(endpoint).test(baseUrl))
 }
 
@@ -321,13 +321,13 @@ export const AuthProvider = ({ children }) => {
           } else {
             pendingApiCalls.current.delete(requestId)
           }
-        } else if (response.status === 400) {
+        } else if (response.status === 400 || response.status === 500) {
           pendingApiCalls.current.delete(requestId)
           toast.error("Bad request. Please try again.", {
             description: response.message.error || response.message || "Error occurred",
             duration: 3000
           })
-        } else if (!inEndpointList(notThrowErrorEndpoint, url) && response.status !== 500) {
+        } else if (!inEndpointList(notThrowErrorEndpoint, url)) {
           // Wait a small delay to ensure the response is fully processed
           setTimeout(() => {
             pendingApiCalls.current.delete(requestId)

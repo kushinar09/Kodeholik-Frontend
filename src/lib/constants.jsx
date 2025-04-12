@@ -155,10 +155,10 @@ const ENDPOINTS = {
   UNTAG_FAVOURITE: `${API_URL}/problem/untag-favourite/`,
 
   //DownloadFile lesson
-  DOWNLOAD_FILE_LESSON: (fileKey) => `${API_URL}/lesson/download-file?key=${encodeURIComponent(fileKey)}`,
+  DOWNLOAD_FILE_LESSON: `${API_URL}/lesson/download-file?key=:key`,
 
   //image
-  GET_IMAGE: (imageKey) => `${API_URL}/s3/presigned-url?key=${encodeURIComponent(imageKey)}`,
+  GET_IMAGE: `${API_URL}/s3/presigned-url?key=:key`,
   POST_UPLOAD_IMAGE: `${API_URL}/s3/upload`,
 
   // Exam
