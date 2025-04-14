@@ -187,7 +187,7 @@ export default function MyCourses() {
                             <span className="mr-1 font-semibold">{course.rate || 0}</span>
                             <Star className="size-4 fill-amber-500" />
                           </div>
-                          <span className="text-muted-foreground text-sm">Enroll: {course.enrollAt}</span>
+                          <span className="text-muted-foreground text-sm">Enroll: {course.enrolledAt}</span>
                         </div>
                       </div>
                     </div>

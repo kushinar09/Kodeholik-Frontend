@@ -323,10 +323,8 @@ export const AuthProvider = ({ children }) => {
           }
         } else if (response.status === 400 || response.status === 500) {
           pendingApiCalls.current.delete(requestId)
-          toast.error("Bad request. Please try again.", {
-            description: response.message.error || response.message || "Error occurred",
-            duration: 3000
-          })
+          let errorMessage = "Bad request. Waring when call api: " + url
+          console.warn(errorMessage)
         } else if (!inEndpointList(notThrowErrorEndpoint, url)) {
           // Wait a small delay to ensure the response is fully processed
           setTimeout(() => {

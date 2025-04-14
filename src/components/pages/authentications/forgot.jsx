@@ -18,7 +18,7 @@ import { toast } from "sonner"
 
 // Form validation
 const forgotPasswordSchema = z.object({
-  email: z.string().min(1, "Please enter your email").email("Please enter a valid email address")
+  email: z.string().trim().min(1, "Please enter your email").email("Please enter a valid email address")
 })
 
 export default function ForgotPassword() {

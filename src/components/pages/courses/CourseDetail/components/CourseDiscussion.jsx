@@ -240,11 +240,13 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
       <Button
         variant="ghost"
         size="sm"
-        className={`h-7 px-2 rounded-full ${message.liked ? "text-primary-button bg-primary-button/10" : "text-text-muted hover:bg-bg-muted hover:text-primary"}`}
+        className={`h-7 px-2 rounded-full ${message.liked ? "text-primary bg-primary/10 hover:bg-primary/30 hover:text-primary" : "text-text-muted hover:bg-bg-muted hover:text-primary"}`}
         onClick={() => toggleLike(message.id, isReply, parentId)}
       >
-        <ArrowBigUp className={`h-3.5 w-3.5 mr-1 ${message.liked ? "fill-primary-button" : ""}`} />
-        <span className="text-xs">{message.likes > 0 ? message.likes : ""}</span>
+        <ArrowBigUp className={`size-3 ${message.liked ? "fill-primary-button" : ""}`} />
+        {message.likes > 0 &&
+          <span className="text-xs ml-1">{message.likes}</span>
+        }
       </Button>
 
       {!isReply && (

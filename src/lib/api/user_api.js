@@ -26,22 +26,18 @@ export async function editProfile(apiCall, body) {
     body: body
   })
   if (!response.ok) {
-    if (response.status == 400) {
-      try {
-        const errorData = await response.json();
-        toast.error("Error", {
-          description: errorData.message
-        })
-      } catch (error) {
-        console.error("Error parsing error response:", error);
-      }
+    const errorData = await response.json()
+    let errorMessage = "Failed to edit profile"
+
+    if (Array.isArray(errorData.message)) {
+      // Extract first error message from array
+      errorMessage = errorData.message[0]?.error || errorMessage
+    } else if (typeof errorData.message === "object") {
+      errorMessage = errorData.message.error || errorMessage
+    } else if (typeof errorData.message === "string") {
+      errorMessage = errorData.message
     }
-    else if (response.status == 500) {
-      toast.error("Error", {
-        description: MESSAGES.MSG01
-      })
-    }
-    throw new Error("Failed to edit profile");
+    throw new Error(errorMessage)
   }
   else {
     const text = await response.text()
@@ -60,22 +56,17 @@ export async function changePassword(apiCall, body) {
     body: JSON.stringify(body)
   })
   if (!response.ok) {
-    if (response.status == 400) {
-      try {
-        const errorData = await response.json();
-        toast.error("Error", {
-          description: errorData.message
-        })
-      } catch (error) {
-        console.error("Error parsing error response:", error);
-      }
+    const errorData = await response.json()
+    let errorMessage = "Failed to edit profile"
+
+    if (Array.isArray(errorData.message)) {
+      errorMessage = errorData.message[0]?.error || errorMessage
+    } else if (typeof errorData.message === "object") {
+      errorMessage = errorData.message.error || errorMessage
+    } else if (typeof errorData.message === "string") {
+      errorMessage = errorData.message
     }
-    else if (response.status == 500) {
-      toast.error("Error", {
-        description: MESSAGES.MSG01
-      })
-    }
-    throw new Error("Failed to edit profile");
+    throw new Error(errorMessage)
   }
   else {
     const text = await response.text()
@@ -214,22 +205,17 @@ export async function tagFavourite(apiCall, link) {
     }
   })
   if (!response.ok) {
-    if (response.status == 400) {
-      try {
-        const errorData = await response.json();
-        toast.error("Error", {
-          description: errorData.message
-        })
-      } catch (error) {
-        console.error("Error parsing error response:", error);
-      }
+    let errorMessage = "Failed to tag favourite"
+    const errorData = await response.json()
+
+    if (Array.isArray(errorData.message)) {
+      errorMessage = errorData.message[0]?.error || errorMessage
+    } else if (typeof errorData.message === "object") {
+      errorMessage = errorData.message.error || errorMessage
+    } else if (typeof errorData.message === "string") {
+      errorMessage = errorData.message
     }
-    else if (response.status == 500) {
-      toast.error("Error", {
-        description: MESSAGES.MSG01
-      })
-    }
-    throw new Error("Failed to tag favourite");
+    throw new Error(errorMessage)
   }
   else {
     const text = await response.text()
@@ -247,22 +233,17 @@ export async function untagFavourite(apiCall, link) {
     }
   })
   if (!response.ok) {
-    if (response.status == 400) {
-      try {
-        const errorData = await response.json();
-        toast.error("Error", {
-          description: errorData.message
-        })
-      } catch (error) {
-        console.error("Error parsing error response:", error);
-      }
+    let errorMessage = "Failed to tag favourite"
+    const errorData = await response.json()
+
+    if (Array.isArray(errorData.message)) {
+      errorMessage = errorData.message[0]?.error || errorMessage
+    } else if (typeof errorData.message === "object") {
+      errorMessage = errorData.message.error || errorMessage
+    } else if (typeof errorData.message === "string") {
+      errorMessage = errorData.message
     }
-    else if (response.status == 500) {
-      toast.error("Error", {
-        description: MESSAGES.MSG01
-      })
-    }
-    throw new Error("Failed to tag favourite");
+    throw new Error(errorMessage)
   }
   else {
     const text = await response.text()
