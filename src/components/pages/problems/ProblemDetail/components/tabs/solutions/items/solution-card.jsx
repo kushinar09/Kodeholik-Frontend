@@ -58,7 +58,7 @@ export default function SolutionCard({ infor, solutions, setSolutions, handleCli
         <div className="flex items-start gap-3">
           <Avatar className="h-10 w-10">
             {infor.createdBy.avatar ? (
-              <AvatarImage src={infor.createdBy.avatar} alt={`${infor.createdBy.username}'s avatar`} />
+              <AvatarImage src={infor.createdBy.avatar} alt={`${infor.createdBy.username}'s avatar`} className="object-cover"/>
             ) : null}
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>

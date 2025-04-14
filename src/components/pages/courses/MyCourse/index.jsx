@@ -152,7 +152,7 @@ export default function MyCourses() {
                     <div className="p-4 flex flex-col flex-1 gap-3">
                       <div className="flex gap-2">
                         <Avatar className="cursor-pointer size-6 border-2 border-primary hover:border-primary/80 transition-colors">
-                          <AvatarImage src={course.createdBy?.avatar} alt={course.createdBy?.fullname || "User"} />
+                          <AvatarImage src={course.createdBy?.avatar} alt={course.createdBy?.fullname || "User"} className="object-cover"/>
                           <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                             {course.createdBy?.username ? course.createdBy?.username
                               .split(" ")
