@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { getCourseSearch, getTopicList } from "@/lib/api/course_api"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { GLOBALS } from "@/lib/constants"
 import HeaderSection from "@/components/common/shared/header"
@@ -37,6 +37,11 @@ export default function CoursePage() {
   const navigate = useNavigate()
 
   const { apiCall } = useAuth()
+  const debounceTimeout = useRef(null)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, selectedTopics])
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -51,11 +56,7 @@ export default function CoursePage() {
           query: searchQuery || undefined,
           topic: selectedTopics.length > 0 ? selectedTopics.join(",") : undefined
         })
-        const filteredCourses = searchQuery
-          ? (data.content || []).filter((course) =>
-            course.title.toLowerCase().includes(searchQuery.toLowerCase()))
-          : data.content || []
-        setCourses(filteredCourses)
+        setCourses(data.content || [])
         setTotalPages(data.totalPages || 1)
       } catch (error) {
         console.error("Error fetching courses:", error)
@@ -65,7 +66,19 @@ export default function CoursePage() {
         setIsLoading(false)
       }
     }
-    fetchCourses()
+
+    // Clear previous debounce timeout
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current)
+    }
+
+    // Set new debounce timeout
+    debounceTimeout.current = setTimeout(() => {
+      fetchCourses()
+    }, 200)
+
+    // Cleanup on unmount or dependencies change
+    return () => clearTimeout(debounceTimeout.current)
   }, [currentPage, searchQuery, selectedTopics, sortBy, ascending])
 
   useEffect(() => {
