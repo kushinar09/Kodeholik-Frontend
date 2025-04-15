@@ -104,10 +104,10 @@ export default function ExamList() {
         }
 
         if (dateRange?.from || dateRange?.to) {
-          if (!dateRange?.from) dateRange.from = dateRange.to
-          if (!dateRange?.to) dateRange.to = dateRange.from
-          params.append("start", format(dateRange.from, "yyyy-MM-dd"))
-          params.append("end", format(dateRange.to, "yyyy-MM-dd"))
+          if (!dateRange?.from) dateRange.from = dateRange?.to
+          if (!dateRange?.to) dateRange.to = dateRange?.from
+          params.append("start", format(dateRange?.from, "yyyy-MM-dd"))
+          params.append("end", format(dateRange?.to, "yyyy-MM-dd"))
         }
 
         // Fetch data and wait at least 500ms before stopping loading
@@ -445,17 +445,17 @@ export default function ExamList() {
                                 variant={"outline"}
                                 className={cn(
                                   "w-full h-full justify-start text-left font-normal bg-bg-primary text-text-primary",
-                                  !dateRange.from && "text-muted-foreground"
+                                  !dateRange?.from && "text-muted-foreground"
                                 )}
                               >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                {dateRange.from ? (
-                                  dateRange.to ? (
+                                {dateRange?.from ? (
+                                  dateRange?.to ? (
                                     <>
-                                      {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+                                      {format(dateRange?.from, "LLL dd, y")} - {format(dateRange?.to, "LLL dd, y")}
                                     </>
                                   ) : (
-                                    format(dateRange.from, "LLL dd, y")
+                                    format(dateRange?.from, "LLL dd, y")
                                   )
                                 ) : (
                                   <span>Select date range</span>
@@ -466,7 +466,7 @@ export default function ExamList() {
                               <Calendar
                                 initialFocus
                                 mode="range"
-                                defaultMonth={dateRange.from}
+                                defaultMonth={dateRange?.from}
                                 selected={dateRange}
                                 onSelect={setDateRange}
                                 numberOfMonths={2}
@@ -577,12 +577,12 @@ export default function ExamList() {
                 ) : (
                   <div className="text-center py-12 bg-bg-card rounded-lg shadow-sm">
                     <h3 className="text-xl font-medium text-text-primary">
-                      {searchTitle !== "" || searchStatus !== "ALL" || dateRange.from || dateRange.to
+                      {searchTitle !== "" || searchStatus !== "ALL" || dateRange?.from || dateRange?.to
                         ? "No exams found"
                         : "You haven't enrolled in any exams"}
                     </h3>
                     <p className="mt-2 text-text-primary/70">
-                      {searchTitle !== "" || searchStatus !== "ALL" || dateRange.from || dateRange.to
+                      {searchTitle !== "" || searchStatus !== "ALL" || dateRange?.from || dateRange?.to
                         ? "Try adjusting your search filters"
                         : "Check the upcoming exams tab to find exams to participate in"}
                     </p>
