@@ -12,7 +12,7 @@ import {
   BookmarkCheck,
   Users,
   AlertCircle,
-  ChevronLeft,
+  ChevronLeft
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -25,7 +25,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogHeader,
+  DialogHeader
 } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -46,7 +46,7 @@ export default function CourseDetail({
   totalLessons,
   completedLessons,
   completionPercentage,
-  isEnrolled,
+  isEnrolled
 }) {
   const { isAuthenticated } = useAuth()
 
@@ -235,7 +235,7 @@ export default function CourseDetail({
                           className={`${!showFullDescription
                             ? "absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-gray-900/90 to-transparent flex items-end justify-center pb-2"
                             : "mt-4 text-center"
-                            }`}
+                          }`}
                         >
                           <Button
                             variant="ghost"
