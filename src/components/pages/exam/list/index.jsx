@@ -252,6 +252,11 @@ export default function ExamList() {
     fetchAllData()
   }
 
+  const handleTimeUp = (examCode) => {
+    console.log("remove", examCode)
+    setAllExams((prevExams) => prevExams.filter(exam => exam.code !== examCode))
+  }
+
   if (error) {
     return (
       <div className="min-h-screen bg-bg-primary">
@@ -323,9 +328,9 @@ export default function ExamList() {
               <button
                 className={`px-4 py-2 font-medium text-sm sm:text-base 
                 ${activeTab === "pending"
-                    ? "border-b-2 border-primary text-primary"
-                    : "text-gray-500 hover:text-gray-700"
-                  }`}
+      ? "border-b-2 border-primary text-primary"
+      : "text-gray-500 hover:text-gray-700"
+    }`}
                 onClick={() => setActiveTab("pending")}
               >
                 Upcoming Exams
@@ -338,9 +343,9 @@ export default function ExamList() {
               <button
                 className={`px-4 py-2 font-medium text-sm sm:text-base 
                 ${activeTab === "my-exams"
-                    ? "border-b-2 border-primary text-primary"
-                    : "text-gray-500 hover:text-gray-700"
-                  }`}
+      ? "border-b-2 border-primary text-primary"
+      : "text-gray-500 hover:text-gray-700"
+    }`}
                 onClick={() => setActiveTab("my-exams")}
               >
                 My Exams
@@ -389,6 +394,7 @@ export default function ExamList() {
                         formatTime={formatTime}
                         type="pending"
                         onEnrollSuccess={handleEnrollSuccess}
+                        onTimeUp={handleTimeUp}
                       />
                     ))}
                   </div>
@@ -536,7 +542,7 @@ export default function ExamList() {
                               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
                               disabled={currentPage === 0}
                               className={`p-2 px-4 rounded-md text-text-primary flex items-center gap-2 bg-bg-card ${currentPage === 0 ? "opacity-70 cursor-not-allowed" : ""
-                                }`}
+                              }`}
                             >
                               <ChevronLeft className="h-4 w-4" />
                               <span className="hidden sm:inline">Previous</span>
@@ -550,7 +556,7 @@ export default function ExamList() {
                                 className={`w-10 h-10 rounded-md ${currentPage === index
                                   ? "bg-primary text-bg-card font-semibold"
                                   : "text-gray-600 hover:bg-gray-50 border"
-                                  }`}
+                                }`}
                               >
                                 {index + 1}
                               </button>
@@ -564,7 +570,7 @@ export default function ExamList() {
                               className={`p-2 px-4 rounded-md text-text-primary flex items-center gap-2 bg-bg-card ${currentPage === myExams.totalPages - 1
                                 ? "opacity-70 cursor-not-allowed"
                                 : "hover:bg-gray-50"
-                                }`}
+                              }`}
                             >
                               <span className="hidden sm:inline">Next</span>
                               <ChevronRight className="h-4 w-4" />
