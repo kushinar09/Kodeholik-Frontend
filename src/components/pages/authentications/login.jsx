@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from "react"
+import React, { useEffect, ReactDOM } from "react"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -16,6 +16,7 @@ import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google"
 import GitHubLogin from "react-github-login"
 import { useAuth } from "@/providers/AuthProvider"
 import { toast } from "sonner"
+
 export default function LoginPage() {
   const [loading, setLoading] = useState(true)
   const [errors, setErrors] = useState({})
@@ -122,11 +123,11 @@ export default function LoginPage() {
     }
   }
 
-  function handleLoginGoogle(token) {
+  async function handleLoginGoogle(token) {
     loginGoogle(token)
   }
 
-  function handleLoginGithub(code) {
+  async function handleLoginGithub(code) {
     loginGithub(code)
   }
 
@@ -196,25 +197,33 @@ export default function LoginPage() {
                 <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
                   <span className="relative z-10 bg-bg-card px-2 text-input-text">Or continue with</span>
                 </div>
-                <div className="grid grid-cols-1 gap-4">
+                <div className="flex ">
+
                   <GoogleOAuthProvider clientId="873651389602-g3egfh8nipch5dad289s114sge0769n0.apps.googleusercontent.com">
-                    <GoogleLogin className="w-full"
+                    <GoogleLogin
                       onSuccess={credentialResponse => {
                         handleLoginGoogle(credentialResponse.credential)
                       }}
                       onError={() => {
-                        toast.error("Login Google failed. Try other way to login")
+                        toast.error("Login Google Failed", {
+                          description: "Please try again."
+                        })
                       }}
                     >
+
                     </GoogleLogin>
+
                   </GoogleOAuthProvider>
-                  <Button type="button" variant="outline" style={{ height: "42px" }}>
+
+                  <Button type="button" variant="outline" style={{ height: "42px" }} className="w-full ml-2">
                     <GitHubLogin clientId="Ov23liJomhkV4CiiBVoq" redirectUri="http://localhost:5174/login/github"
                       onSuccess={credentialResponse => {
                         handleLoginGithub(credentialResponse.code)
                       }}
                       onFailure={() => {
-                        toast.error("Login Github failed. Try other way to login")
+                        toast.error("Login Github Failed", {
+                          description: "Please try again."
+                        })
                       }
                       } className="w-full flex justify-center"
                     >

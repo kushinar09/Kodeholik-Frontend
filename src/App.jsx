@@ -5,6 +5,7 @@ import { SocketProvider } from "./providers/SocketNotificationProvider"
 import { SocketExamProvider } from "./providers/SocketExamProvider"
 import { Toaster } from "sonner"
 import LoadingScreen from "./components/common/shared/other/loading"
+import LoginGithub from "./components/pages/authentications/login-github"
 
 // Lazy load all components
 const ProblemDetail = lazy(() => import("./components/pages/problems/ProblemDetail"))
@@ -63,6 +64,7 @@ function App() {
 
                   {/* auth */}
                   <Route path="/login" element={<LoginPage />} />
+                  <Route path="/login-github" element={<LoginGithub />} />
                   <Route path="/forgot" element={<ForgotPassword />} />
                   <Route path="/reset" element={<ResetPassword />} />
 
