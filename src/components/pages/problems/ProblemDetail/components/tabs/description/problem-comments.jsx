@@ -136,7 +136,9 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
         })
       }
     } catch (error) {
-      console.error("Error posting comment:", error)
+      toast.error("Error", {
+        description: error.message || "Failed to post comment"
+      })
     }
   }
 
@@ -322,7 +324,9 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
       }
       newReply.id = response.data.id
     } catch (error) {
-      console.error("Error posting comment:", error)
+      toast.error("Error posting comment", {
+        description: error.message || "Failed to post comment"
+      })
     }
 
 

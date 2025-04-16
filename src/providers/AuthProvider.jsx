@@ -408,6 +408,66 @@ export const AuthProvider = ({ children }) => {
   }
 
   // Add a login function to ensure both states are set properly:
+  const loginGoogle = async (credentials) => {
+    try {
+      incrementActiveRequests()
+      const response = await fetch(ENDPOINTS.LOGIN_GOOGLE + "?token=" + credentials, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "http://kodeholik.site",
+          "Access-Control-Allow-Credentials": "true"
+        },
+        body: JSON.stringify(credentials)
+      })
+
+      if (response.ok) {
+        // After successful login, immediately check auth status to get user data
+        await checkAuthStatus(true)
+        return { success: true }
+      } else {
+        return { success: false, error: await response.json() }
+      }
+    } catch (error) {
+      console.error("Login failed:", error)
+      return { success: false, error }
+    } finally {
+      decrementActiveRequests()
+    }
+  }
+
+  const loginGithub = async (credentials) => {
+    try {
+      incrementActiveRequests()
+      const response = await fetch(ENDPOINTS.LOGIN_GITHUB + "?code=" + credentials, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "http://kodeholik.site",
+          "Access-Control-Allow-Credentials": "true"
+        },
+        body: JSON.stringify(credentials)
+      })
+
+      if (response.ok) {
+        // After successful login, immediately check auth status to get user data
+        await checkAuthStatus(true)
+        return { success: true }
+      } else {
+        return { success: false, error: await response.json() }
+      }
+    } catch (error) {
+      console.error("Login failed:", error)
+      return { success: false, error }
+    } finally {
+      decrementActiveRequests()
+    }
+  }
+
+
+  // Add a login function to ensure both states are set properly:
   const login = async (credentials) => {
     try {
       incrementActiveRequests()
@@ -442,6 +502,8 @@ export const AuthProvider = ({ children }) => {
       value={{
         apiCall,
         login,
+        loginGoogle,
+        loginGithub,
         logout,
         isAuthenticated,
         user,

@@ -17,6 +17,7 @@ import { ENDPOINTS } from "@/lib/constants"
 import { useAuth } from "@/providers/AuthProvider"
 import { Separator } from "@/components/ui/separator"
 import { postComment } from "@/lib/api/problem_api"
+import { toast } from "sonner"
 
 export default function DiscussionSection({ solutionId }) {
   const [isCollapsed, setIsCollapsed] = useState(true)
@@ -103,7 +104,9 @@ export default function DiscussionSection({ solutionId }) {
         })
       }
     } catch (error) {
-      console.error("Error posting comment:", error)
+      toast.error("Error posting comment", {
+        description: error.message || "Failed to post comment"
+      })
     }
   }
 
@@ -190,7 +193,9 @@ export default function DiscussionSection({ solutionId }) {
         setTotalComments(totalComments + 1)
       }
     } catch (error) {
-      console.error("Error posting comment:", error)
+      toast.error("Error posting comment", {
+        description: error.message || "Failed to post comment"
+      })
     }
 
 

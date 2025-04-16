@@ -123,7 +123,17 @@ export async function postComment(apiCall, id, comment, commentReply = null, typ
     const text = await response.json()
     return { status: true, data: text }
   } else {
-    return { status: false, message: "Error when post comment: " + response.message }
+    const errorData = await response.json()
+    let errorMessage = "Error when post comment: " + response.status
+
+    if (Array.isArray(errorData.message)) {
+      errorMessage = errorData.message[0]?.error || errorMessage
+    } else if (typeof errorData.message === "object") {
+      errorMessage = errorData.message.error || errorMessage
+    } else if (typeof errorData.message === "string") {
+      errorMessage = typeof errorData.details === "string" ? errorData.details : errorData.message
+    }
+    throw new Error(errorMessage)
   }
 }
 
