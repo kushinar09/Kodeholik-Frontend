@@ -66,11 +66,3 @@ export async function resetPassword(token, password) {
     throw new Error(error.message)
   }
 }
-
-export const loginWithGoogle = () => {
-  window.location.href = ENDPOINTS.LOGIN_GOOGLE
-}
-
-export const loginWithGithub = () => {
-  window.location.href = ENDPOINTS.LOGIN_GITHUB
-}

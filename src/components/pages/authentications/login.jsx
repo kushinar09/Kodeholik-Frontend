@@ -210,12 +210,10 @@ export default function LoginPage() {
                         })
                       }}
                     >
-
                     </GoogleLogin>
-
                   </GoogleOAuthProvider>
 
-                  <Button type="button" variant="outline" style={{ height: "42px" }} className="w-full ml-2">
+                  <Button type="button" variant="outline" style={{ height: "42px" }} className="flex-1 ml-2">
                     <GitHubLogin clientId="Ov23liJomhkV4CiiBVoq" redirectUri="http://localhost:5174/login/github"
                       onSuccess={credentialResponse => {
                         handleLoginGithub(credentialResponse.code)
