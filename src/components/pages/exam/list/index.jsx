@@ -253,15 +253,14 @@ export default function ExamList() {
   }
 
   const handleTimeUp = (examCode) => {
-    console.log("remove", examCode)
     setAllExams((prevExams) => prevExams.filter(exam => exam.code !== examCode))
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-bg-primary">
+      <div className="min-h-screen flex flex-col bg-bg-primary">
         <HeaderSection currentActive="exams" />
-        <div className="p-4 px-24">
+        <div className="flex-grow p-4 px-24">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
             <h2 className="text-lg font-medium mb-2">Error Loading Data</h2>
             <p>{error}</p>
@@ -283,12 +282,12 @@ export default function ExamList() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-primary">
+    <div className="min-h-screen flex flex-col bg-bg-primary">
       <HeaderSection currentActive="exams" />
       {loading
         ? <LoadingSkeleton />
         :
-        <div className="p-4 px-36">
+        <div className="flex-grow p-4 px-36">
           {/* Happening Now Section - Special Highlight */}
           {happeningExams.length > 0 && (
             <div className="mb-10">

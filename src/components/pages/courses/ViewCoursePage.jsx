@@ -132,9 +132,9 @@ export default function CoursePage() {
   const displayedTopics = showAllTopics ? topics : topics.slice(0, 5)
 
   return (
-    <div className="min-h-screen bg-bg-primary">
+    <div className="min-h-screen flex flex-col bg-bg-primary">
       <HeaderSection currentActive="courses" />
-      <div className="mx-36 py-8 text-text-primary">
+      <div className="flex-grow mx-36 py-8 text-text-primary">
         <div className="flex flex-col md:flex-row gap-8">
           <div className="w-full md:w-64 shrink-0">
             <div className="flex justify-between">

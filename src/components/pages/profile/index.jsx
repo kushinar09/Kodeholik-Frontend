@@ -29,9 +29,9 @@ export default function Profile() {
   const [currentUser, setCurrentUser] = useState(null)
   const [stats, setStats] = useState(null)
   const [rates, setRates] = useState(null)
-  const [isTopicOpen, setIsTopicOpen] = useState(true)
-  const [isSkillOpen, setIsSkillOpen] = useState(true)
-  const [isLanguageOpen, setIsLanguageOpen] = useState(true)
+  const [isTopicOpen, setIsTopicOpen] = useState(false)
+  const [isSkillOpen, setIsSkillOpen] = useState(false)
+  const [isLanguageOpen, setIsLanguageOpen] = useState(false)
   const [languageSolved, setLanguageSolved] = useState(null)
   const [topicSolved, setTopicSolved] = useState(null)
   const [fundamentalSkillSolved, setFundamentalSkillSolved] = useState(null)
@@ -269,10 +269,10 @@ export default function Profile() {
     <>
       {isLoading && <LoadingScreen />}
       {!isLoading && isAuthenticated &&
-        <div className="min-h-screen bg-bg-primary">
+        <div className="min-h-screen flex flex-col bg-bg-primary">
           <HeaderSection />
           {/* Main Content */}
-          <main className="p-4 px-36">
+          <main className="flex-grow p-4 px-36">
             {/* Study Plan Section */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-8">
               <div className="md:col-span-3">
