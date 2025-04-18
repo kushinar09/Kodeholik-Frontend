@@ -1,9 +1,35 @@
-import React from "react"
+import React, { useState, useTransition } from "react"
 
 import logo from "@/assets/images/logo/K_nobg.png"
 
 const LOGO = React.forwardRef(({ className, ...props }, ref) => {
-  return <img src={logo} className={className} alt="Kodeholik" ref={ref} {...props} />
+  const [loaded, setLoaded] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  const handleImageLoad = () => {
+    // Use transition to make the state update non-blocking
+    startTransition(() => {
+      setLoaded(true)
+    })
+  }
+
+  return (
+    <img loading="lazy"
+      src={logo}
+      loading="lazy"
+      className={`
+        ${className} 
+        transition-all 
+        duration-700 
+        ease-in-out
+        ${loaded ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-1"}
+      `}
+      alt={props.alt || "Kodeholik"}
+      ref={ref}
+      onLoad={handleImageLoad}
+      {...props}
+    />
+  )
 })
 
 const GLOBALS = {

@@ -140,7 +140,7 @@ export default function MyCourses() {
                     className="bg-bg-card border-none hover:scale-105 text-text-primary overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-all"
                   >
                     <div className="relative">
-                      <img
+                      <img loading="lazy"
                         src={course.image || placeholder}
                         alt={course.title}
                         className="w-full aspect-[5/3] object-cover"

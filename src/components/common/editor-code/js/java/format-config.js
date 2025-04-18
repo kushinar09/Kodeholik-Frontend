@@ -458,8 +458,8 @@ function applyGoogleStyleRules(line, config) {
   formattedLine = formattedLine.replace(/(\w+)\s+\((?!\s)/g, "$1(")
 
   // Space around binary operators
-  formattedLine = formattedLine.replace(/([^\s=!<>])(==|!=|<=|>=|&&|\|\||[+\-*/%&|^]|<<|>>|>>>)([^\s=])/g, "$1 $2 $3")
-  formattedLine = formattedLine.replace(/([^\s])\s*(=)\s*([^\s=])/g, "$1 $2 $3")
+  formattedLine = formattedLine.replace(/([^\s=!<>])(\s*)(==|!=|<=|>=|&&|\|\||[+\-*/%&|^]|<<|>>|>>>)(\s*)([^\s=])/g, "$1 $3 $5")
+  formattedLine = formattedLine.replace(/([^\s])\s*(?<![=!<>])=\s*([^\s=])/g, "$1 = $2")
 
   // No space for unary operators
   // formattedLine = formattedLine.replace(/\s+(\+\+|--)/g, "$1")

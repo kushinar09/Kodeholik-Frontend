@@ -116,7 +116,7 @@ export default function MyFavourite() {
             {!noContent &&
                 <Table>
                     <TableHeader>
-                        <TableRow>
+                        <TableRow className="hover:bg-gray-700/50">
                             <TableHead className="text-primary-text">ID</TableHead>
                             <TableHead className="text-primary-text">Title</TableHead>
                             <TableHead className="text-primary-text"></TableHead>
@@ -124,7 +124,7 @@ export default function MyFavourite() {
                     </TableHeader>
                     <TableBody>
                         {myFavourite != null && myFavourite.map((favourite) => (
-                            <TableRow className="text-primary-text" key={favourite.link}>
+                            <TableRow className="text-primary-text hover:bg-gray-700/50" key={favourite.link}>
                                 <TableCell>{favourite.id}</TableCell>
                                 <TableCell onClick={() => navigate("/problem/" + favourite.link)} className="text-primary-text font-bold cursor-pointer">{favourite.title}</TableCell>
                                 <TableCell className="text-black">

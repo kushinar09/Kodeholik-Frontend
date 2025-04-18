@@ -276,7 +276,7 @@ export default function RateCommentCourse({ courseId, setCourse, isAuthenticated
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                             <div className="flex items-center gap-3">
                               {/* User Avatar */}
-                              <img
+                              <img loading="lazy"
                                 src={item.user?.avatar || "https://via.placeholder.com/40"} // Fallback to placeholder if no avatar
                                 alt={`${item.user?.username || "Anonymous"}'s avatar`}
                                 className="w-10 h-10 rounded-full object-cover border border-gray-600"

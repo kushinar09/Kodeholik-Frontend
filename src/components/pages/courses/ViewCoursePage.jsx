@@ -275,7 +275,7 @@ export default function CoursePage() {
                     onClick={() => navigate(`/courses/${course.id}`)}
                   >
                     <div className="relative">
-                      <img
+                      <img loading="lazy"
                         src={course.image || placeholder}
                         alt={course.title}
                         className="w-full aspect-[5/3] object-cover"

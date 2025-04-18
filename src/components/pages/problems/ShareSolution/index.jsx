@@ -215,7 +215,8 @@ export default function ShareSolution({ solution, setIsEditMode }) {
 
   const getValueRemoveLockedCode = (value) => {
     const regex = new RegExp("LOCKED-CODE\\s*//Submission\\s*[\\s\\S]*?LOCKED-CODE", "g")
-    return value.replace(regex, "").replace("# Code \n <!--Please select a code for your solution by clicking the 'Add Submission' button. If you want to remove a selected code, click the 'X' icon in the Selected Submissions section. You cannot delete or edit the selected code here. Please choose at least one code.--> ", "").trim()
+    // .replace("# Code \n <!--Please select a code for your solution by clicking the 'Add Submission' button. If you want to remove a selected code, click the 'X' icon in the Selected Submissions section. You cannot delete or edit the selected code here. Please choose at least one code.--> ", "")
+    return value.replace(regex, "").trim()
   }
 
   return (
@@ -346,7 +347,7 @@ export default function ShareSolution({ solution, setIsEditMode }) {
                   <span>Explain your approach</span>
                 </div>
                 {markdownValue != null &&
-                  <div className="h-fit">
+                  <div className="h-[400px]">
                     <MarkdownEditor value={markdownValue} setCanDelete={setCanDelete} canDelete={canDelete} onChange={handleOnChange} />
                   </div>
                 }

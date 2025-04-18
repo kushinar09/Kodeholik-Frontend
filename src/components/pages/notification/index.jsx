@@ -12,7 +12,7 @@ import {
   PaginationItem,
   PaginationLink,
   PaginationNext,
-  PaginationPrevious,
+  PaginationPrevious
 } from "@/components/ui/pagination"
 import { cn } from "@/lib/utils"
 import { ArrowLeft } from "lucide-react"
@@ -49,7 +49,7 @@ export default function NotificationsPage() {
         <PaginationLink onClick={() => setCurrentPage(0)} isActive={currentPage === 0}>
           1
         </PaginationLink>
-      </PaginationItem>,
+      </PaginationItem>
     )
 
     // Show ellipsis if needed
@@ -57,7 +57,7 @@ export default function NotificationsPage() {
       items.push(
         <PaginationItem key="ellipsis-start">
           <PaginationEllipsis />
-        </PaginationItem>,
+        </PaginationItem>
       )
     }
 
@@ -69,7 +69,7 @@ export default function NotificationsPage() {
             <PaginationLink onClick={() => setCurrentPage(i)} isActive={currentPage === i}>
               {i + 1}
             </PaginationLink>
-          </PaginationItem>,
+          </PaginationItem>
         )
       }
     }
@@ -79,7 +79,7 @@ export default function NotificationsPage() {
       items.push(
         <PaginationItem key="ellipsis-end">
           <PaginationEllipsis />
-        </PaginationItem>,
+        </PaginationItem>
       )
     }
 
@@ -90,7 +90,7 @@ export default function NotificationsPage() {
           <PaginationLink onClick={() => setCurrentPage(totalPages - 1)} isActive={currentPage === totalPages - 1}>
             {totalPages}
           </PaginationLink>
-        </PaginationItem>,
+        </PaginationItem>
       )
     }
 
