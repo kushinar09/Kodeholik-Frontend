@@ -104,10 +104,10 @@ export default function ExamList() {
         }
 
         if (dateRange?.from || dateRange?.to) {
-          if (!dateRange?.from) dateRange.from = dateRange.to
-          if (!dateRange?.to) dateRange.to = dateRange.from
-          params.append("start", format(dateRange.from, "yyyy-MM-dd"))
-          params.append("end", format(dateRange.to, "yyyy-MM-dd"))
+          if (!dateRange?.from) dateRange.from = dateRange?.to
+          if (!dateRange?.to) dateRange.to = dateRange?.from
+          params.append("start", format(dateRange?.from, "yyyy-MM-dd"))
+          params.append("end", format(dateRange?.to, "yyyy-MM-dd"))
         }
 
         // Fetch data and wait at least 500ms before stopping loading
@@ -252,11 +252,15 @@ export default function ExamList() {
     fetchAllData()
   }
 
+  const handleTimeUp = (examCode) => {
+    setAllExams((prevExams) => prevExams.filter(exam => exam.code !== examCode))
+  }
+
   if (error) {
     return (
-      <div className="min-h-screen bg-bg-primary">
+      <div className="min-h-screen flex flex-col bg-bg-primary">
         <HeaderSection currentActive="exams" />
-        <div className="p-4 px-24">
+        <div className="flex-grow p-4 px-24">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
             <h2 className="text-lg font-medium mb-2">Error Loading Data</h2>
             <p>{error}</p>
@@ -278,12 +282,12 @@ export default function ExamList() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-primary">
+    <div className="min-h-screen flex flex-col bg-bg-primary">
       <HeaderSection currentActive="exams" />
       {loading
         ? <LoadingSkeleton />
         :
-        <div className="p-4 px-36">
+        <div className="flex-grow p-4 px-36">
           {/* Happening Now Section - Special Highlight */}
           {happeningExams.length > 0 && (
             <div className="mb-10">
@@ -323,9 +327,9 @@ export default function ExamList() {
               <button
                 className={`px-4 py-2 font-medium text-sm sm:text-base 
                 ${activeTab === "pending"
-                    ? "border-b-2 border-primary text-primary"
-                    : "text-gray-500 hover:text-gray-700"
-                  }`}
+      ? "border-b-2 border-primary text-primary"
+      : "text-gray-500 hover:text-gray-700"
+    }`}
                 onClick={() => setActiveTab("pending")}
               >
                 Upcoming Exams
@@ -338,9 +342,9 @@ export default function ExamList() {
               <button
                 className={`px-4 py-2 font-medium text-sm sm:text-base 
                 ${activeTab === "my-exams"
-                    ? "border-b-2 border-primary text-primary"
-                    : "text-gray-500 hover:text-gray-700"
-                  }`}
+      ? "border-b-2 border-primary text-primary"
+      : "text-gray-500 hover:text-gray-700"
+    }`}
                 onClick={() => setActiveTab("my-exams")}
               >
                 My Exams
@@ -389,6 +393,7 @@ export default function ExamList() {
                         formatTime={formatTime}
                         type="pending"
                         onEnrollSuccess={handleEnrollSuccess}
+                        onTimeUp={handleTimeUp}
                       />
                     ))}
                   </div>
@@ -445,17 +450,17 @@ export default function ExamList() {
                                 variant={"outline"}
                                 className={cn(
                                   "w-full h-full justify-start text-left font-normal bg-bg-primary text-text-primary",
-                                  !dateRange.from && "text-muted-foreground"
+                                  !dateRange?.from && "text-muted-foreground"
                                 )}
                               >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                {dateRange.from ? (
-                                  dateRange.to ? (
+                                {dateRange?.from ? (
+                                  dateRange?.to ? (
                                     <>
-                                      {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+                                      {format(dateRange?.from, "LLL dd, y")} - {format(dateRange?.to, "LLL dd, y")}
                                     </>
                                   ) : (
-                                    format(dateRange.from, "LLL dd, y")
+                                    format(dateRange?.from, "LLL dd, y")
                                   )
                                 ) : (
                                   <span>Select date range</span>
@@ -466,7 +471,7 @@ export default function ExamList() {
                               <Calendar
                                 initialFocus
                                 mode="range"
-                                defaultMonth={dateRange.from}
+                                defaultMonth={dateRange?.from}
                                 selected={dateRange}
                                 onSelect={setDateRange}
                                 numberOfMonths={2}
@@ -536,7 +541,7 @@ export default function ExamList() {
                               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
                               disabled={currentPage === 0}
                               className={`p-2 px-4 rounded-md text-text-primary flex items-center gap-2 bg-bg-card ${currentPage === 0 ? "opacity-70 cursor-not-allowed" : ""
-                                }`}
+                              }`}
                             >
                               <ChevronLeft className="h-4 w-4" />
                               <span className="hidden sm:inline">Previous</span>
@@ -550,7 +555,7 @@ export default function ExamList() {
                                 className={`w-10 h-10 rounded-md ${currentPage === index
                                   ? "bg-primary text-bg-card font-semibold"
                                   : "text-gray-600 hover:bg-gray-50 border"
-                                  }`}
+                                }`}
                               >
                                 {index + 1}
                               </button>
@@ -564,7 +569,7 @@ export default function ExamList() {
                               className={`p-2 px-4 rounded-md text-text-primary flex items-center gap-2 bg-bg-card ${currentPage === myExams.totalPages - 1
                                 ? "opacity-70 cursor-not-allowed"
                                 : "hover:bg-gray-50"
-                                }`}
+                              }`}
                             >
                               <span className="hidden sm:inline">Next</span>
                               <ChevronRight className="h-4 w-4" />
@@ -577,12 +582,12 @@ export default function ExamList() {
                 ) : (
                   <div className="text-center py-12 bg-bg-card rounded-lg shadow-sm">
                     <h3 className="text-xl font-medium text-text-primary">
-                      {searchTitle !== "" || searchStatus !== "ALL" || dateRange.from || dateRange.to
+                      {searchTitle !== "" || searchStatus !== "ALL" || dateRange?.from || dateRange?.to
                         ? "No exams found"
                         : "You haven't enrolled in any exams"}
                     </h3>
                     <p className="mt-2 text-text-primary/70">
-                      {searchTitle !== "" || searchStatus !== "ALL" || dateRange.from || dateRange.to
+                      {searchTitle !== "" || searchStatus !== "ALL" || dateRange?.from || dateRange?.to
                         ? "Try adjusting your search filters"
                         : "Check the upcoming exams tab to find exams to participate in"}
                     </p>

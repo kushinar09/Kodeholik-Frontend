@@ -68,7 +68,7 @@ export default function CourseOutline({
                             <FileText className="h-4 w-4 mr-3 text-green-400 flex-shrink-0" />
                           )}
                           <span
-                            className={`text-sm ${selectedLesson?.id === lesson.id ? "text-white font-medium" : "text-gray-300"}`}
+                            className={`flex-1 text-sm text-wrap line-clamp-2 max-w-full ${selectedLesson?.id === lesson.id ? "text-white font-medium" : "text-gray-300"}`}
                           >
                             {lesson.title}
                           </span>

@@ -9,6 +9,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { useSocketExam } from "@/providers/SocketExamProvider"
 import LoadingScreen from "@/components/common/shared/other/loading"
+import { LOGO } from "@/lib/constants"
 
 export default function WaitingRoom() {
   const { id } = useParams()
@@ -44,7 +45,7 @@ export default function WaitingRoom() {
         Number.parseInt(month) - 1,
         Number.parseInt(day),
         Number.parseInt(hours),
-        Number.parseInt(minutes),
+        Number.parseInt(minutes)
       )
     } catch (err) {
       console.error("Error parsing exam time:", err)
@@ -133,7 +134,7 @@ export default function WaitingRoom() {
       setTimeLeft({
         hours: hours,
         minutes: minutes,
-        seconds: seconds,
+        seconds: seconds
       })
 
       // Clear any existing interval
@@ -178,7 +179,7 @@ export default function WaitingRoom() {
     setTimeLeft({
       hours: hours,
       minutes: minutes,
-      seconds: seconds,
+      seconds: seconds
     })
 
     // Static property to track last check time
@@ -290,7 +291,7 @@ export default function WaitingRoom() {
     try {
       new Notification("Take your exam!", {
         body: "It's time to take your examination.",
-        icon: "/placeholder.svg?height=64&width=64",
+        icon: LOGO
       })
     } catch (err) {
       console.error("Error showing notification:", err)

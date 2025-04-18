@@ -12,7 +12,6 @@ import { EditProfileDialog } from "./edit"
 import LoadingScreen from "@/components/common/shared/other/loading"
 import { ChangePasswordDialog } from "./change-password"
 import { useNavigate } from "react-router-dom"
-import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
 import { ENDPOINTS } from "@/lib/constants"
 import { RadialChart } from "@/components/common/shared/other/radial-chart"
@@ -30,9 +29,9 @@ export default function Profile() {
   const [currentUser, setCurrentUser] = useState(null)
   const [stats, setStats] = useState(null)
   const [rates, setRates] = useState(null)
-  const [isTopicOpen, setIsTopicOpen] = useState(true)
-  const [isSkillOpen, setIsSkillOpen] = useState(true)
-  const [isLanguageOpen, setIsLanguageOpen] = useState(true)
+  const [isTopicOpen, setIsTopicOpen] = useState(false)
+  const [isSkillOpen, setIsSkillOpen] = useState(false)
+  const [isLanguageOpen, setIsLanguageOpen] = useState(false)
   const [languageSolved, setLanguageSolved] = useState(null)
   const [topicSolved, setTopicSolved] = useState(null)
   const [fundamentalSkillSolved, setFundamentalSkillSolved] = useState(null)
@@ -65,7 +64,6 @@ export default function Profile() {
     try {
       setIsLoading(true)
       const data = await getUserProfile(apiCall)
-      console.log(data)
       setCurrentUser(data)
       setProfile({
         avatarFile: null,
@@ -133,7 +131,6 @@ export default function Profile() {
     try {
       setIsLoading(true)
       const data = await getNumberTopicSolved(apiCall)
-      console.log(data)
       setTopicSolved(data)
     } catch (error) {
       toast.error(error.message)
@@ -183,19 +180,24 @@ export default function Profile() {
         username: data.username,
         fullname: data.fullname
       }))
-    } catch (error) {
-      toast.error("Edit Profile", {
-        description: error.message || "Edit profile failed. Please try again"
-      })
-    } finally {
       toast.success("Edit Profile", {
         description: "Edit profile successful"
       })
       setIsEditProfileDialogOpen(false)
+    } catch (error) {
+      toast.error("Edit Profile", {
+        description: error.message || "Edit profile failed. Please try again"
+      })
     }
   }
 
   const changeUserPassword = async (formPassword) => {
+    if (!formPassword.oldPassword.trim() ||
+      !formPassword.newPassword.trim() ||
+      !formPassword.confirmPassword.trim()) {
+      toast.error("All fields must be not empty or contain all space")
+      return
+    }
     try {
       await changePassword(apiCall, formPassword)
       toast.success("Change Password", {
@@ -239,7 +241,6 @@ export default function Profile() {
           })),
         className: ""
       }
-      console.log(transformedStats)
       setStats(transformedStats)
     } catch (error) {
       console.error("Error fetching stats:", error)
@@ -258,7 +259,6 @@ export default function Profile() {
         sideStats: [],
         className: "w-full"
       }
-      console.log(transformedStats)
       setRates(transformedStats)
     } catch (error) {
       console.error("Error fetching stats:", error)
@@ -269,10 +269,10 @@ export default function Profile() {
     <>
       {isLoading && <LoadingScreen />}
       {!isLoading && isAuthenticated &&
-        <div className="min-h-screen bg-bg-primary">
+        <div className="min-h-screen flex flex-col bg-bg-primary">
           <HeaderSection />
           {/* Main Content */}
-          <main className="p-4 px-36">
+          <main className="flex-grow p-4 px-36">
             {/* Study Plan Section */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-8">
               <div className="md:col-span-3">

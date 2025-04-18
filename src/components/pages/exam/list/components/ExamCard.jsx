@@ -24,7 +24,8 @@ export default function ExamCard({
   formatTime,
   type,
   onEnrollSuccess, // New prop to handle enrollment success
-  onUnenrollSuccess // New prop to handle unenrollment success
+  onUnenrollSuccess, // New prop to handle unenrollment success
+  onTimeUp = null
 }) {
   const { apiCall } = useAuth()
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
@@ -34,7 +35,7 @@ export default function ExamCard({
   const [examResults, setExamResults] = useState(null)
   const [isEnrolled, setIsEnrolled] = useState(type === "mylist")
 
-  const marginSeconds = 300 // 5 minutes
+  const marginSeconds = 300
 
   const isWithinMargin = (dateTime, marginSeconds) => {
     // Manually parse DD/MM/YYYY, HH:mm format
@@ -85,7 +86,7 @@ export default function ExamCard({
       const startDate = new Date(year, month - 1, day, hour, minute)
       const now = new Date()
 
-      return Math.floor((startDate - now) / 1000) // Difference in seconds
+      return Math.floor((startDate - now - 5000) / 1000) // Difference in seconds
     } catch (error) {
       console.error("Error calculating seconds until start:", error)
       return 0
@@ -273,8 +274,8 @@ export default function ExamCard({
       >
         <div className="p-4 border-b">
           <div className="flex justify-between items-start">
-            <h3 className="text-lg font-medium">{exam.title || "Untitled Exam"}</h3>
-            {inFuture(exam.startTime) && <CountdownTimer initialSeconds={getSecondsUntilStart(exam.startTime)} />}
+            <h3 className="text-lg font-medium truncate max-w-64">{exam.title || "Untitled Exam"}</h3>
+            {inFuture(exam.startTime) && <CountdownTimer initialSeconds={getSecondsUntilStart(exam.startTime)} onComplete={() => onTimeUp(exam.code)} />}
           </div>
         </div>
         <div className="p-4 space-y-2">
@@ -314,7 +315,7 @@ export default function ExamCard({
               onClick={() =>
                 handleClickExam(
                   exam.code,
-                  isWithinMarginPeriod
+                  isWithinMarginPeriod && exam.status === "NOT_STARTED"
                     ? "join-waiting"
                     : exam.status === "NOT_STARTED"
                       ? "unenroll"
@@ -324,14 +325,16 @@ export default function ExamCard({
                 )
               }
               disabled={isLoading || exam.status === "IN_PROGRESS"}
-              className={`w-full py-2 px-4 rounded-md font-medium text-sm ${isLoading ? "opacity-70 cursor-not-allowed" : ""} ${exam.status === "IN_PROGRESS"
+              className={`w-full py-2 px-4 rounded-md font-medium text-sm 
+                ${isLoading ? "opacity-70 cursor-not-allowed" : ""} 
+                ${exam.status === "IN_PROGRESS"
                   ? "cursor-default bg-primary/70 text-gray-700"
                   : "cursor-pointer bg-primary text-bg-card hover:bg-primary-button-hover"
                 }`}
             >
               {isLoading
                 ? "Processing..."
-                : isWithinMarginPeriod
+                : isWithinMarginPeriod && exam.status === "NOT_STARTED"
                   ? "Join"
                   : exam.status === "NOT_STARTED"
                     ? "Unenroll"

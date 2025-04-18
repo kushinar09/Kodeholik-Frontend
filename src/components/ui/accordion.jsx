@@ -10,18 +10,15 @@ export const Accordion = ({ children, className, type = "single", collapsible = 
   const [openItems, setOpenItems] = useState(value ? { [value]: true } : {})
 
   const toggleItem = (itemValue) => {
-    console.log(`ToggleItem called with value: ${itemValue}, current openItems:`, openItems)
     if (type === "single") {
       const newState = openItems[itemValue] && collapsible ? {} : { [itemValue]: true }
       setOpenItems(newState)
-      console.log(`New openItems state:`, newState)
       if (onValueChange) {
         onValueChange(Object.keys(newState)[0] || "")
       }
     } else {
       setOpenItems((prev) => {
         const newState = { ...prev, [itemValue]: !prev[itemValue] }
-        console.log(`New openItems state:`, newState)
         if (onValueChange) {
           onValueChange(Object.keys(newState).filter((key) => newState[key]))
         }

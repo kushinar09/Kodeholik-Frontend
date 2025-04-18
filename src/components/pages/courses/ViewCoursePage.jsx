@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { getCourseSearch, getTopicList } from "@/lib/api/course_api"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { GLOBALS } from "@/lib/constants"
 import HeaderSection from "@/components/common/shared/header"
@@ -37,6 +37,11 @@ export default function CoursePage() {
   const navigate = useNavigate()
 
   const { apiCall } = useAuth()
+  const debounceTimeout = useRef(null)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, selectedTopics])
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -51,11 +56,7 @@ export default function CoursePage() {
           query: searchQuery || undefined,
           topic: selectedTopics.length > 0 ? selectedTopics.join(",") : undefined
         })
-        const filteredCourses = searchQuery
-          ? (data.content || []).filter((course) =>
-            course.title.toLowerCase().includes(searchQuery.toLowerCase()))
-          : data.content || []
-        setCourses(filteredCourses)
+        setCourses(data.content || [])
         setTotalPages(data.totalPages || 1)
       } catch (error) {
         console.error("Error fetching courses:", error)
@@ -65,7 +66,19 @@ export default function CoursePage() {
         setIsLoading(false)
       }
     }
-    fetchCourses()
+
+    // Clear previous debounce timeout
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current)
+    }
+
+    // Set new debounce timeout
+    debounceTimeout.current = setTimeout(() => {
+      fetchCourses()
+    }, 200)
+
+    // Cleanup on unmount or dependencies change
+    return () => clearTimeout(debounceTimeout.current)
   }, [currentPage, searchQuery, selectedTopics, sortBy, ascending])
 
   useEffect(() => {
@@ -119,9 +132,9 @@ export default function CoursePage() {
   const displayedTopics = showAllTopics ? topics : topics.slice(0, 5)
 
   return (
-    <div className="min-h-screen bg-bg-primary">
+    <div className="min-h-screen flex flex-col bg-bg-primary">
       <HeaderSection currentActive="courses" />
-      <div className="mx-36 py-8 text-text-primary">
+      <div className="flex-grow mx-36 py-8 text-text-primary">
         <div className="flex flex-col md:flex-row gap-8">
           <div className="w-full md:w-64 shrink-0">
             <div className="flex justify-between">
@@ -289,7 +302,7 @@ export default function CoursePage() {
                     <div className="p-4 flex flex-col flex-1 gap-3">
                       <div className="flex gap-2">
                         <Avatar className="cursor-pointer bg-white size-6 border-2 border-primary hover:border-primary/80 transition-colors">
-                          <AvatarImage src={course.createdBy?.avatar} alt={course.createdBy?.fullname || "User"} />
+                          <AvatarImage src={course.createdBy?.avatar} alt={course.createdBy?.fullname || "User"} className="object-cover" />
                           <AvatarFallback className="bg-primary/10 text-bg-card font-semibold">
                             {course.createdBy?.username ? course.createdBy?.username
                               .split(" ")

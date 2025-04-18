@@ -29,7 +29,7 @@ export async function getProblemEditorial(apiCall, id) {
 }
 
 export async function getProblemSolutions(apiCall, id, page = 0, size = 15, title, languageName, sortBy, ascending, topics) {
-  const url = `${ENDPOINTS.GET_PROBLEM_SOLUTIONS.replace(":id", id)}${"?page=" + page}${size ? "&size=" + size : ""}${title ? "&title=" + title : ""}${languageName ? "&languageName=" + languageName : ""}${sortBy ? "&sortBy=" + sortBy : ""}${sortBy ? "&ascending=" + ascending : ""}`
+  const url = `${ENDPOINTS.GET_PROBLEM_SOLUTIONS.replace(":id", id)}${"?page=" + page}${size ? "&size=" + size : ""}${title ? "&title=" + encodeURIComponent(title) : ""}${languageName ? "&languageName=" + languageName : ""}${sortBy ? "&sortBy=" + sortBy : ""}${sortBy ? "&ascending=" + ascending : ""}`
   const response = await apiCall(url, {
     method: "POST",
     headers: {
@@ -123,7 +123,17 @@ export async function postComment(apiCall, id, comment, commentReply = null, typ
     const text = await response.json()
     return { status: true, data: text }
   } else {
-    return { status: false, message: "Error when post comment: " + response.message }
+    const errorData = await response.json()
+    let errorMessage = "Error when post comment: " + response.status
+
+    if (Array.isArray(errorData.message)) {
+      errorMessage = errorData.message[0]?.error || errorMessage
+    } else if (typeof errorData.message === "object") {
+      errorMessage = errorData.message.error || errorMessage
+    } else if (typeof errorData.message === "string") {
+      errorMessage = typeof errorData.details === "string" ? errorData.details : errorData.message
+    }
+    throw new Error(errorMessage)
   }
 }
 

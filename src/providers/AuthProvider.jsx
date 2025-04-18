@@ -6,6 +6,7 @@ import UnauthorisedError from "@/components/pages/errors/unauthorized-error"
 import ForbiddenError from "@/components/pages/errors/forbidden"
 import NotFoundError from "@/components/pages/errors/not-found-error"
 import GeneralError from "@/components/pages/errors/general-error"
+import { toast } from "sonner"
 
 const AuthContext = createContext()
 
@@ -32,20 +33,20 @@ const notThrowErrorEndpoint = [
   ENDPOINTS.GET_TOKEN_EXAM,
   ENDPOINTS.POST_RUN_EXAM,
   ENDPOINTS.POST_ENROLL_EXAM,
-  ENDPOINTS.POST_UNENROLL_EXAM
+  ENDPOINTS.POST_UNENROLL_EXAM,
+  ENDPOINTS.DOWNLOAD_FILE_LESSON
 ]
 
 // List of endpoints that don't need token rotation
 const notCallRotateTokenEndpoints = [ENDPOINTS.ROTATE_TOKEN, ENDPOINTS.POST_LOGOUT, ENDPOINTS.POST_LOGIN]
 
 function convertToRegex(endpoint) {
-  return new RegExp(`^${endpoint.replace(/:[^/]+/g, "([^/]+)").replace(/\//g, "\\/")}$`)
+  const path = endpoint.split("?")[0]
+  return new RegExp(`^${path.replace(/:[^/]+/g, "([^/]+)").replace(/\//g, "\\/")}$`)
 }
 
 function inEndpointList(endpointList, requestedUrl) {
-  // Remove query parameters from requested URL
   const baseUrl = requestedUrl.split("?")[0]
-
   return endpointList.some((endpoint) => convertToRegex(endpoint).test(baseUrl))
 }
 
@@ -86,7 +87,7 @@ export const AuthProvider = ({ children }) => {
       const response = await fetch(ENDPOINTS.GET_INFOR, {
         credentials: "include",
         headers: {
-          "Access-Control-Allow-Origin": "http://kodeholik.site",
+          "Access-Control-Allow-Origin": "http://localhost:5174",
           "Access-Control-Allow-Credentials": "true"
         }
       })
@@ -179,7 +180,7 @@ export const AuthProvider = ({ children }) => {
         method: "POST",
         credentials: "include",
         headers: {
-          "Access-Control-Allow-Origin": "http://kodeholik.site",
+          "Access-Control-Allow-Origin": "http://localhost:5174",
           "Access-Control-Allow-Credentials": "true"
         }
       })
@@ -212,7 +213,7 @@ export const AuthProvider = ({ children }) => {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://kodeholik.site",
+        "Access-Control-Allow-Origin": "http://localhost:5174",
         "Access-Control-Allow-Credentials": "true"
       }
     })
@@ -275,7 +276,7 @@ export const AuthProvider = ({ children }) => {
     }
     options.headers = {
       ...(options.headers || {}),
-      "Access-Control-Allow-Origin": "http://kodeholik.site",
+      "Access-Control-Allow-Origin": "http://localhost:5174",
       "Access-Control-Allow-Credentials": "true"
     }
     options.credentials = "include"
@@ -320,7 +321,11 @@ export const AuthProvider = ({ children }) => {
           } else {
             pendingApiCalls.current.delete(requestId)
           }
-        } else if (!inEndpointList(notThrowErrorEndpoint, url) && response.status !== 400 && response.status !== 500) {
+        } else if (response.status === 400 || response.status === 500) {
+          pendingApiCalls.current.delete(requestId)
+          let errorMessage = "Bad request. Waring when call api: " + url
+          console.warn(errorMessage)
+        } else if (!inEndpointList(notThrowErrorEndpoint, url)) {
           // Wait a small delay to ensure the response is fully processed
           setTimeout(() => {
             pendingApiCalls.current.delete(requestId)
@@ -378,14 +383,14 @@ export const AuthProvider = ({ children }) => {
     const errorCode = getMostSevereError()
 
     switch (errorCode) {
-    case "401":
-      return <UnauthorisedError />
-    case "403":
-      return <ForbiddenError />
-    case "404":
-      return <NotFoundError />
-    default:
-      return <GeneralError />
+      case "401":
+        return <UnauthorisedError />
+      case "403":
+        return <ForbiddenError />
+      case "404":
+        return <NotFoundError />
+      default:
+        return <GeneralError />
     }
   }
 
@@ -411,7 +416,7 @@ export const AuthProvider = ({ children }) => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "http://kodeholik.site",
+          "Access-Control-Allow-Origin": "http://localhost:5174",
           "Access-Control-Allow-Credentials": "true"
         },
         body: JSON.stringify(credentials)
@@ -440,7 +445,7 @@ export const AuthProvider = ({ children }) => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "http://kodeholik.site",
+          "Access-Control-Allow-Origin": "http://localhost:5174",
           "Access-Control-Allow-Credentials": "true"
         },
         body: JSON.stringify(credentials)
@@ -469,7 +474,7 @@ export const AuthProvider = ({ children }) => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "http://kodeholik.site",
+          "Access-Control-Allow-Origin": "http://localhost:5174",
           "Access-Control-Allow-Credentials": "true"
         },
         body: JSON.stringify(credentials)
@@ -495,9 +500,9 @@ export const AuthProvider = ({ children }) => {
       value={{
         apiCall,
         login,
-        logout,
         loginGoogle,
         loginGithub,
+        logout,
         isAuthenticated,
         user,
         loading: activeRequests > 0,

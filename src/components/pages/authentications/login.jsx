@@ -12,11 +12,11 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { LOGO } from "@/lib/constants"
 import { MESSAGES } from "@/lib/messages"
 
-import { loginWithGithub, loginWithGoogle } from "@/lib/api/auth_api"
-import { useAuth } from "@/providers/AuthProvider"
-import { toast } from "sonner"
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google"
 import GitHubLogin from "react-github-login"
+import { useAuth } from "@/providers/AuthProvider"
+import { toast } from "sonner"
+
 export default function LoginPage() {
   const [loading, setLoading] = useState(true)
   const [errors, setErrors] = useState({})
@@ -123,9 +123,8 @@ export default function LoginPage() {
     }
   }
 
-
   async function handleLoginGoogle(token) {
-    loginGoogle(token);
+    loginGoogle(token)
   }
 
   async function handleLoginGithub(code) {
@@ -199,30 +198,33 @@ export default function LoginPage() {
                   <span className="relative z-10 bg-bg-card px-2 text-input-text">Or continue with</span>
                 </div>
                 <div className="flex ">
-                  
+
                   <GoogleOAuthProvider clientId="873651389602-g3egfh8nipch5dad289s114sge0769n0.apps.googleusercontent.com">
                     <GoogleLogin
                       onSuccess={credentialResponse => {
-                        handleLoginGoogle(credentialResponse.credential);
+                        handleLoginGoogle(credentialResponse.credential)
                       }}
                       onError={() => {
-                        console.log('Login Failed');
+                        toast.error("Login Google Failed", {
+                          description: "Please try again."
+                        })
                       }}
                     >
-        
                     </GoogleLogin>
-                    
                   </GoogleOAuthProvider>
 
-                  <Button type="button" variant="outline" style={{height: '42px'}} className="w-full ml-2">
+                  <Button type="button" variant="outline" style={{ height: "42px" }} className="flex-1 ml-2">
                     <GitHubLogin clientId="Ov23liJomhkV4CiiBVoq" redirectUri="http://localhost:5174/login/github"
                       onSuccess={credentialResponse => {
-                        handleLoginGithub(credentialResponse.code);
+                        handleLoginGithub(credentialResponse.code)
                       }}
                       onFailure={() => {
-                        console.log('Login Failed');
+                        toast.error("Login Github Failed", {
+                          description: "Please try again."
+                        })
                       }
-                      } className="w-full flex justify-center" >
+                      } className="w-full flex justify-center"
+                    >
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
                           fillRule="evenodd"

@@ -42,26 +42,44 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
 
   const fetchComments = async () => {
     try {
-      const response = await apiCall(
-        type == "PROBLEM"
+      const url =
+        type === "PROBLEM"
           ? `${ENDPOINTS.GET_PROBLEM_COMMENTS.replace(":id", id)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
           : `${ENDPOINTS.GET_SOLUTION_COMMENTS.replace(":id", locationId)}?page=${page}&size=${size}&sortBy=${sortBy}&ascending=${ascending}`
-      )
-      if (!response.ok) throw new Error("Failed to fetch comments")
-      const data = await response.json()
-      for (let i = 0; i < data.content.length; i++) {
-        if (data.content[i].user) {
+
+      const response = await apiCall(url)
+
+      if (!response || !response.ok) {
+        throw new Error("Failed to fetch comments")
+      }
+
+      const text = await response.text()
+      if (!text) {
+        setComments([])
+        setTotalPages(1)
+        setTotalComments(0)
+        return
+      }
+
+      const data = JSON.parse(text)
+
+      const content = data?.content || []
+
+      for (let i = 0; i < content.length; i++) {
+        if (content[i]?.user) {
           setIsEditOpen((prev) => ({
             ...prev,
-            [data.content[i].id]: false
+            [content[i].id]: false
           }))
         }
+        setTotalComments((prev) => prev + content[i].noReply)
       }
-      setComments(data.content.filter(c => c.replyId === null))
-      setTotalPages(data.totalPages)
-      setTotalComments(data.totalElements)
+
+      setComments(content.filter((c) => c?.replyId === null))
+      setTotalComments((prev) => (data?.totalElements ? prev + data?.totalElements : 0))
+      setTotalPages(data?.totalPages || 0)
     } catch (error) {
-      console.error("Error fetching comments:", error)
+      toast.warning("Error fetching comments:", error)
     }
   }
 
@@ -118,7 +136,9 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
         })
       }
     } catch (error) {
-      console.error("Error posting comment:", error)
+      toast.error("Error", {
+        description: error.message || "Failed to post comment"
+      })
     }
   }
 
@@ -304,7 +324,9 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
       }
       newReply.id = response.data.id
     } catch (error) {
-      console.error("Error posting comment:", error)
+      toast.error("Error posting comment", {
+        description: error.message || "Failed to post comment"
+      })
     }
 
 
@@ -348,8 +370,7 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
           [id]: status == "EDIT" ? true : false
         }))
       }
-    }
-    else {
+    } else {
       setIsEditOpen((prev) => ({
         ...prev,
         [id]: status == "EDIT" ? true : false
@@ -431,7 +452,7 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
                   <Button
                     onClick={UploadComment}
                     className="bg-primary text-black font-semibold mt-4"
-                    disabled={!isAuthenticated || comment === ""}
+                    disabled={!isAuthenticated || !comment.trim()}
                     title={`${!isAuthenticated ? "Login to pust your comment" : "Comment"}`}
                   >
                     Comment
@@ -532,8 +553,9 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-sm bg-green-500 text-white font-bold hover:bg-green-500 hover:text-white "
+                                className="text-sm bg-green-500 text-white hover:bg-green-500 hover:text-white "
                                 onClick={() => toggleEditComment(comment.id, "SAVE", comment.comment)}
+                                disabled={!comment.comment.trim()}
                               >
                                 <Edit className="h-4 w-4 mr-1" />
                                 Save
@@ -662,6 +684,7 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
                                       size="sm"
                                       className="text-sm bg-green-500 text-white font-bold hover:bg-green-500 hover:text-white "
                                       onClick={() => toggleEditComment(reply.id, "SAVE", reply.comment)}
+                                      disabled={!reply.comment.trim()}
                                     >
                                       <Edit className="h-4 w-4 mr-1" />
                                       Save

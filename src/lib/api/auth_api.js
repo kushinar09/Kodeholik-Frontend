@@ -1,5 +1,4 @@
 import { ENDPOINTS } from "@/lib/constants"
-import { MESSAGES } from "../messages"
 
 // reset
 export async function requestResetPassword(email) {
@@ -17,7 +16,7 @@ export async function requestResetPassword(email) {
       return { status: false }
     }
   } catch (error) {
-    return { status: false, field: "email", message: error instanceof Error ? error.message : "An unexpected error occurred" }
+    return { status: false, field: "email", message: error.message || "An unexpected error occurred" }
   }
 }
 
@@ -66,12 +65,4 @@ export async function resetPassword(token, password) {
   } catch (error) {
     throw new Error(error.message)
   }
-}
-
-export const loginWithGoogle = () => {
-  window.location.href = ENDPOINTS.LOGIN_GOOGLE
-}
-
-export const loginWithGithub = () => {
-  window.location.href = ENDPOINTS.LOGIN_GITHUB
 }

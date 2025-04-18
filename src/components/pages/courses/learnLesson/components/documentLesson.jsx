@@ -3,7 +3,7 @@ import { FileText, Download } from "lucide-react"
 
 export default function DocumentLesson({ attachedFile, onDownload, resourceError }) {
   const getDisplayFileName = (file) => {
-    return file ? file.replace("lessons/", "") : ""
+    return file ? file.replace("lessons/", "").split("-").pop() : ""
   }
 
   return (

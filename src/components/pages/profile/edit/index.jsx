@@ -187,7 +187,7 @@ export function EditProfileDialog({ open, onOpenChange, onSubmit, profile, setPr
                   />
                 </div>
                 <div className="mt-4 flex justify-end">
-                  <Button type="submit">Edit</Button>
+                  <Button type="submit" disabled={!profile.fullname.trim()}>Edit</Button>
                 </div>
               </div>
             </div>

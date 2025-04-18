@@ -2,7 +2,7 @@ import ExamCardSkeleton from "./ExamCardSkeleton"
 
 export default function LoadingSkeleton() {
   return (
-    <div className="mx-auto py-8 px-36 bg-bg-primary">
+    <div className="py-8 px-36 flex-grow bg-bg-primary">
       {/* Happening Now Skeleton */}
       <div className="mb-10">
         <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-bg-card to-[#1E282C] shadow-lg p-6 md:p-8">

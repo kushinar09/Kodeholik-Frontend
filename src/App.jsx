@@ -64,7 +64,7 @@ function App() {
 
                   {/* auth */}
                   <Route path="/login" element={<LoginPage />} />
-                  <Route path="/login-github" element={<LoginGithub />} />
+                  <Route path="/login/github" element={<LoginGithub />} />
                   <Route path="/forgot" element={<ForgotPassword />} />
                   <Route path="/reset" element={<ResetPassword />} />
 

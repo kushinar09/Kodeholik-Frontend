@@ -31,7 +31,7 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
   const [sortBy, setSortBy] = useState("noUpvote")
   const [sortDirection, setSortDirection] = useState("desc")
 
-  const { apiCall } = useAuth()
+  const { user, apiCall } = useAuth()
 
   useEffect(() => {
     document.title = `${title} - ${GLOBALS.APPLICATION_NAME}`
@@ -240,11 +240,13 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
       <Button
         variant="ghost"
         size="sm"
-        className={`h-7 px-2 rounded-full ${message.liked ? "text-primary-button bg-primary-button/10" : "text-text-muted hover:bg-bg-muted hover:text-primary"}`}
+        className={`h-7 px-2 rounded-full ${message.liked ? "text-primary bg-primary/10 hover:bg-primary/30 hover:text-primary" : "text-text-muted hover:bg-bg-muted hover:text-primary"}`}
         onClick={() => toggleLike(message.id, isReply, parentId)}
       >
-        <ArrowBigUp className={`h-3.5 w-3.5 mr-1 ${message.liked ? "fill-primary-button" : ""}`} />
-        <span className="text-xs">{message.likes > 0 ? message.likes : ""}</span>
+        <ArrowBigUp className={`size-3 ${message.liked ? "fill-primary-button" : ""}`} />
+        {message.likes > 0 &&
+          <span className="text-xs ml-1">{message.likes}</span>
+        }
       </Button>
 
       {!isReply && (
@@ -320,7 +322,7 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
           <div key={message.id} className="mb-6">
             <div className="flex gap-3">
               <Avatar className="h-9 w-9 flex-shrink-0 border border-border-muted">
-                <AvatarImage src={message.avatar} alt={message.user} />
+                <AvatarImage src={message.avatar} alt={message.user} className="object-cover" />
                 <AvatarFallback className="bg-bg-muted text-text-primary">{message.user[0]}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
@@ -359,14 +361,16 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
                     {message.replies.map((reply) => (
                       <div key={reply.id} className="flex gap-3">
                         <Avatar className="h-8 w-8 flex-shrink-0 border border-border-muted">
-                          <AvatarImage src={reply.avatar} alt={reply.user} />
+                          <AvatarImage src={reply.avatar} alt={reply.user} className="object-cover" />
                           <AvatarFallback className="bg-bg-muted text-text-primary">{reply.user[0]}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <div className="bg-bg-muted rounded-lg p-3 border border-border-muted shadow-sm">
-                            <p className="font-medium text-sm text-text-primary flex items-center">
-                              {message.user}
-                              {message.role === "TEACHER" && (
+                            <p
+                              className={`${reply.user === user?.username ? "font-semibold" : "font-medium"} text-sm text-text-primary flex items-center`}
+                            >
+                              {reply.user === user?.username ? "You" : reply.user}
+                              {reply.role === "TEACHER" && (
                                 <GraduationCap className="ml-1 h-3.5 w-3.5 text-primary-button" />
                               )}
                             </p>
@@ -430,7 +434,7 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
 
         <form onSubmit={handleSendMessage} className="flex items-center gap-2 w-full">
           <Avatar className="h-9 w-9 flex-shrink-0 border border-border-muted">
-            <AvatarImage src="/placeholder.svg?height=40&width=40" alt="You" />
+            <AvatarImage src={user && user.avatar || "/placeholder.svg?height=40&width=40"} alt="You" className="object-cover" />
             <AvatarFallback className="bg-bg-muted text-text-primary">Y</AvatarFallback>
           </Avatar>
           <div className="flex-1 flex items-center gap-2 bg-bg-muted rounded-full px-4 border border-border-muted focus-within:border-primary-button transition-colors">
