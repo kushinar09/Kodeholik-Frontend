@@ -7,11 +7,13 @@ import { CodeHighlighter } from "@/components/common/editor-code/code-highlighte
 import { copyToClipboard } from "@/lib/utils/format-utils"
 import { useEffect, useState } from "react"
 import { Check, Copy } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 export default function ProblemEditorial({ editorial, isLoadingEditorial }) {
   const { isAuthenticated } = useAuth()
   const [copied, setCopied] = useState(false)
   const [currentCode, setCurrentCode] = useState("")
+  const navigate = useNavigate()
 
   useEffect(() => {
     setCurrentCode(editorial?.solutionCodes[0]?.solutionCode)
@@ -45,7 +47,7 @@ export default function ProblemEditorial({ editorial, isLoadingEditorial }) {
           </svg>
           Please login to view this content
         </div>
-        <Button className="mt-2 w-fit" variant="outline" onClick={() => (window.location.href = "/login")}>
+        <Button className="mt-2 w-fit" variant="outline" onClick={() => navigate("/login", { state: { redirectPath: window.location.pathname } })}>
           Sign In
         </Button>
       </div>

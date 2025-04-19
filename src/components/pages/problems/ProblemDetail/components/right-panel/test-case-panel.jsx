@@ -3,28 +3,158 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Plus } from "lucide-react"
+import { Plus, X } from "lucide-react"
 import { formatValue } from "@/lib/utils/format-utils"
+import { useRef, useEffect } from "react"
 
-/**
- * Panel for test cases and results
- * @param {Object} props - Component props
- * @param {boolean} props.isResultActive - Whether result view is active
- * @param {Function} props.setIsResultActive - Function to toggle result view
- * @param {boolean} props.isCompact - Whether the panel is in compact mode
- * @param {Array} props.testCases - Test cases
- * @param {string} props.activeCase - Active test case index
- * @param {Function} props.setActiveCase - Function to set active test case
- * @param {Object} props.results - Test results
- * @param {boolean} props.showResult - Whether to show test results
- * @param {string} props.activeResult - Active result index
- * @param {Function} props.setActiveResult - Function to set active result
- */
+// Function to create a deep copy of an object
+const deepCopy = (obj) => {
+  return JSON.parse(JSON.stringify(obj))
+}
+
+// Function to format array values on a single line
+const formatArrayInline = (value) => {
+  if (Array.isArray(value)) {
+    return `[${value.join(", ")}]`
+  } else if (typeof value === "string" && value.startsWith("[") && value.endsWith("]")) {
+    try {
+      const parsedArray = JSON.parse(value)
+      if (Array.isArray(parsedArray)) {
+        return `[${parsedArray.join(", ")}]`
+      }
+    } catch (e) {
+      // If parsing fails, return the original string
+    }
+    return value
+  }
+  return typeof value === "object" ? JSON.stringify(value, null, 2) : String(value)
+}
+
+// Auto-growing input component
+const AutoGrowInput2 = ({ value, onChange, className }) => {
+  const inputRef = useRef(null)
+
+  // Function to update height based on content
+  const updateHeight = () => {
+    if (inputRef.current) {
+      // Reset height temporarily to get the correct scrollHeight
+      inputRef.current.style.height = "auto"
+      // Set height to scrollHeight to fit content (min 40px)
+      inputRef.current.style.height = `${Math.max(40, inputRef.current.scrollHeight)}px`
+    }
+  }
+
+  // Update height when value changes
+  useEffect(() => {
+    updateHeight()
+  }, [value])
+
+  // Handle input changes while preserving cursor position
+  const handleInput = (e) => {
+    const newValue = e.currentTarget.innerText
+    onChange(newValue)
+
+    // Schedule height update after React's state update
+    setTimeout(updateHeight, 0)
+  }
+
+  // Initial content setup
+  useEffect(() => {
+    if (inputRef.current) {
+      // Only set content if it's different to avoid cursor jumps
+      if (inputRef.current.innerText !== value) {
+        inputRef.current.innerText = value
+        updateHeight()
+      }
+    }
+  }, [])
+
+  return (
+    <pre
+      ref={inputRef}
+      contentEditable
+      className={cn(
+        "w-full rounded bg-input-bg text-input-text p-2 min-h-[40px] overflow-hidden outline-none whitespace-pre-wrap break-words",
+        className
+      )}
+      onInput={handleInput}
+      suppressContentEditableWarning={true}
+    />
+  )
+}
+
+// Auto-growing input component
+const AutoGrowInput = ({ value, onChange, className }) => {
+  const inputRef = useRef(null)
+
+  const updateHeight = () => {
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto"
+      inputRef.current.style.height = `${Math.max(40, inputRef.current.scrollHeight)}px`
+    }
+  }
+
+  useEffect(() => {
+    if (!inputRef.current) return
+
+    try {
+      const selection = window.getSelection()
+      const hasRange = selection && selection.rangeCount > 0
+      let startOffset = null
+      let startNode = null
+
+      if (hasRange) {
+        const range = selection.getRangeAt(0)
+        startOffset = range.startOffset
+        startNode = range.startContainer
+      }
+
+      // Only update content if needed
+      if (inputRef.current.textContent !== value) {
+        inputRef.current.textContent = value
+
+        if (hasRange && startNode && inputRef.current.contains(startNode)) {
+          const newRange = document.createRange()
+          newRange.setStart(startNode, Math.min(startOffset, startNode.length))
+          newRange.collapse(true)
+          selection.removeAllRanges()
+          selection.addRange(newRange)
+        }
+      }
+    } catch (error) {
+      console.warn("Caret restore skipped:", error)
+      inputRef.current.textContent = value // fallback
+    }
+
+    updateHeight()
+  }, [value])
+
+  const handleInput = (e) => {
+    const newValue = e.currentTarget.textContent
+    onChange(newValue)
+  }
+
+  return (
+    <pre
+      ref={inputRef}
+      contentEditable
+      className={cn(
+        "w-full rounded bg-input-bg text-input-text p-2 min-h-[40px] overflow-hidden outline-none",
+        className
+      )}
+      onInput={handleInput}
+      suppressContentEditableWarning={true}
+    />
+  )
+}
+
 export default function TestCasePanel({
   isResultActive,
   setIsResultActive,
   isCompact,
   testCases,
+  customTestCases,
+  setCustomTestCases,
   activeCase,
   setActiveCase,
   results,
@@ -117,7 +247,7 @@ export default function TestCasePanel({
           {!isResultActive && (
             <div className="w-full space-y-4 p-4">
               {/* Test Case Tabs */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 {Object.keys(testCases).map((caseKey) => (
                   <Button
                     key={caseKey}
@@ -128,26 +258,120 @@ export default function TestCasePanel({
                     Case {Number.parseInt(caseKey) + 1}
                   </Button>
                 ))}
-                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-button-primary">
-                  <Plus className="h-4 w-4" />
-                </Button>
+
+                {customTestCases.map((_, index) => (
+                  <div key={`custom-${index}`} className="group">
+                    <Button
+                      variant={activeCase === `custom-${index}` ? "" : "ghost"}
+                      className={`relative h-8 font-bold ${activeCase === `custom-${index}` ? "bg-button-primary hover:bg-button-hover" : "hover:bg-button-primary"}`}
+                      onClick={() => setActiveCase(`custom-${index}`)}
+                    >
+                      Case {testCases.length + index + 1}
+                      <button
+                        className="absolute -top-2 -right-2 bg-gray-500 text-white rounded-full size-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          const newCustomTestCases = [...customTestCases]
+                          newCustomTestCases.splice(index, 1)
+                          setCustomTestCases(newCustomTestCases)
+
+                          // If the active case is the one being removed, set to the first test case
+                          if (index === 0 && activeCase === `custom-${index}`) {
+                            setActiveCase((testCases.length - 1).toString())
+                          } else if (activeCase === `custom-${index}`) {
+                            setActiveCase(`custom-${index - 1}`)
+                          } else if (activeCase.startsWith("custom-") && activeCase.split("-")[1] > index) {
+                            setActiveCase(`custom-${Number.parseInt(activeCase.split("-")[1]) - 1}`)
+                          }
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Button>
+                  </div>
+                ))}
+
+                {customTestCases.length < 5 &&
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 hover:bg-button-primary"
+                    onClick={() => {
+                      if (testCases.length > 0) {
+                        // Get a random test case from the fixed test cases as a template
+                        const randomIndex = Math.floor(Math.random() * testCases.length)
+                        // Create a deep copy to ensure it's completely independent
+                        const randomTestCase = deepCopy(testCases[randomIndex])
+
+                        // Format arrays for display
+                        randomTestCase.input.forEach((param) => {
+                          if (Array.isArray(param.value)) {
+                            // Keep the original array structure but it will be formatted inline when displayed
+                            param.value = [...param.value]
+                          }
+                        })
+
+                        // Add it to custom test cases
+                        setCustomTestCases([...customTestCases, randomTestCase])
+
+                        // Set it as active
+                        setActiveCase(`custom-${customTestCases.length}`)
+                      }
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                }
               </div>
 
               {/* Test Case Content */}
-              {testCases.length > 0 && (
+              {activeCase && (
                 <div className="space-y-4">
-                  {testCases[activeCase].input.map((param, index) => (
-                    <div key={index} className="space-y-2">
-                      <Label className="text-sm text-black">{param.name} =</Label>
-                      <div className="rounded bg-input-bg text-input-text p-2">{formatValue(param.value)}</div>
-                    </div>
-                  ))}
-                  <div className="space-y-2">
-                    <Label className="text-sm text-black">Expected Output =</Label>
-                    <div className="rounded bg-input-bg text-input-text p-2">
-                      {formatValue(testCases[activeCase].expectedOutput)}
-                    </div>
-                  </div>
+                  {activeCase.startsWith("custom-") ? (
+                    // Custom test case (editable values only, not names)
+                    <>
+                      {console.log(activeCase.split("-")[1], customTestCases)}
+                      {customTestCases[Number.parseInt(activeCase.split("-")[1])].input.map((param, paramIndex) => (
+                        <div key={paramIndex} className="space-y-2">
+                          <Label className="text-sm text-black">{param.name} =</Label>
+                          <AutoGrowInput
+                            value={formatArrayInline(param.value)}
+                            onChange={(newValue) => {
+                              // Create a deep copy of the entire customTestCases array
+                              const newCustomTestCases = deepCopy(customTestCases)
+
+                              // Update only the specific test case and parameter
+                              const caseIndex = Number.parseInt(activeCase.split("-")[1])
+                              newCustomTestCases[caseIndex].input[paramIndex].value = newValue
+
+                              // Update state with the new array
+                              setCustomTestCases(newCustomTestCases)
+                            }}
+                          />
+                        </div>
+                      ))}
+                      {/* No expectedOutput section for custom test cases */}
+                    </>
+                  ) : (
+                    // Fixed test case (read-only)
+                    <>
+                      {testCases.length > 0 &&
+                        testCases[activeCase]?.input.map((param, index) => (
+                          <div key={index} className="space-y-2">
+                            <Label className="text-sm text-black">{param.name} =</Label>
+                            <div className="rounded bg-input-bg text-input-text p-2">{formatValue(param.value)}</div>
+                          </div>
+                        ))}
+                      {testCases.length > 0 && (
+                        <div className="space-y-2">
+                          <Label className="text-sm text-black">Expected Output =</Label>
+                          <div className="rounded bg-input-bg text-input-text p-2">
+                            {formatValue(testCases[activeCase]?.expectedOutput)}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -226,4 +450,3 @@ export default function TestCasePanel({
     </div>
   )
 }
-

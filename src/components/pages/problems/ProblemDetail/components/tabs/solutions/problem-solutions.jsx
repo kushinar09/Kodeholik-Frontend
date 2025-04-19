@@ -19,6 +19,7 @@ import {
 import SolutionCard from "./items/solution-card"
 import SolutionDetail from "./items/solution-detail"
 import { ENDPOINTS } from "@/lib/constants"
+import { useNavigate } from "react-router-dom"
 
 const sortValue = {
   VOTE: {
@@ -60,6 +61,7 @@ export default function ProblemSolutions({
   const sizePage = 10
   const [showAllTopics, setShowAllTopics] = useState(false)
   const containerRef = useRef(null)
+  const navigate = useNavigate()
 
   // Toggle topic selection
   function toggleTopic(topic) {
@@ -142,7 +144,7 @@ export default function ProblemSolutions({
           </svg>
           Please login to view this content
         </div>
-        <Button className="mt-2 w-fit" variant="outline" onClick={() => (window.location.href = "/login")}>
+        <Button className="mt-2 w-fit" variant="outline" onClick={() => navigate("/login", { state: { redirectPath: window.location.pathname } })}>
           Sign In
         </Button>
       </div>

@@ -1,12 +1,12 @@
 import { ENDPOINTS } from "../constants"
 
-export async function runCode(apiCall, id, code, languageName) {
+export async function runCode(apiCall, id, code, languageName, testCases) {
   try {
     const response = await apiCall(ENDPOINTS.POST_RUN_CODE.replace(":id", id), {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, languageName })
+      body: JSON.stringify({ code, languageName, testCases })
     }, true)
 
     const data = await response.json()

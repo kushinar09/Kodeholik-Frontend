@@ -7,6 +7,7 @@ import { useAuth } from "@/providers/AuthProvider"
 import { format, parse } from "date-fns"
 import { ArrowDownAZ, ArrowUpAZ } from "lucide-react"
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 const SubmissionStatus = {
   ACCEPTED: "ACCEPTED",
@@ -15,17 +16,17 @@ const SubmissionStatus = {
   MEMORY_LIMIT_EXCEEDED: "MEMORY_LIMIT_EXCEEDED",
   RUNTIME_ERROR: "RUNTIME_ERROR",
   COMPILATION_ERROR: "COMPILATION_ERROR",
-  PENDING: "PENDING",
+  PENDING: "PENDING"
 }
 
 export default function ProblemSubmissions({
   submissionsData,
   selectedSubmissionId,
   setSelectedSubmissionId,
-  isLoadingSubmission,
+  isLoadingSubmission
 }) {
   const { isAuthenticated } = useAuth()
-
+  const navigate = useNavigate()
   const [sortField, setSortField] = useState(null)
   const [sortDirection, setSortDirection] = useState("asc")
   const [submissions, setSubmissions] = useState(submissionsData)
@@ -92,7 +93,7 @@ export default function ProblemSubmissions({
           </svg>
           Please login to view this content
         </div>
-        <Button className="mt-2 w-fit" variant="outline" onClick={() => (window.location.href = "/login")}>
+        <Button className="mt-2 w-fit" variant="outline" onClick={() => navigate("/login", { state: { redirectPath: window.location.pathname } })}>
           Sign In
         </Button>
       </div>
