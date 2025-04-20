@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect, useCallback } from "react"
-import { useParams } from "react-router-dom"
+import { Link, useLocation, useParams } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels"
 import "highlight.js/styles/default.css"
@@ -28,7 +28,6 @@ import TestCasePanel from "./components/right-panel/test-case-panel"
 import { useAuth } from "@/providers/AuthProvider"
 import { leftTabEnum } from "./data/data"
 import { debounce } from "lodash"
-// import LoadingScreen from "@/components/common/shared/other/loading"
 import ShareSolution from "../ShareSolution"
 import { toast } from "sonner"
 import { GLOBALS } from "@/lib/constants"
@@ -37,9 +36,9 @@ export default function ProblemDetail() {
   const { id } = useParams()
   const { submission } = useParams()
   const { solution } = useParams()
-  const { apiCall } = useAuth()
-
+  const { apiCall, isAuthenticated } = useAuth()
   const [problemId, setProblemId] = useState(0)
+  const location = useLocation()
 
   const [openedTabEditorial, setOpenedTabEditorial] = useState(false)
   const [openedTabSolution, setOpenedTabSolution] = useState(false)
@@ -77,6 +76,7 @@ export default function ProblemDetail() {
   // Test case state
   const [activeCase, setActiveCase] = useState("0")
   const [activeResult, setActiveResult] = useState("0")
+  const [customTestCase, setCustomTestCase] = useState([])
 
   // Results state
   const [results, setResults] = useState()
@@ -323,7 +323,7 @@ export default function ProblemDetail() {
   async function handleRunCode() {
     setIsRunning("run")
     try {
-      const result = await runCode(apiCall, id, currentCode, language)
+      const result = await runCode(apiCall, id, currentCode, language, customTestCase)
       if (result.status) {
         setResults(result.data)
         setShowResult(true)
@@ -377,7 +377,17 @@ export default function ProblemDetail() {
                 <div ref={leftPanelRef} className="h-full overflow-hidden">
                   <div className={cn("h-full flex flex-col transition-all duration-200", isCompactLeft ? "w-[40px]" : "")}>
                     <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} isCompact={isCompactLeft} />
-
+                    {!isAuthenticated &&
+                      <div className="bg-blue-100/10 p-3 rounded border border-blue-100/20 flex items-center justify-center">
+                        <div className="flex items-center justify-center h-full text-sm font-medium text-gray-500">
+                          Please{" "}
+                          <Link to="/login" className="text-blue-500 hover:text-blue-600 mx-1" state={{ redirectPath: location.pathname }}>
+                            login
+                          </Link>{" "}
+                          to run or submit code
+                        </div>
+                      </div>
+                    }
                     <LeftPanelContent
                       id={id}
                       problemId={problemId}
@@ -453,6 +463,8 @@ export default function ProblemDetail() {
                       showResult={showResult}
                       activeResult={activeResult}
                       setActiveResult={setActiveResult}
+                      customTestCases={customTestCase}
+                      setCustomTestCases={setCustomTestCase}
                     />
                   </Panel>
                 </PanelGroup>
