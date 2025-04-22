@@ -23,7 +23,7 @@ export function SearchBar({ search, setSearch, onSearchChange, isFiltersOpen, se
       return
     }
 
-    const fetchSuggestions = async () => {
+    const fetchSuggestionSearchs = async () => {
       try {
         const response = await apiCall(ENDPOINTS.GET_SUGGEST_SEARCH.replace(":text", encodeURIComponent(tempSearch)))
         if (!response.ok) throw new Error("Failed to fetch suggestions")
@@ -34,7 +34,7 @@ export function SearchBar({ search, setSearch, onSearchChange, isFiltersOpen, se
       }
     }
 
-    const debounceTimeout = setTimeout(fetchSuggestions, 300)
+    const debounceTimeout = setTimeout(fetchSuggestionSearchs, 300)
     return () => clearTimeout(debounceTimeout)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tempSearch])

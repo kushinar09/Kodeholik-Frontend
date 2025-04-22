@@ -13,7 +13,7 @@ export function CourseHeader() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchTopCourses = async () => {
       try {
         const response = await fetch(ENDPOINTS.GET_TOP_COURSES)
         const data = await response.json()
@@ -25,7 +25,7 @@ export function CourseHeader() {
       }
     }
 
-    fetchCourses()
+    fetchTopCourses()
   }, [])
   return (
     <section className="mb-4">

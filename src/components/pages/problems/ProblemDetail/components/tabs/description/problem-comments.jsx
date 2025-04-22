@@ -40,7 +40,7 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
   const [isEditOpen, setIsEditOpen] = useState([])
   const { apiCall, isAuthenticated, user } = useAuth()
 
-  const fetchComments = async () => {
+  const fetchCommentsDescription = async () => {
     try {
       const url =
         type === "PROBLEM"
@@ -84,7 +84,7 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
   }
 
   useEffect(() => {
-    fetchComments()
+    fetchCommentsDescription()
   }, [id, page, sortBy, ascending, activeTab])
 
   function toggleCollapsed() {
@@ -270,11 +270,6 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
   const toggleUnupvoteReply = async (comment) => {
     try {
       unupvoteComment(apiCall, comment.id)
-      // for (let i = 0; i < loadedReplies.length; i++) {
-      //   if (comment.replyId = loadedReplies[i]) {
-
-      //   }
-      // }
       setLoadedReplies(updateUnupvoted(loadedReplies, comment))
     } catch (error) {
       console.log(error)

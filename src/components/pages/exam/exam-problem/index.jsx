@@ -252,14 +252,17 @@ export default function ExamProblems() {
     setSelectedProblem(null)
   }
 
-  const handleRunCode = async (code, language, problemLink) => {
+  const handleRunCode = async (code, language, problemLink, customTestCases) => {
     try {
       const response = await apiCall(ENDPOINTS.POST_RUN_EXAM.replace(":idProblem", problemLink).replace(":id", id), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code: code,
-          languageName: language
+          languageName: language,
+          inputs: customTestCases.map(testCase =>
+            testCase.input.map(({ name, value }) => ({ name, value }))
+          )
         })
       })
       return response.json()
@@ -354,16 +357,23 @@ export default function ExamProblems() {
     setShowSubmitDialog(true)
   }
 
+  const onPenalty = () => {
+    performSubmitExam(true)
+  }
+
   // Actual submission logic
-  const performSubmitExam = () => {
+  const performSubmitExam = (penalty = false) => {
     if (!isMountedRef.current || isSubmitting) return
 
     setIsSubmitting(true)
 
     // Submit exam answers
     if (submitExamAnswers(id, storeCode)) {
-      toast.success("Exam submitted successfully!")
-
+      if (penalty !== null && penalty !== undefined && penalty) {
+        toast.error("You have been penalized for your activity. Exam will be submitted.")
+      } else {
+        toast.success("Exam submitted successfully!")
+      }
       // Stop the timer
       setIsTimerRunning(false)
       if (timerIntervalRef.current) {
@@ -433,6 +443,7 @@ export default function ExamProblems() {
           onRun={handleRunCode}
           onCodeChange={handleCodeChange}
           handleChangeProblem={handleChangeProblem}
+          onPenalty={onPenalty}
         />
       </div>
     )

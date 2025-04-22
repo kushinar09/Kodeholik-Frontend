@@ -6,7 +6,13 @@ export async function runCode(apiCall, id, code, languageName, testCases) {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, languageName, testCases })
+      body: JSON.stringify({
+        code,
+        languageName,
+        inputs: testCases.map(testCase =>
+          testCase.input.map(({ name, value }) => ({ name, value }))
+        )
+      })
     }, true)
 
     const data = await response.json()
