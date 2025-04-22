@@ -367,13 +367,13 @@ export default function ExamProblems() {
 
     setIsSubmitting(true)
 
+    if (typeof penalty === "boolean" && penalty) {
+      toast.error("You have been penalized for your activity. Exam will be submitted.")
+    }
+
     // Submit exam answers
     if (submitExamAnswers(id, storeCode)) {
-      if (penalty !== null && penalty !== undefined && penalty) {
-        toast.error("You have been penalized for your activity. Exam will be submitted.")
-      } else {
-        toast.success("Exam submitted successfully!")
-      }
+      toast.success("Exam submitted successfully!")
       // Stop the timer
       setIsTimerRunning(false)
       if (timerIntervalRef.current) {
