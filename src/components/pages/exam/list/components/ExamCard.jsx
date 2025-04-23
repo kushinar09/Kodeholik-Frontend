@@ -340,7 +340,7 @@ export default function ExamCard({
                     ? "Unenroll"
                     : exam.status === "END"
                       ? "View Results"
-                      : "Do not participate"}
+                      : "Currently happening"}
             </button>
           )}
         </div>

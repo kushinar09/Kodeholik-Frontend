@@ -20,12 +20,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from "@/components/ui/alert-dialog"
+import { convertToType } from "@/lib/api/code_api"
 
 export default function ExamProblems() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const { problems, examData, isConnected, token, examCode, username, duration, connectSocket, submitExamAnswers } =
+  const { problems, examData, isConnected, token, examCode, username, endTime, connectSocket, submitExamAnswers } =
     useSocketExam()
   const { apiCall } = useAuth()
 
@@ -170,27 +171,25 @@ export default function ExamProblems() {
       if (storedData) {
         const parsedData = JSON.parse(storedData)
 
-        if (parsedData.duration && parsedData.lastActiveTime) {
+        if (endTime) {
           // Calculate elapsed time since last activity
           const now = new Date().getTime()
-          const lastActive = parsedData.lastActiveTime
-          const elapsedSeconds = Math.floor((now - lastActive) / 1000)
+          const elapsedSeconds = Math.floor((endTime - now) / 1000)
 
           // Calculate remaining time
-          const remainingTime = Math.max(0, parsedData.duration - elapsedSeconds)
+          const remainingTime = Math.max(0, elapsedSeconds)
 
           // Set the time left
           setTimeLeft(remainingTime)
           examStartTimeRef.current = new Date(now - elapsedSeconds * 1000)
-          console.log(`Restored exam timer: ${remainingTime}s remaining`)
-        } else if (duration) {
+        } else if (parsedData.endTime) {
           // If we have duration from the provider but no lastActiveTime
-          setTimeLeft(duration)
+          setTimeLeft((parsedData.endTime - new Date().getTime()) / 1000)
           examStartTimeRef.current = new Date()
         }
-      } else if (duration) {
+      } else if (endTime) {
         // Fresh exam start
-        setTimeLeft(duration)
+        setTimeLeft((endTime - new Date().getTime()) / 1000)
         examStartTimeRef.current = new Date()
 
         // Initialize tempData with current time
@@ -202,8 +201,7 @@ export default function ExamProblems() {
               code: examCode,
               username,
               problems,
-              duration,
-              lastActiveTime: new Date().getTime()
+              endTime
             })
           )
         }
@@ -212,11 +210,11 @@ export default function ExamProblems() {
       setIsTimerRunning(true)
     } catch (err) {
       console.error("Error calculating remaining time:", err)
-      if (duration) {
-        setTimeLeft(duration)
+      if (endTime) {
+        setTimeLeft((endTime - new Date().getTime()) / 1000)
       }
     }
-  }, [duration, problems, token, examCode, username])
+  }, [endTime, problems, token, examCode, username])
 
   // Format seconds to HH:MM:SS
   const formatTime = (seconds) => {
@@ -261,14 +259,24 @@ export default function ExamProblems() {
           code: code,
           languageName: language,
           inputs: customTestCases.map(testCase =>
-            testCase.input.map(({ name, value }) => ({ name, value }))
+            testCase.input.map(({ name, value, type }) => ({ name, value: convertToType(value, type) }))
           )
         })
       })
-      return response.json()
+      const data = await response.json()
+
+      if (response.ok) {
+        return { status: true, data: data }
+      }
+
+      return { status: false, data: data }
     } catch (e) {
       toast.error("Compile error: " + e.message)
-      return { status: false, message: e }
+      return {
+        status: false, data: {
+          message: e.message
+        }
+      }
     }
   }
 
@@ -321,18 +329,6 @@ export default function ExamProblems() {
 
       setTimeLeft((prevTime) => {
         const newTime = prevTime - 1
-
-        // Update lastActiveTime in localStorage
-        try {
-          const storedData = localStorage.getItem("tempData")
-          if (storedData) {
-            const parsedData = JSON.parse(storedData)
-            parsedData.lastActiveTime = new Date().getTime()
-            localStorage.setItem("tempData", JSON.stringify(parsedData))
-          }
-        } catch (err) {
-          console.error("Error updating lastActiveTime in timer:", err)
-        }
 
         if (newTime <= 0) {
           clearInterval(timerIntervalRef.current)
