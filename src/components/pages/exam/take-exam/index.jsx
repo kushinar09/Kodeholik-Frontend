@@ -161,10 +161,26 @@ export default function TakeExam({
     setIsRunning(true)
     try {
       const result = await onRun(code, language, problemLink, customTestCase)
-      setResults(result)
-      setShowResult(true)
-      setIsResultActive(true)
-      setActiveResult("0")
+
+      if (result.status) {
+        setResults(result.data)
+        setShowResult(true)
+        setIsResultActive(true)
+        setActiveResult("0")
+      } else {
+        setShowResult(true)
+        setIsResultActive(true)
+        setResults({
+          details	: result?.data?.details,
+          error: true,
+          message: result?.data?.message,
+          testCaseValue: result?.data?.testCaseValue
+        })
+        toast.error("Run code error", {
+          description: result.data.message
+        })
+      }
+
     } catch (e) {
       toast.error("Compile error: " + e.message)
     } finally {

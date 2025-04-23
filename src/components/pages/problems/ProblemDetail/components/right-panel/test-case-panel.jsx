@@ -331,7 +331,7 @@ export default function TestCasePanel({
             </div>
           )}
 
-          {isResultActive && (
+          {isResultActive && !results?.error && (
             <div className="w-full space-y-4 p-4">
               {results.status && results.status.toLowerCase() === "success" && (
                 <div>
@@ -395,7 +395,7 @@ export default function TestCasePanel({
                       {formatValue(results.results[activeResult].actualOutput)}
                     </div>
                   </div>
-                  {results.results[activeResult].expectedOutput &&
+                  {results.results[activeResult].expectedOutput != null &&
                     <div className="space-y-2">
                       <Label className="text-sm text-black">Expected Output =</Label>
                       <div className="rounded bg-input-bg text-input-text p-2">
@@ -405,6 +405,18 @@ export default function TestCasePanel({
                   }
                 </div>
               )}
+            </div>
+          )}
+
+          {isResultActive && results?.error && (
+            <div className="w-full space-y-4 p-4">
+              <div>
+                <span className="text-lg font-semibold text-text-error">Failed</span>
+              </div>
+
+              <div className="rounded-lg border-t border-red-200 bg-red-50 p-4">
+                <pre className="text-sm text-red-600 break-words whitespace-pre-wrap">{results?.testCaseValue ? results.testCaseValue + " - " : ""}{results?.message}</pre>
+              </div>
             </div>
           )}
         </div>

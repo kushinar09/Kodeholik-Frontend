@@ -330,6 +330,14 @@ export default function ProblemDetail() {
         setIsResultActive(true)
         setActiveResult("0")
       } else {
+        setShowResult(true)
+        setIsResultActive(true)
+        setResults({
+          details	: result?.data?.details,
+          error: true,
+          message: result?.data?.message,
+          testCaseValue: result?.data?.testCaseValue
+        })
         toast.error("Run code error", {
           description: result.data.message
         })
