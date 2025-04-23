@@ -284,10 +284,6 @@ export const AuthProvider = ({ children }) => {
     try {
       let response = await fetch(url, options)
 
-      // For debugging purposes only
-      // const responseClone = response.clone()
-      // responseClone.text().then((text) => console.log(url, text))
-
       // Handle token refresh if needed
       if (response.status === 401 && !inEndpointList(notCallRotateTokenEndpoints, url)) {
         const refreshStatus = await refreshAccessToken()

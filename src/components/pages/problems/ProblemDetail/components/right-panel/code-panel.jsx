@@ -40,9 +40,8 @@ export default function CodePanel({
     try {
       const response = await getSubmissionDetail(apiCall, submissionId)
       setSubmitted(response.data)
-      console.log(response)
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 

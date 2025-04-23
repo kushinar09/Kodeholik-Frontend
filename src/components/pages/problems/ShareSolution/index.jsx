@@ -80,17 +80,16 @@ export default function ShareSolution({ solution, setIsEditMode }) {
       }
       setDropdownItems(arr)
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
   const fetchAllSkills = async () => {
     try {
       const response = await getAllSkills(apiCall)
-      console.log(response)
       setSkills(response?.map((skill) => ({ value: skill, label: skill })) || [])
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -188,7 +187,6 @@ export default function ShareSolution({ solution, setIsEditMode }) {
     requestData.textSolution = getValueRemoveLockedCode(markdownValue)
     requestData.skills = solutionSkills
     requestData.submissionId = selectedSubmissionId
-    // console.log(requestData);
     handlePostSolution()
   }
 

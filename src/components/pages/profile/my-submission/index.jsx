@@ -51,7 +51,7 @@ export default function MySubmission() {
                 setTotalElements(response.totalElements)
             }
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
     }
 
@@ -60,7 +60,6 @@ export default function MySubmission() {
     }, [])
 
     const handleFilterChange = (newFilters) => {
-        console.log(newFilters)
         setFilters(newFilters)
         if (newFilters.status === "all") {
             requestData.status = null

@@ -48,7 +48,7 @@ export default function SolutionCard({ infor, solutions, setSolutions, handleCli
       }
 
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 

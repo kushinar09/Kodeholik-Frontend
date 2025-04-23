@@ -95,7 +95,7 @@ export function SocketExamProvider({ children }) {
       const client = new Client({
         webSocketFactory: () => socket,
         debug: (str) => {
-          console.log("STOMP:", str)
+          // console.log("STOMP:", str)
         },
         reconnectDelay: 5000,
         heartbeatIncoming: 4000,
@@ -106,13 +106,12 @@ export function SocketExamProvider({ children }) {
         setIsConnected(true)
         setConnectionAttempts(0)
         reconnectingRef.current = false
-        console.log("✅ Connected to WebSocket Exam")
 
         // Subscribe to exam topic
         client.subscribe(`/topic/exam/${codeValue}`, (message) => {
           try {
             const examData = JSON.parse(message.body)
-            console.log("📩 Received exam data:", examData)
+            // console.log("📩 Received exam data:", examData)
             if (examData && examData.details?.duration) {
               setExamData(examData)
               setProblems(formatProblems(examData))
@@ -139,7 +138,7 @@ export function SocketExamProvider({ children }) {
         if (usernameValue) {
           client.subscribe(`/error/${usernameValue}`, (message) => {
             try {
-              console.log("error", message.body)
+              console.error("error", message.body)
               const errorData = JSON.parse(message.body)
               toast.error(errorData.message || "An error occurred")
               console.error("Received error:", errorData)
@@ -165,7 +164,7 @@ export function SocketExamProvider({ children }) {
       }
 
       client.onDisconnect = () => {
-        console.log("Disconnected from WebSocket")
+        // console.log("Disconnected from WebSocket")
         setIsConnected(false)
       }
 
@@ -183,7 +182,7 @@ export function SocketExamProvider({ children }) {
     if (connectionAttempts < 5 && !reconnectingRef.current) {
       reconnectingRef.current = true
       const delay = Math.min(1000 * Math.pow(2, connectionAttempts), 30000)
-      console.log(`Attempting to reconnect in ${delay / 1000} seconds...`)
+      // console.log(`Attempting to reconnect in ${delay / 1000} seconds...`)
 
       setTimeout(() => {
         setConnectionAttempts((prev) => prev + 1)
@@ -208,7 +207,7 @@ export function SocketExamProvider({ children }) {
         }
         setStompClient(null)
         setIsConnected(false)
-        console.log("Disconnected from WebSocket")
+        // console.log("Disconnected from WebSocket")
       } catch (err) {
         console.error("Error disconnecting:", err)
       }
@@ -223,7 +222,7 @@ export function SocketExamProvider({ children }) {
     if (storedData) {
       try {
         const parsedData = JSON.parse(storedData)
-        console.log("Found stored exam data:", parsedData)
+        // console.log("Found stored exam data:", parsedData)
 
         // Set the stored values
         if (parsedData.token) setToken(parsedData.token)
@@ -234,7 +233,7 @@ export function SocketExamProvider({ children }) {
 
         // Reconnect to socket with stored credentials
         if (parsedData.token && parsedData.code && parsedData.username) {
-          console.log("Reconnecting with stored credentials")
+          // console.log("Reconnecting with stored credentials")
           connectSocket(parsedData.token, parsedData.code, parsedData.username)
         }
       } catch (err) {
@@ -262,7 +261,7 @@ export function SocketExamProvider({ children }) {
 
   // Function to submit exam answers
   const submitExamAnswers = (idExam, problemAnswers) => {
-    console.log("Submit exam answers", idExam, problemAnswers)
+    // console.log("Submit exam answers", idExam, problemAnswers)
     if (!stompClient || !isConnected) {
       toast.error("Not connected to exam server")
       return false
@@ -273,7 +272,7 @@ export function SocketExamProvider({ children }) {
         destination: `/app/exam/submit/${idExam}`,
         body: JSON.stringify(problemAnswers)
       })
-      console.log("📤 Đã gửi yêu cầu bắt đầu bài thi.")
+      // console.log("📤 Đã gửi yêu cầu bắt đầu bài thi.")
 
       // Clear localStorage after submission
       localStorage.removeItem("tempData")

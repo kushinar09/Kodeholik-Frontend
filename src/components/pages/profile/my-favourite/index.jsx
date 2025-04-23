@@ -45,7 +45,7 @@ export default function MyFavourite() {
                 setTotalElements(response.totalElements)
             }
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
     }
 
@@ -79,7 +79,7 @@ export default function MyFavourite() {
             })
             fetchMyFavourite()
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
     }
 

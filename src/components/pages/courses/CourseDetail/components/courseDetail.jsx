@@ -160,7 +160,6 @@ export default function CourseDetail({
   }
 
   const formatLastUpdated = (updatedAt) => {
-    console.log(updatedAt)
     if (!updatedAt) return "Unknown"
     const [datePart, timePart] = updatedAt.split(", ")
     const [day, month, year] = datePart.split("/").map(Number)

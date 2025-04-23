@@ -60,7 +60,6 @@ export default function CourseDetailPage() {
           }
         } else {
           setIsEnrolled(false) // Default to not enrolled if not logged in
-          console.log("User not authenticated, skipping enrollment check.")
         }
       } catch (error) {
         console.error("Error fetching course data:", error.message)

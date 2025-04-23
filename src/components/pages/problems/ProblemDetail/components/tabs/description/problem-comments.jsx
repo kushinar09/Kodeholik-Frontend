@@ -209,7 +209,7 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
         )
       )
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -222,7 +222,7 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
         )
       )
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -263,7 +263,7 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
       upvoteComment(apiCall, comment.id)
       setLoadedReplies(updateUpvoted(loadedReplies, comment))
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -272,7 +272,7 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
       unupvoteComment(apiCall, comment.id)
       setLoadedReplies(updateUnupvoted(loadedReplies, comment))
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -385,7 +385,7 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
         )
       )
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 

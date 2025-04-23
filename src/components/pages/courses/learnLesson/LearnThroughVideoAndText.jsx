@@ -243,10 +243,8 @@ export default function LearnThroughVideoAndText() {
 
       // Check if progress is 100% and call completedAndSendMail
       if (newProgress >= 100) {
-        console.log(`[Course Completion] Progress reached 100% for course ID: ${id}, calling completedAndSendMail`)
         try {
           await completedAndSendMail(id)
-          console.log(`[Course Completion] Successfully called completedAndSendMail for course ID: ${id}`)
         } catch (error) {
           console.error(`[Course Completion] Failed to call completedAndSendMail for course ID: ${id}:`, error)
         }
