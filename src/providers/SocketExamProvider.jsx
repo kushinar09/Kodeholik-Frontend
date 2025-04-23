@@ -114,6 +114,7 @@ export function SocketExamProvider({ children }) {
         client.subscribe(`/topic/exam/${codeValue}`, (message) => {
           try {
             const examData = JSON.parse(message.body)
+            console.log(examData)
             if (examData && examData.details.duration) {
               setExamData(examData)
               setProblems(formatProblems(examData))
