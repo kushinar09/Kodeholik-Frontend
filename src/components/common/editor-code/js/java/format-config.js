@@ -457,16 +457,39 @@ function applyGoogleStyleRules(line, config) {
   // No space before parentheses in method calls and declarations
   formattedLine = formattedLine.replace(/(\w+)\s+\((?!\s)/g, "$1(")
 
-  // Space around binary operators
-  formattedLine = formattedLine.replace(/([^\s=!<>])(\s*)(==|!=|<=|>=|&&|\|\||[+\-*/%&|^]|<<|>>|>>>)(\s*)([^\s=])/g, "$1 $3 $5")
-  formattedLine = formattedLine.replace(/([^\s])\s*(?<![=!<>])=\s*([^\s=])/g, "$1 = $2")
+  // Fix unary minus in return statements and variable assignments
+  // This needs to come before binary operator spacing
+  formattedLine = formattedLine.replace(/-\s+(\d+)/g, " -$1")
+  formattedLine = formattedLine.replace(/\s+-(\d+)/g, " -$1")
 
-  // No space for unary operators
-  // formattedLine = formattedLine.replace(/\s+(\+\+|--)/g, "$1")
-  // formattedLine = formattedLine.replace(/(\+\+|--)\s+/g, "$1")
+  // Handle compound assignment operators with spaces on both sides
+  formattedLine = formattedLine.replace(/([^\s])\s*(\+=|-=|\*=|\/=|%=|&=|\|=|\^=|<<=|>>=|>>>=)\s*([^\s])/g, "$1 $2 $3")
 
-  formattedLine = formattedLine.replace(/\s*\+\s*\+\s*/g, "++")
-  formattedLine = formattedLine.replace(/\s*-\s*-\s*/g, "--")
+  // Handle equality operators with spaces on both sides
+  formattedLine = formattedLine.replace(/([^\s])\s*(==|!=|<=|>=)\s*([^\s])/g, "$1 $2 $3")
+
+  // Handle binary operators with spaces on both sides
+  formattedLine = formattedLine.replace(/([^\s])\s*([+\-*/%&|^]|<<|>>|>>>)(?![+=])\s*([^\s])/g, "$1 $2 $3")
+
+  // Handle assignment with spaces on both sides
+  formattedLine = formattedLine.replace(/([^\s])\s*=(?!=)\s*([^\s])/g, "$1 = $2")
+
+  // Handle logical operators with spaces on both sides
+  formattedLine = formattedLine.replace(/([^\s])\s*(&&|\|\|)\s*([^\s])/g, "$1 $2 $3")
+
+  // Handle increment/decrement operators (space before, no space after)
+  formattedLine = formattedLine.replace(/([^\s])\s*\+\+/g, "$1 ++")
+  formattedLine = formattedLine.replace(/([^\s])\s*--/g, "$1 --")
+
+  // Fix for loops with proper spacing
+  formattedLine = formattedLine.replace(/for\s*$$\s*([^;]+);\s*([^;]+);\s*(.+?)\s*$$/g, (match, init, condition, increment) => {
+    // Clean up the increment part but preserve the space before ++ or --
+    let cleanIncrement = increment.trim()
+      .replace(/([^\s])\+\+/g, "$1 ++")
+      .replace(/([^\s])--/g, "$1 --")
+
+    return `for (${init.trim()}; ${condition.trim()}; ${cleanIncrement})`
+  })
 
   // Space after commas
   formattedLine = formattedLine.replace(/,([^\s])/g, ", $1")
@@ -532,6 +555,27 @@ function applyGoogleStyleRules(line, config) {
 
   // Space after closing angle bracket in type arguments
   formattedLine = formattedLine.replace(/>([a-zA-Z0-9_])/g, "> $1")
+
+  // Fix any broken compound operators (ensure no spaces within the operator)
+  formattedLine = formattedLine.replace(/\+ =/g, "+=")
+  formattedLine = formattedLine.replace(/- =/g, "-=")
+  formattedLine = formattedLine.replace(/\* =/g, "*=")
+  formattedLine = formattedLine.replace(/\/ =/g, "/=")
+  formattedLine = formattedLine.replace(/% =/g, "%=")
+  formattedLine = formattedLine.replace(/& =/g, "&=")
+  formattedLine = formattedLine.replace(/= =/g, "==")
+  formattedLine = formattedLine.replace(/\| =/g, "|=")
+  formattedLine = formattedLine.replace(/\^ =/g, "^=")
+  formattedLine = formattedLine.replace(/! =/g, "!=")
+  formattedLine = formattedLine.replace(/< =/g, "<=")
+  formattedLine = formattedLine.replace(/> =/g, ">=")
+  formattedLine = formattedLine.replace(/<< =/g, "<<=")
+  formattedLine = formattedLine.replace(/>> =/g, ">>=")
+  formattedLine = formattedLine.replace(/>>> =/g, ">>>=")
+
+  // Fix any broken increment/decrement operators
+  formattedLine = formattedLine.replace(/\+ \+/g, "++")
+  formattedLine = formattedLine.replace(/- -/g, "--")
 
   // Remove multiple spaces
   formattedLine = formattedLine.replace(/\s{2,}/g, " ")

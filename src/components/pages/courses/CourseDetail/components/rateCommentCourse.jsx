@@ -37,12 +37,10 @@ export default function RateCommentCourse({ courseId, setCourse, isAuthenticated
         }
 
         const fetchedComments = await getRateCommentCourse(apiCall, courseId)
-        console.log("Successfully fetched comments:", fetchedComments)
         setComments(Array.isArray(fetchedComments) ? fetchedComments : [])
         setCurrentPage(1)
         if (isAuthenticated) {
           const enrolled = await checkEnrollCourse(apiCall, courseId)
-          console.log("Enrollment status for course", courseId, ":", enrolled)
         }
       } catch (error) {
         console.error("Failed to fetch data:", error.message)
@@ -117,7 +115,6 @@ export default function RateCommentCourse({ courseId, setCourse, isAuthenticated
         rating: rating,
         comment: comment.trim()
       }
-      console.log("Submitting payload:", JSON.stringify(data))
 
       const submittedData = await rateCommentCourse(data, apiCall)
       if (submittedData.ok) {

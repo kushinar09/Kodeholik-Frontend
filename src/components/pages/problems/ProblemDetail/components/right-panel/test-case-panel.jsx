@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label"
 import { Plus, X } from "lucide-react"
 import { formatValue } from "@/lib/utils/format-utils"
 import { useRef, useEffect } from "react"
+import { toast } from "sonner"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 // Function to create a deep copy of an object
 const deepCopy = (obj) => {
@@ -28,59 +30,6 @@ const formatArrayInline = (value) => {
     return value
   }
   return typeof value === "object" ? JSON.stringify(value, null, 2) : String(value)
-}
-
-// Auto-growing input component
-const AutoGrowInput2 = ({ value, onChange, className }) => {
-  const inputRef = useRef(null)
-
-  // Function to update height based on content
-  const updateHeight = () => {
-    if (inputRef.current) {
-      // Reset height temporarily to get the correct scrollHeight
-      inputRef.current.style.height = "auto"
-      // Set height to scrollHeight to fit content (min 40px)
-      inputRef.current.style.height = `${Math.max(40, inputRef.current.scrollHeight)}px`
-    }
-  }
-
-  // Update height when value changes
-  useEffect(() => {
-    updateHeight()
-  }, [value])
-
-  // Handle input changes while preserving cursor position
-  const handleInput = (e) => {
-    const newValue = e.currentTarget.innerText
-    onChange(newValue)
-
-    // Schedule height update after React's state update
-    setTimeout(updateHeight, 0)
-  }
-
-  // Initial content setup
-  useEffect(() => {
-    if (inputRef.current) {
-      // Only set content if it's different to avoid cursor jumps
-      if (inputRef.current.innerText !== value) {
-        inputRef.current.innerText = value
-        updateHeight()
-      }
-    }
-  }, [])
-
-  return (
-    <pre
-      ref={inputRef}
-      contentEditable
-      className={cn(
-        "w-full rounded bg-input-bg text-input-text p-2 min-h-[40px] overflow-hidden outline-none whitespace-pre-wrap break-words",
-        className
-      )}
-      onInput={handleInput}
-      suppressContentEditableWarning={true}
-    />
-  )
 }
 
 // Auto-growing input component
@@ -122,7 +71,7 @@ const AutoGrowInput = ({ value, onChange, className }) => {
         }
       }
     } catch (error) {
-      console.warn("Caret restore skipped:", error)
+      toast.warning("Caret restore skipped:", error.message)
       inputRef.current.textContent = value // fallback
     }
 
@@ -242,7 +191,7 @@ export default function TestCasePanel({
           </div>
         )}
       </div>
-      <div className={cn("overflow-auto flex-1", isCompact ? "flex justify-center hidden" : "")}>
+      <div className={cn("overflow-auto flex-1", isCompact ? "justify-center hidden" : "")}>
         <div className="space-y-4 min-w-[420px]">
           {!isResultActive && (
             <div className="w-full space-y-4 p-4">
@@ -258,44 +207,50 @@ export default function TestCasePanel({
                     Case {Number.parseInt(caseKey) + 1}
                   </Button>
                 ))}
+                <TooltipProvider>
+                  {customTestCases.map((_, index) => (
+                    <Tooltip key={`custom-${index}`} >
+                      <TooltipTrigger asChild>
+                        <div className="group">
+                          <Button
+                            variant={activeCase === `custom-${index}` ? "" : "ghost"}
+                            className={`relative h-8 font-bold ${activeCase === `custom-${index}` ? "bg-blue-300 hover:bg-blue-400" : "hover:bg-blue-400"}`}
+                            onClick={() => setActiveCase(`custom-${index}`)}
+                          >
+                            Case {testCases.length + index + 1}
+                            <button
+                              className="absolute -top-2 -right-2 bg-gray-500 text-white rounded-full size-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                const newCustomTestCases = [...customTestCases]
+                                newCustomTestCases.splice(index, 1)
+                                setCustomTestCases(newCustomTestCases)
 
-                {customTestCases.map((_, index) => (
-                  <div key={`custom-${index}`} className="group">
-                    <Button
-                      variant={activeCase === `custom-${index}` ? "" : "ghost"}
-                      className={`relative h-8 font-bold ${activeCase === `custom-${index}` ? "bg-button-primary hover:bg-button-hover" : "hover:bg-button-primary"}`}
-                      onClick={() => setActiveCase(`custom-${index}`)}
-                    >
-                      Case {testCases.length + index + 1}
-                      <button
-                        className="absolute -top-2 -right-2 bg-gray-500 text-white rounded-full size-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          const newCustomTestCases = [...customTestCases]
-                          newCustomTestCases.splice(index, 1)
-                          setCustomTestCases(newCustomTestCases)
-
-                          // If the active case is the one being removed, set to the first test case
-                          if (index === 0 && activeCase === `custom-${index}`) {
-                            setActiveCase((testCases.length - 1).toString())
-                          } else if (activeCase === `custom-${index}`) {
-                            setActiveCase(`custom-${index - 1}`)
-                          } else if (activeCase.startsWith("custom-") && activeCase.split("-")[1] > index) {
-                            setActiveCase(`custom-${Number.parseInt(activeCase.split("-")[1]) - 1}`)
-                          }
-                        }}
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Button>
-                  </div>
-                ))}
-
+                                if (index === 0 && activeCase === `custom-${index}`) {
+                                  setActiveCase((testCases.length - 1).toString())
+                                } else if (activeCase === `custom-${index}`) {
+                                  setActiveCase(`custom-${index - 1}`)
+                                } else if (activeCase.startsWith("custom-") && activeCase.split("-")[1] > index) {
+                                  setActiveCase(`custom-${Number.parseInt(activeCase.split("-")[1]) - 1}`)
+                                }
+                              }}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Button>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="mb-2 bg-white text-black rounded-md shadow-md">
+                        <p>This is a custom test case. When executed, it returns only the output.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </TooltipProvider>
                 {customTestCases.length < 5 &&
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 hover:bg-button-primary"
+                    className="h-8 w-8 hover:bg-blue-400"
                     onClick={() => {
                       if (testCases.length > 0) {
                         // Get a random test case from the fixed test cases as a template
@@ -330,7 +285,6 @@ export default function TestCasePanel({
                   {activeCase.startsWith("custom-") ? (
                     // Custom test case (editable values only, not names)
                     <>
-                      {console.log(activeCase.split("-")[1], customTestCases)}
                       {customTestCases[Number.parseInt(activeCase.split("-")[1])].input.map((param, paramIndex) => (
                         <div key={paramIndex} className="space-y-2">
                           <Label className="text-sm text-black">{param.name} =</Label>
@@ -377,7 +331,7 @@ export default function TestCasePanel({
             </div>
           )}
 
-          {isResultActive && (
+          {isResultActive && !results?.error && (
             <div className="w-full space-y-4 p-4">
               {results.status && results.status.toLowerCase() === "success" && (
                 <div>
@@ -402,10 +356,16 @@ export default function TestCasePanel({
                     <Button
                       key={index}
                       variant={activeResult === index.toString() ? "" : "ghost"}
-                      className={`h-8 font-bold ${activeResult === index.toString() ? "bg-button-primary hover:bg-button-hover " : "hover:bg-button-primary"}`}
+                      className={`h-8 font-bold 
+                        ${activeResult === index.toString()
+                          ? (result.status ? "bg-button-primary hover:bg-button-hover "
+                            : "bg-blue-300 hover:bg-blue-400 ")
+                          : ((result.status ? "hover:bg-button-primary" : "hover:bg-blue-300"))
+                        }`}
                       onClick={() => setActiveResult(index.toString())}
                     >
-                      {result.status !== "Success" && <span className="w-1 h-1 bg-red-500 rounded-full mr-1"></span>}
+                      {result.status && result.status.toLowerCase() === "success" && <span className="w-1 h-1 bg-green-500 rounded-full mr-1"></span>}
+                      {result.status && result.status.toLowerCase() === "failed" && <span className="w-1 h-1 bg-red-500 rounded-full mr-1"></span>}
                       Case {Number.parseInt(index) + 1}
                     </Button>
                   ))}
@@ -435,14 +395,28 @@ export default function TestCasePanel({
                       {formatValue(results.results[activeResult].actualOutput)}
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-black">Expected Output =</Label>
-                    <div className="rounded bg-input-bg text-input-text p-2">
-                      {formatValue(results.results[activeResult].expectedOutput)}
+                  {results.results[activeResult].expectedOutput != null &&
+                    <div className="space-y-2">
+                      <Label className="text-sm text-black">Expected Output =</Label>
+                      <div className="rounded bg-input-bg text-input-text p-2">
+                        {formatValue(results.results[activeResult].expectedOutput)}
+                      </div>
                     </div>
-                  </div>
+                  }
                 </div>
               )}
+            </div>
+          )}
+
+          {isResultActive && results?.error && (
+            <div className="w-full space-y-4 p-4">
+              <div>
+                <span className="text-lg font-semibold text-text-error">Failed</span>
+              </div>
+
+              <div className="rounded-lg border-t border-red-200 bg-red-50 p-4">
+                <pre className="text-sm text-red-600 break-words whitespace-pre-wrap">{results?.testCaseValue ? results.testCaseValue + " - " : ""}{results?.message}</pre>
+              </div>
             </div>
           )}
         </div>

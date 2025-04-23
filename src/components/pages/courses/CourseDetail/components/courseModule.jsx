@@ -8,7 +8,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function CourseModule({ chapters, toggleChapter, navigate }) {
   const handleToggle = (chapterId) => {
-    console.log(`Toggling chapter ${chapterId}`) // Debug toggle action
     if (toggleChapter) toggleChapter(chapterId) // Call external toggle if provided
   }
 
@@ -94,7 +93,7 @@ export default function CourseModule({ chapters, toggleChapter, navigate }) {
                 <FileText className="h-16 w-16 mx-auto mb-4 text-gray-600" />
                 <h3 className="text-xl font-medium text-white mb-2">No Modules Available</h3>
                 <p className="text-gray-400 max-w-md mx-auto">
-                  This course doesn't have any modules available yet. Check back later for updates.
+                  This course doesn&apos;t have any modules available yet. Check back later for updates.
                 </p>
               </div>
             )}

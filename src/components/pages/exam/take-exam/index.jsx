@@ -43,6 +43,7 @@ export default function TakeExam({
   const [language, setLanguage] = useState(languageStore || compileInformation[0]?.language || "")
   const [availableLanguages, setAvailableLanguages] = useState([])
   const [testCases, setTestCases] = useState(compileInformation[0]?.testCases || [])
+  const [customTestCase, setCustomTestCase] = useState([])
 
   // Test case state
   const [activeCase, setActiveCase] = useState("0")
@@ -53,14 +54,19 @@ export default function TakeExam({
   const [showResult, setShowResult] = useState(false)
   const [isResultActive, setIsResultActive] = useState(false)
 
-  // const [isVisible, setIsVisible] = useState(true)
-  // const [warningCount, setWarningCount] = useState(0)
-  // const maxWarnings = 0
+  const [isVisible, setIsVisible] = useState(true)
+  const [warningCount, setWarningCount] = useState(0)
+  const maxWarnings = 2
+
   // useEffect(() => {
   //   const handleVisibilityChange = () => {
   //     if (document.hidden && warningCount < maxWarnings) {
   //       setWarningCount((prev) => prev + 1)
-  //       alert(`Warning: Do not switch tabs! Warnings left: ${maxWarnings - (warningCount + 1)}`)
+  //       if (warningCount === maxWarnings - 1) {
+  //         alert("Last warning! Do not switch tabs! You will be penalized if you do it again.")
+  //       } else {
+  //         alert(`Warning: Do not switch tabs! Warnings left: ${maxWarnings - (warningCount + 1)}`)
+  //       }
   //     } else if (!document.hidden) {
   //       setIsVisible(true)
   //     }
@@ -154,11 +160,27 @@ export default function TakeExam({
   const handleRunCode = async () => {
     setIsRunning(true)
     try {
-      const result = await onRun(code, language, problemLink)
-      setResults(result)
-      setShowResult(true)
-      setIsResultActive(true)
-      setActiveResult("0")
+      const result = await onRun(code, language, problemLink, customTestCase)
+
+      if (result.status) {
+        setResults(result.data)
+        setShowResult(true)
+        setIsResultActive(true)
+        setActiveResult("0")
+      } else {
+        setShowResult(true)
+        setIsResultActive(true)
+        setResults({
+          details	: result?.data?.details,
+          error: true,
+          message: result?.data?.message,
+          testCaseValue: result?.data?.testCaseValue
+        })
+        toast.error("Run code error", {
+          description: result.data.message
+        })
+      }
+
     } catch (e) {
       toast.error("Compile error: " + e.message)
     } finally {
@@ -222,6 +244,8 @@ export default function TakeExam({
                   showResult={showResult}
                   activeResult={activeResult}
                   setActiveResult={setActiveResult}
+                  customTestCases={customTestCase}
+                  setCustomTestCases={setCustomTestCase}
                 />
               </Panel>
             </PanelGroup>

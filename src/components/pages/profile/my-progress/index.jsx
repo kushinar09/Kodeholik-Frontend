@@ -50,7 +50,7 @@ export default function MyProgress() {
                 setTotalElements(response.totalElements)
             }
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
     }
 
@@ -59,7 +59,6 @@ export default function MyProgress() {
     }, [])
 
     const handleFilterChange = (newFilters) => {
-        console.log(newFilters)
         setFilters(newFilters)
         if (newFilters.status === "all") {
             requestData.status = null

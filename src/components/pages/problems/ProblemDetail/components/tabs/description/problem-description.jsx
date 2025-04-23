@@ -35,7 +35,7 @@ export default function ProblemDescription({ description, setDescription, id, pr
       const newDescription = { ...description, favourite: true }
       setDescription(newDescription)
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -45,7 +45,7 @@ export default function ProblemDescription({ description, setDescription, id, pr
       const newDescription = { ...description, favourite: false }
       setDescription(newDescription)
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 

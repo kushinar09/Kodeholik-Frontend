@@ -73,7 +73,7 @@ export default function SolutionDetail({ solutionId, handleBack, setIsEditMode, 
         }
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 

@@ -20,8 +20,6 @@ export function EditProfileDialog({ open, onOpenChange, onSubmit, profile, setPr
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    console.log(imageFile)
-
     onSubmit(profile)
   }
 

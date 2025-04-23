@@ -38,7 +38,7 @@ export default function DiscussionSection({ solutionId }) {
 
   const { apiCall, isAuthenticated, user } = useAuth()
 
-  const fetchComments = useCallback(async () => {
+  const fetchCommentsSolution = useCallback(async () => {
     if (!solutionId) return
     try {
       const response = await apiCall(
@@ -56,8 +56,8 @@ export default function DiscussionSection({ solutionId }) {
   }, [solutionId, page, sortBy, ascending])
 
   useEffect(() => {
-    fetchComments()
-  }, [fetchComments])
+    fetchCommentsSolution()
+  }, [fetchCommentsSolution])
 
   function toggleCollapsed() {
     setIsCollapsed(!isCollapsed)

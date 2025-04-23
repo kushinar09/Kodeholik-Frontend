@@ -48,7 +48,7 @@ export default function SolutionCard({ infor, solutions, setSolutions, handleCli
       }
 
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -64,11 +64,11 @@ export default function SolutionCard({ infor, solutions, setSolutions, handleCli
           </Avatar>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <a href={`/profile/${infor.createdBy.username}`} target="_blank" className="font-medium">{infor.createdBy.username}</a>
+              <p className="font-medium">{infor.createdBy.username}</p>
               <span className="text-muted-foreground text-sm">· {infor.createdAt}</span>
             </div>
-            <div className="cursor-pointer">
-              <p className="text-lg font-semibold mb-3" onClick={() => handleClickSolution(infor.id)}>{infor.title}</p>
+            <div>
+              <p className="text-lg font-semibold mb-3 cursor-pointer" onClick={() => handleClickSolution(infor.id)}>{infor.title}</p>
               <div className="flex items-center gap-6 text-muted-foreground text-sm">
                 <div className="flex items-center gap-2">
                   <Button onClick={() => toggleUpvote(infor.id)} variant="ghost" size="icon" className="h-3 w-3">

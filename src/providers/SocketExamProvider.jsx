@@ -27,12 +27,10 @@ export function SocketExamProvider({ children }) {
   const [username, setUsername] = useState(null)
   const [examCode, setExamCode] = useState(null)
   const [startTime, setStartTime] = useState("")
+  const [endTime, setEndTime] = useState(null)
   const [error, setError] = useState(null)
   const [connectionAttempts, setConnectionAttempts] = useState(0)
   const [problems, setProblems] = useState([])
-  const [duration, setDuration] = useState(0)
-  const navigate = useNavigate()
-  const location = useLocation()
   const reconnectingRef = useRef(false)
 
   const { apiCall } = useAuth()
@@ -97,7 +95,7 @@ export function SocketExamProvider({ children }) {
       const client = new Client({
         webSocketFactory: () => socket,
         debug: (str) => {
-          console.log("STOMP:", str)
+          // console.log("STOMP:", str)
         },
         reconnectDelay: 5000,
         heartbeatIncoming: 4000,
@@ -108,17 +106,16 @@ export function SocketExamProvider({ children }) {
         setIsConnected(true)
         setConnectionAttempts(0)
         reconnectingRef.current = false
-        console.log("✅ Connected to WebSocket Exam")
 
         // Subscribe to exam topic
         client.subscribe(`/topic/exam/${codeValue}`, (message) => {
           try {
             const examData = JSON.parse(message.body)
             console.log(examData)
-            if (examData && examData.details.duration) {
+            if (examData && examData.details?.duration) {
               setExamData(examData)
               setProblems(formatProblems(examData))
-              setDuration(examData.details.duration)
+              setEndTime(examData.details.endTime)
 
               // Store data in localStorage for reconnection
               localStorage.setItem(
@@ -128,12 +125,10 @@ export function SocketExamProvider({ children }) {
                   code: codeValue,
                   username: usernameValue,
                   problems: formatProblems(examData),
-                  duration: examData.details.duration,
-                  lastActiveTime: new Date().getTime()
+                  endTime: examData.details.endTime
                 })
               )
             }
-            console.log("📩 Received exam data:", examData)
           } catch (err) {
             console.error("Error parsing exam data:", err)
           }
@@ -143,7 +138,7 @@ export function SocketExamProvider({ children }) {
         if (usernameValue) {
           client.subscribe(`/error/${usernameValue}`, (message) => {
             try {
-              console.log("error", message.body)
+              console.error("error", message.body)
               const errorData = JSON.parse(message.body)
               toast.error(errorData.message || "An error occurred")
               console.error("Received error:", errorData)
@@ -169,7 +164,7 @@ export function SocketExamProvider({ children }) {
       }
 
       client.onDisconnect = () => {
-        console.log("Disconnected from WebSocket")
+        // console.log("Disconnected from WebSocket")
         setIsConnected(false)
       }
 
@@ -187,7 +182,7 @@ export function SocketExamProvider({ children }) {
     if (connectionAttempts < 5 && !reconnectingRef.current) {
       reconnectingRef.current = true
       const delay = Math.min(1000 * Math.pow(2, connectionAttempts), 30000)
-      console.log(`Attempting to reconnect in ${delay / 1000} seconds...`)
+      // console.log(`Attempting to reconnect in ${delay / 1000} seconds...`)
 
       setTimeout(() => {
         setConnectionAttempts((prev) => prev + 1)
@@ -212,7 +207,7 @@ export function SocketExamProvider({ children }) {
         }
         setStompClient(null)
         setIsConnected(false)
-        console.log("Disconnected from WebSocket")
+        // console.log("Disconnected from WebSocket")
       } catch (err) {
         console.error("Error disconnecting:", err)
       }
@@ -227,18 +222,18 @@ export function SocketExamProvider({ children }) {
     if (storedData) {
       try {
         const parsedData = JSON.parse(storedData)
-        console.log("Found stored exam data:", parsedData)
+        // console.log("Found stored exam data:", parsedData)
 
         // Set the stored values
         if (parsedData.token) setToken(parsedData.token)
         if (parsedData.code) setExamCode(parsedData.code)
         if (parsedData.username) setUsername(parsedData.username)
         if (parsedData.problems) setProblems(parsedData.problems)
-        if (parsedData.duration) setDuration(parsedData.duration)
+        if (parsedData.endTime) setEndTime(parsedData.endTime)
 
         // Reconnect to socket with stored credentials
         if (parsedData.token && parsedData.code && parsedData.username) {
-          console.log("Reconnecting with stored credentials")
+          // console.log("Reconnecting with stored credentials")
           connectSocket(parsedData.token, parsedData.code, parsedData.username)
         }
       } catch (err) {
@@ -266,7 +261,7 @@ export function SocketExamProvider({ children }) {
 
   // Function to submit exam answers
   const submitExamAnswers = (idExam, problemAnswers) => {
-    console.log("Submit exam answers", idExam, problemAnswers)
+    // console.log("Submit exam answers", idExam, problemAnswers)
     if (!stompClient || !isConnected) {
       toast.error("Not connected to exam server")
       return false
@@ -277,7 +272,7 @@ export function SocketExamProvider({ children }) {
         destination: `/app/exam/submit/${idExam}`,
         body: JSON.stringify(problemAnswers)
       })
-      console.log("📤 Đã gửi yêu cầu bắt đầu bài thi.")
+      // console.log("📤 Đã gửi yêu cầu bắt đầu bài thi.")
 
       // Clear localStorage after submission
       localStorage.removeItem("tempData")
@@ -291,31 +286,10 @@ export function SocketExamProvider({ children }) {
     }
   }
 
-  // Update lastActiveTime periodically to track exam progress
-  useEffect(() => {
-    if (isConnected && token) {
-      const updateInterval = setInterval(() => {
-        const storedData = localStorage.getItem("tempData")
-        if (storedData) {
-          try {
-            const parsedData = JSON.parse(storedData)
-            parsedData.lastActiveTime = new Date().getTime()
-            localStorage.setItem("tempData", JSON.stringify(parsedData))
-          } catch (err) {
-            console.error("Error updating lastActiveTime:", err)
-          }
-        }
-      }, 10000) // Update every 10 seconds
-
-      return () => clearInterval(updateInterval)
-    }
-  }, [isConnected, token])
-
   // Add this function to the SocketExamProvider component to allow clearing localStorage
   const clearExamData = () => {
     localStorage.removeItem("tempData")
     localStorage.removeItem("tempCode")
-    console.log("Cleared exam data from localStorage")
   }
 
   // Context value
@@ -328,7 +302,7 @@ export function SocketExamProvider({ children }) {
     startTime,
     error,
     problems,
-    duration,
+    endTime,
     fetchToken,
     connectSocket,
     disconnectSocket,

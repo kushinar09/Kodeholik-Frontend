@@ -57,8 +57,6 @@ export default function FormWithWarning() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Save the form data
-    console.log("Form submitted:", formData)
     // Update the initial form data to match current data
     setInitialFormData({ ...formData })
     // Form is no longer dirty after saving
