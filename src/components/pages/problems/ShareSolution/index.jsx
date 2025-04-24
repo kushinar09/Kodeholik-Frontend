@@ -48,7 +48,7 @@ export default function ShareSolution({ solution, setIsEditMode }) {
   const [problemLink, setProblemLink] = useState("")
   const fetchSuccessSubmissionList = async () => {
     try {
-      const response = await getSuccessSubmissionList(apiCall, link)
+      const response = await getSuccessSubmissionList(apiCall, (link || solution.problem.link))
       let arr = []
       for (let i = 0; i < response.length; i++) {
         if (response[i].id == submission) {
@@ -94,6 +94,7 @@ export default function ShareSolution({ solution, setIsEditMode }) {
   }
 
   useEffect(() => {
+    console.log(submission, link, solution)
     fetchAllSkills()
     if (solution == null) {
       fetchSuccessSubmissionList()
@@ -182,7 +183,7 @@ export default function ShareSolution({ solution, setIsEditMode }) {
   }, [title, selectedSubmissionId])
 
   const submitSolution = () => {
-    requestData.link = link
+    requestData.link = (link || solution.problem.link)
     requestData.title = title
     requestData.textSolution = getValueRemoveLockedCode(markdownValue)
     requestData.skills = solutionSkills
@@ -196,7 +197,7 @@ export default function ShareSolution({ solution, setIsEditMode }) {
         const response = await postSolution(apiCall, requestData)
         if (response.status == true) {
           toast.success("Post solution successful", { duration: 2000 })
-          navigate("/problem-solution/" + link + "/" + response.data.id)
+          navigate("/problem-solution/" + (link || solution.problem.link) + "/" + response.data.id)
         }
       }
       else {
@@ -224,7 +225,10 @@ export default function ShareSolution({ solution, setIsEditMode }) {
         <Card className="shadow-lg border-0">
 
           <CardHeader className="pb-3 border-b">
-            <div className="flex gap-2 items-center text-gray-500 cursor-pointer hover:underline" onClick={() => navigate("/problem-submission/" + link + "/" + submission)}>
+            <div className="flex gap-2 items-center text-gray-500 cursor-pointer hover:underline" onClick={() => {
+              setIsEditMode?.(false) || navigate("/problem-submission/" + (link || solution.problem.link) + "/" + submission)
+            }}
+            >
               <span>
                 <ArrowLeft className="w-4 h-4" />
               </span>
@@ -358,7 +362,10 @@ export default function ShareSolution({ solution, setIsEditMode }) {
           </CardContent>
 
           <CardFooter className="flex justify-end gap-3 pt-2 border-t">
-            <Button variant="outline" onClick={() => navigate("/problem-submission/" + link + "/" + submission)}>
+            <Button variant="outline" onClick={() => {
+              setIsEditMode?.(false) || navigate("/problem-submission/" + (link || solution.problem.link) + "/" + submission)
+            }}
+            >
               Cancel
             </Button>
             <Button type="button" className={`gap-2 bg-primary ${canSubmit ? "" : "disabled"}`} disabled={!canSubmit} onClick={() => submitSolution()}>

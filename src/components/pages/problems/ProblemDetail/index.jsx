@@ -333,7 +333,7 @@ export default function ProblemDetail() {
         setShowResult(true)
         setIsResultActive(true)
         setResults({
-          details	: result?.data?.details,
+          details: result?.data?.details,
           error: true,
           message: result?.data?.message,
           testCaseValue: result?.data?.testCaseValue
@@ -370,118 +370,116 @@ export default function ProblemDetail() {
     <div>
       {isEditMode && <ShareSolution solution={currentSolution} setIsEditMode={setIsEditMode} />}
 
-      {!isEditMode &&
-        <div className="h-screen flex flex-col">
-          <ProblemHeader
-            onRun={handleRunCode}
-            onSubmit={handleSubmitCode}
-            isRunning={isRunning}
-          />
+      <div className="h-screen flex flex-col">
+        <ProblemHeader
+          onRun={handleRunCode}
+          onSubmit={handleSubmitCode}
+          isRunning={isRunning}
+        />
 
-          <div className="flex-1 p-2 bg-bg-primary/50">
-            <PanelGroup direction="horizontal" onLayout={(sizes) => setLeftSize(sizes[0])}>
-              {/* Left Panel */}
-              <Panel className="min-w-[40px] overflow-auto bg-background rounded-md" defaultSize={50}>
-                <div ref={leftPanelRef} className="h-full overflow-hidden">
-                  <div className={cn("h-full flex flex-col transition-all duration-200", isCompactLeft ? "w-[40px]" : "")}>
-                    <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} isCompact={isCompactLeft} />
-                    {!isAuthenticated &&
-                      <div className="bg-blue-100/10 p-3 rounded border border-blue-100/20 flex items-center justify-center">
-                        <div className="flex items-center justify-center h-full text-sm font-medium text-gray-500">
-                          Please{" "}
-                          <Link to="/login" className="text-blue-500 hover:text-blue-600 mx-1" state={{ redirectPath: location.pathname }}>
-                            login
-                          </Link>{" "}
-                          to run or submit code
-                        </div>
+        <div className="flex-1 p-2 bg-bg-primary/50">
+          <PanelGroup direction="horizontal" onLayout={(sizes) => setLeftSize(sizes[0])}>
+            {/* Left Panel */}
+            <Panel className="min-w-[40px] overflow-auto bg-background rounded-md" defaultSize={50}>
+              <div ref={leftPanelRef} className="h-full overflow-hidden">
+                <div className={cn("h-full flex flex-col transition-all duration-200", isCompactLeft ? "w-[40px]" : "")}>
+                  <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} isCompact={isCompactLeft} />
+                  {!isAuthenticated &&
+                    <div className="bg-blue-100/10 p-3 rounded border border-blue-100/20 flex items-center justify-center">
+                      <div className="flex items-center justify-center h-full text-sm font-medium text-gray-500">
+                        Please{" "}
+                        <Link to="/login" className="text-blue-500 hover:text-blue-600 mx-1" state={{ redirectPath: location.pathname }}>
+                          login
+                        </Link>{" "}
+                        to run or submit code
                       </div>
-                    }
-                    <LeftPanelContent
-                      id={id}
-                      problemId={problemId}
-                      activeTab={activeTab}
-                      setActiveTab={setActiveTab}
-                      isCompact={isCompactLeft}
-                      description={description}
-                      setDescription={setDescription}
-                      editorial={editorial}
-                      solutions={solutions}
-                      setSolutions={setSolutions}
-                      submissions={submissions}
-                      selectedSubmissionId={selectedSubmissionId}
-                      setSelectedSubmissionId={setSelectedSubmissionId}
-                      onchangeFilterSolutions={onchangeFilterSolutions}
-                      showSolution={showSolution}
-                      setShowSolution={setShowSolution}
-                      currentSolutionId={currentSolutionId}
-                      setCurrentSolutionId={setCurrentSolutionId}
-                      setIsEditMode={setIsEditMode}
-                      setCurrentSolution={setCurrentSolution}
-                      isLoadingDescription={isLoadingDescription}
-                      isLoadingEditorial={isLoadingEditorial}
-                      isLoadingSolutions={isLoadingSolutions}
-                      isLoadingSubmission={isLoadingSubmission}
-                    />
-                  </div>
+                    </div>
+                  }
+                  <LeftPanelContent
+                    id={id}
+                    problemId={problemId}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    isCompact={isCompactLeft}
+                    description={description}
+                    setDescription={setDescription}
+                    editorial={editorial}
+                    solutions={solutions}
+                    setSolutions={setSolutions}
+                    submissions={submissions}
+                    selectedSubmissionId={selectedSubmissionId}
+                    setSelectedSubmissionId={setSelectedSubmissionId}
+                    onchangeFilterSolutions={onchangeFilterSolutions}
+                    showSolution={showSolution}
+                    setShowSolution={setShowSolution}
+                    currentSolutionId={currentSolutionId}
+                    setCurrentSolutionId={setCurrentSolutionId}
+                    setIsEditMode={setIsEditMode}
+                    setCurrentSolution={setCurrentSolution}
+                    isLoadingDescription={isLoadingDescription}
+                    isLoadingEditorial={isLoadingEditorial}
+                    isLoadingSolutions={isLoadingSolutions}
+                    isLoadingSubmission={isLoadingSubmission}
+                  />
                 </div>
-              </Panel>
+              </div>
+            </Panel>
 
-              <PanelResizeHandle className="splitter splitter_vert relative w-1.5 transition-colors" />
+            <PanelResizeHandle className="splitter splitter_vert relative w-1.5 transition-colors" />
 
-              {/* Right Panel Group */}
-              <Panel className="min-w-[40px] overflow-auto">
-                <PanelGroup direction="vertical">
-                  {/* Right Top Panel - Code Editor */}
+            {/* Right Panel Group */}
+            <Panel className="min-w-[40px] overflow-auto">
+              <PanelGroup direction="vertical">
+                {/* Right Top Panel - Code Editor */}
 
-                  <Panel className="min-h-[40px] rounded-md overflow-hidden">
-                    <CodePanel
-                      isSubmittedActive={isSubmittedActive}
-                      setIsSubmittedActive={setIsSubmittedActive}
-                      isCompact={isCompactRight}
-                      code={code}
-                      currentCode={currentCode}
-                      staticCode={importLib}
-                      onCodeChange={handleCodeChange}
-                      submitted={submitted}
-                      setSubmitted={setSubmitted}
-                      showSubmitted={showSubmitted}
-                      setShowSubmitted={setShowSubmitted}
-                      onLanguageChange={onLanguageChange}
-                      language={language}
-                      availableLanguages={availableLanguages}
-                      activeTab={activeTab}
-                      setActiveTab={setActiveTab}
-                      selectedSubmissionId={selectedSubmissionId}
-                      problemLink={id}
-                    />
-                  </Panel>
+                <Panel className="min-h-[40px] rounded-md overflow-hidden">
+                  <CodePanel
+                    isSubmittedActive={isSubmittedActive}
+                    setIsSubmittedActive={setIsSubmittedActive}
+                    isCompact={isCompactRight}
+                    code={code}
+                    currentCode={currentCode}
+                    staticCode={importLib}
+                    onCodeChange={handleCodeChange}
+                    submitted={submitted}
+                    setSubmitted={setSubmitted}
+                    showSubmitted={showSubmitted}
+                    setShowSubmitted={setShowSubmitted}
+                    onLanguageChange={onLanguageChange}
+                    language={language}
+                    availableLanguages={availableLanguages}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    selectedSubmissionId={selectedSubmissionId}
+                    problemLink={id}
+                  />
+                </Panel>
 
-                  <PanelResizeHandle className="splitter splitter_horz relative h-1.5 transition-colors" />
+                <PanelResizeHandle className="splitter splitter_horz relative h-1.5 transition-colors" />
 
-                  {/* Right Bottom Panel - Test Cases */}
-                  <Panel className="min-h-[40px] overflow-auto rounded-md">
-                    <TestCasePanel
-                      isResultActive={isResultActive}
-                      setIsResultActive={setIsResultActive}
-                      isCompact={isCompactRight}
-                      testCases={testCases}
-                      activeCase={activeCase}
-                      setActiveCase={setActiveCase}
-                      results={results}
-                      showResult={showResult}
-                      activeResult={activeResult}
-                      setActiveResult={setActiveResult}
-                      customTestCases={customTestCase}
-                      setCustomTestCases={setCustomTestCase}
-                    />
-                  </Panel>
-                </PanelGroup>
-              </Panel>
+                {/* Right Bottom Panel - Test Cases */}
+                <Panel className="min-h-[40px] overflow-auto rounded-md">
+                  <TestCasePanel
+                    isResultActive={isResultActive}
+                    setIsResultActive={setIsResultActive}
+                    isCompact={isCompactRight}
+                    testCases={testCases}
+                    activeCase={activeCase}
+                    setActiveCase={setActiveCase}
+                    results={results}
+                    showResult={showResult}
+                    activeResult={activeResult}
+                    setActiveResult={setActiveResult}
+                    customTestCases={customTestCase}
+                    setCustomTestCases={setCustomTestCase}
+                  />
+                </Panel>
+              </PanelGroup>
+            </Panel>
 
-            </PanelGroup>
-          </div>
-        </div >
-      }
+          </PanelGroup>
+        </div>
+      </div >
     </div>
   )
 }
