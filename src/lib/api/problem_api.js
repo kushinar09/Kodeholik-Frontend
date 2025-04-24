@@ -165,7 +165,6 @@ export async function getProblemAvailableLanguages(id) {
 
 export async function getSubmissionDetail(apiCall, submissionId) {
   const url = `${ENDPOINTS.GET_SUBMISSION_DETAIL}${submissionId}`
-  console.log(url)
   const response = await apiCall(url, {
     method: "GET",
     headers: {
@@ -237,7 +236,6 @@ export async function postSolution(apiCall, solution) {
     body: JSON.stringify(solution)
   })
   if (response.ok) {
-    console.log(response)
     const text = await response.json()
     return { status: true, data: text }
   }
@@ -285,7 +283,6 @@ export async function editSolution(apiCall, solution, id) {
     body: JSON.stringify(solution)
   })
   if (response.ok) {
-    console.log(response)
     const text = await response.json()
     return { status: true, data: text }
   }

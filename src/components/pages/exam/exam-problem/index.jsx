@@ -319,6 +319,14 @@ export default function ExamProblems() {
   useEffect(() => {
     if (!isTimerRunning || timeLeft <= 0) return
 
+    if (timeLeft === 300) {
+      toast.info("You have 5 minutes left to complete the exam!")
+    }
+
+    if (timeLeft === 60) {
+      toast.warning("You have 1 minute left to complete the exam!")
+    }
+
     // Clear any existing interval
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current)

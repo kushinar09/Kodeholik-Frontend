@@ -1,7 +1,7 @@
 import { ENDPOINTS } from "../constants"
 
 export function convertToType(value, type) {
-  console.log("Converting value:", value, "of type:", type)
+  // console.log("Converting value:", value, "of type:", type)
   try {
     switch (type) {
     case "STRING":

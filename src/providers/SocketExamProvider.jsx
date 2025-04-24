@@ -111,8 +111,8 @@ export function SocketExamProvider({ children }) {
         client.subscribe(`/topic/exam/${codeValue}`, (message) => {
           try {
             const examData = JSON.parse(message.body)
-            // console.log("📩 Received exam data:", examData)
-            if (examData && examData.details?.duration) {
+            console.log("📩 Received exam data:", message, examData, examData.body)
+            if (examData && examData.type === "TOPIC") {
               setExamData(examData)
               setProblems(formatProblems(examData))
               setEndTime(examData.details.endTime)
@@ -128,6 +128,8 @@ export function SocketExamProvider({ children }) {
                   endTime: examData.details.endTime
                 })
               )
+            } else if (examData.body && examData.body.type === "RESULT") {
+              localStorage.setItem("grade", examData.body.grade)
             }
           } catch (err) {
             console.error("Error parsing exam data:", err)
@@ -138,10 +140,12 @@ export function SocketExamProvider({ children }) {
         if (usernameValue) {
           client.subscribe(`/error/${usernameValue}`, (message) => {
             try {
-              console.error("error", message.body)
-              const errorData = JSON.parse(message.body)
-              toast.error(errorData.message || "An error occurred")
-              console.error("Received error:", errorData)
+              if (typeof (message.body) === "string") {
+                console.error(message.body)
+              } else if (message.body) {
+                const errorData = JSON.parse(message.body)
+                console.error(errorData.message || "An error occurred")
+              }
             } catch (err) {
               console.error("Error parsing error message:", err)
             }
@@ -261,7 +265,7 @@ export function SocketExamProvider({ children }) {
 
   // Function to submit exam answers
   const submitExamAnswers = (idExam, problemAnswers) => {
-    // console.log("Submit exam answers", idExam, problemAnswers)
+    console.log("Submit exam answers", idExam, problemAnswers)
     if (!stompClient || !isConnected) {
       toast.error("Not connected to exam server")
       return false
