@@ -358,7 +358,9 @@ export default function ShareSolution({ solution, setIsEditMode }) {
           </CardContent>
 
           <CardFooter className="flex justify-end gap-3 pt-2 border-t">
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline" onClick={() => navigate("/problem-submission/" + link + "/" + submission)}>
+              Cancel
+            </Button>
             <Button type="button" className={`gap-2 bg-primary ${canSubmit ? "" : "disabled"}`} disabled={!canSubmit} onClick={() => submitSolution()}>
               <Send className="h-4 w-4" />
               Post
