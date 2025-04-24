@@ -263,6 +263,8 @@ export default function TestCasePanel({
                           if (Array.isArray(param.value)) {
                             // Keep the original array structure but it will be formatted inline when displayed
                             param.value = [...param.value]
+                          } else if (typeof param.value === "string" && !param.value.startsWith("\"") && !param.value.endsWith("\"")) {
+                            param.value = "\"" + param.value + "\""
                           }
                         })
 
@@ -395,7 +397,7 @@ export default function TestCasePanel({
                       {formatValue(results.results[activeResult].actualOutput)}
                     </div>
                   </div>
-                  {results.results[activeResult].expectedOutput != null &&
+                  {!results.results[activeResult].isRunInput &&
                     <div className="space-y-2">
                       <Label className="text-sm text-black">Expected Output =</Label>
                       <div className="rounded bg-input-bg text-input-text p-2">

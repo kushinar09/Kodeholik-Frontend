@@ -2,6 +2,9 @@ import { ENDPOINTS } from "../constants"
 
 export function convertToType(value, type) {
   // console.log("Converting value:", value, "of type:", type)
+  if (value.startsWith("\"") && value.endsWith("\"")) {
+    value = value.slice(1, -1)
+  }
   try {
     switch (type) {
     case "STRING":
