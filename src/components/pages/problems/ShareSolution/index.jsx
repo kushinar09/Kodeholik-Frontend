@@ -14,6 +14,7 @@ import { useAuth } from "@/providers/AuthProvider"
 import { Badge } from "@/components/ui/badge"
 import Select from "react-select"
 import { toast } from "sonner"
+import { set } from "date-fns"
 
 const requestData = {
   link: "",
@@ -46,6 +47,8 @@ export default function ShareSolution({ solution, setIsEditMode }) {
   const [isEdit, setIsEdit] = useState(false)
   const [currentSolutionId, setCurrentSolutionId] = useState(0)
   const [problemLink, setProblemLink] = useState("")
+  const [titleError, setTitleError] = useState("")
+  const [submissionError, setSubmissionError] = useState("")
   const fetchSuccessSubmissionList = async () => {
     try {
       const response = await getSuccessSubmissionList(apiCall, (link || solution.problem.link))
@@ -174,10 +177,21 @@ export default function ShareSolution({ solution, setIsEditMode }) {
   }
 
   useEffect(() => {
-    if (title.length < 10 || selectedSubmissionId.length == 0) {
+    if (title.length < 10) {
       setCanSubmit(false)
+      setTitleError("Title must be at least 10 characters.")
+    } else {
+      setTitleError("")
     }
-    else {
+
+    if (selectedSubmissionId.length == 0) {
+      setCanSubmit(false)
+      setSubmissionError("Please select a submission.")
+    } else {
+      setSubmissionError("")
+    }
+
+    if (!title.length < 10 && selectedSubmissionId.length > 0) {
       setCanSubmit(true)
     }
   }, [title, selectedSubmissionId])
@@ -194,17 +208,25 @@ export default function ShareSolution({ solution, setIsEditMode }) {
   const handlePostSolution = async () => {
     try {
       if (!isEdit) {
-        const response = await postSolution(apiCall, requestData)
-        if (response.status == true) {
+        try {
+          const response = await postSolution(apiCall, requestData)
           toast.success("Post solution successful", { duration: 2000 })
           navigate("/problem-solution/" + (link || solution.problem.link) + "/" + response.data.id)
+        } catch (error) {
+          toast.error("Error while share solution", {
+            description: error.message
+          })
         }
       }
       else {
-        const response = await editSolution(apiCall, requestData, currentSolutionId)
-        if (response.status == true) {
+        try {
+          const response = await editSolution(apiCall, requestData, currentSolutionId)
           toast.success("Edit solution successful", { duration: 2000 })
           window.location.href = ("/problem-solution/" + problemLink + "/" + response.data.id)
+        } catch (error) {
+          toast.error("Error while edit solution", {
+            description: error.message
+          })
         }
       }
     } catch (error) {
@@ -241,20 +263,23 @@ export default function ShareSolution({ solution, setIsEditMode }) {
           <CardContent className="space-y-6 pt-4">
             {/* Title Section */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center">
                 <label htmlFor="title" className="text-base font-semibold">
-                  Solution Title
+                  Solution Title <span className="text-red-600 font-bold">*</span>
                 </label>
-                <span className="text-xs text-red-500 font-bold text-muted-foreground">Required</span>
               </div>
               <Input
                 id="title"
                 value={title}
                 required
                 onChange={(e) => setTitle(e.target.value)}
-                className="bg-card text-card-foreground"
+                className={`bg-card text-card-foreground ${titleError ? "border-red-500 focus-visible:ring-red-500" : ""
+                  }`}
                 placeholder="E.g., 'Optimized Dynamic Programming Approach'"
               />
+              {titleError && (
+                <p className="text-sm text-red-600 font-medium">{titleError}</p>
+              )}
             </div>
 
             <div style={{ marginTop: "8px" }}>
@@ -290,14 +315,13 @@ export default function ShareSolution({ solution, setIsEditMode }) {
                 </motion.div>
               </div>
             </div>
-
             {/* Detail Section */}
             <div style={{ marginTop: "8px" }} className="space-y-3">
               <div className="flex flex-col">
                 <div className="flex items-center justify-between">
-                  <label className="text-base font-semibold">Solution Details</label>
-                  <span className="text-xs text-red-500 font-bold text-muted-foreground">Required</span>
-
+                  <label className="text-base font-semibold">
+                    Solution Details <span className="text-red-600 font-bold">*</span>
+                  </label>
                 </div>
                 <div className="relative">
                   <div className="flex items-center mt-1">
@@ -314,7 +338,11 @@ export default function ShareSolution({ solution, setIsEditMode }) {
                               <X className="h-3 w-3 ml-2 mt-1 cursor-pointer" onClick={() => handleDeleteSubmission(submission)} />
                             </Badge>
                           ))}
-                        </div>}
+                        </div>
+                      }
+                      {submissionError && (
+                        <p className="text-sm text-red-600 font-medium ml-2">{submissionError}</p>
+                      )}
                     </div>
                   </div>
                   {/* Dropdown Menu */}
