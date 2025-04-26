@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useSocketExam } from "@/providers/SocketExamProvider"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 // Debounce function implementation
 function debounce(func, wait) {
@@ -161,6 +163,24 @@ export default function ExamList() {
 
     fetchData()
   }, [])
+
+  // Show grade after submit exam
+  const [showDialog, setShowDialog] = useState(false)
+  const [grade, setGrade] = useState(null)
+
+  useEffect(() => {
+    const storedGrade = localStorage.getItem("grade")
+    if (storedGrade) {
+      setGrade(storedGrade)
+      setShowDialog(true)
+    }
+  }, [])
+
+  const handleCloseDialog = () => {
+    setShowDialog(false)
+    localStorage.removeItem("grade")
+  }
+  // End of show grade after submit exam
 
   // Add debounce for search filters
   useEffect(() => {
@@ -327,9 +347,9 @@ export default function ExamList() {
               <button
                 className={`px-4 py-2 font-medium text-sm sm:text-base 
                 ${activeTab === "pending"
-      ? "border-b-2 border-primary text-primary"
-      : "text-gray-500 hover:text-gray-700"
-    }`}
+                    ? "border-b-2 border-primary text-primary"
+                    : "text-gray-500 hover:text-gray-700"
+                  }`}
                 onClick={() => setActiveTab("pending")}
               >
                 Upcoming Exams
@@ -342,9 +362,9 @@ export default function ExamList() {
               <button
                 className={`px-4 py-2 font-medium text-sm sm:text-base 
                 ${activeTab === "my-exams"
-      ? "border-b-2 border-primary text-primary"
-      : "text-gray-500 hover:text-gray-700"
-    }`}
+                    ? "border-b-2 border-primary text-primary"
+                    : "text-gray-500 hover:text-gray-700"
+                  }`}
                 onClick={() => setActiveTab("my-exams")}
               >
                 My Exams
@@ -541,7 +561,7 @@ export default function ExamList() {
                               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
                               disabled={currentPage === 0}
                               className={`p-2 px-4 rounded-md text-text-primary flex items-center gap-2 bg-bg-card ${currentPage === 0 ? "opacity-70 cursor-not-allowed" : ""
-                              }`}
+                                }`}
                             >
                               <ChevronLeft className="h-4 w-4" />
                               <span className="hidden sm:inline">Previous</span>
@@ -555,7 +575,7 @@ export default function ExamList() {
                                 className={`w-10 h-10 rounded-md ${currentPage === index
                                   ? "bg-primary text-bg-card font-semibold"
                                   : "text-gray-600 hover:bg-gray-50 border"
-                                }`}
+                                  }`}
                               >
                                 {index + 1}
                               </button>
@@ -569,7 +589,7 @@ export default function ExamList() {
                               className={`p-2 px-4 rounded-md text-text-primary flex items-center gap-2 bg-bg-card ${currentPage === myExams.totalPages - 1
                                 ? "opacity-70 cursor-not-allowed"
                                 : "hover:bg-gray-50"
-                              }`}
+                                }`}
                             >
                               <span className="hidden sm:inline">Next</span>
                               <ChevronRight className="h-4 w-4" />
@@ -598,7 +618,17 @@ export default function ExamList() {
           </div>
         </div>
       }
-
+      <Dialog open={showDialog} onOpenChange={handleCloseDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Your Grade</DialogTitle>
+            <DialogDescription className="space-y-2 text-gray-900 text-md">
+              <p>You received a grade of: <span className="text-xl font-bold">{grade ? `${parseFloat(grade).toFixed(1)}` : "No grade available."}</span></p>
+              <p>You can see more details when the exam ends.</p>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
       <FooterSection />
     </div>
   )

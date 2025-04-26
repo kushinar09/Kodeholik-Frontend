@@ -316,16 +316,12 @@ export async function courseRegisterOUT(apiCall, id) {
 
 export async function completedAndSendMail(id) {
   const url = ENDPOINTS.COMPLETED_COURSE.replace(":id", id)
-  console.log(`[courseCompleted] Starting for course ID: ${id}, URL: ${url}`)
 
   try {
-    console.log(`[courseCompleted] Sending POST request to ${url}`)
     const response = await fetch(url, {
       method: "POST",
       credentials: "include"
     })
-
-    console.log(`[courseCompleted] Response status: ${response.status}`)
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -334,12 +330,10 @@ export async function completedAndSendMail(id) {
     }
 
     if (response.status === 204) {
-      console.log(`[courseCompleted] Success - No content (204) for course ID: ${id}`)
       return { success: true }
     }
 
     const responseData = await response.json()
-    console.log("[courseCompleted] Success - Response data:", responseData)
     return responseData
   } catch (error) {
     console.error(`[courseCompleted] Error for course ID: ${id}:`, error.message)

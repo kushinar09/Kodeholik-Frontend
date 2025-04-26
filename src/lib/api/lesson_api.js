@@ -62,14 +62,12 @@ export async function downloadFileLesson(apiCall, fileKey) {
 
 export async function completedLesson(id, apiCall) {
   const completeUrl = ENDPOINTS.COMPLETED_LESSON.replace(":id", id)
-  console.log("Fetching file from:", completeUrl)
 
   try {
     const response = await apiCall(completeUrl, {
       method: "POST",
       credentials: "include"
     })
-    console.log("Response Status:", response.status)
 
     if (!response.ok) {
       throw new Error(`Failed to complete lesson. Status: ${response.status}`)

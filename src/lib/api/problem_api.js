@@ -165,7 +165,6 @@ export async function getProblemAvailableLanguages(id) {
 
 export async function getSubmissionDetail(apiCall, submissionId) {
   const url = `${ENDPOINTS.GET_SUBMISSION_DETAIL}${submissionId}`
-  console.log(url)
   const response = await apiCall(url, {
     method: "GET",
     headers: {
@@ -237,42 +236,23 @@ export async function postSolution(apiCall, solution) {
     body: JSON.stringify(solution)
   })
   if (response.ok) {
-    console.log(response)
     const text = await response.json()
     return { status: true, data: text }
   }
   else {
-    if (response.status == 400) {
-      try {
-        const errorData = await response.json()
-        let value = ""
-        if (Array.isArray(errorData.message)) {
-          for (let i = 0; i < errorData.message.length; i++) {
-            value += errorData.message[i].field + ": " + errorData.message[i].error + "; "
-          }
-        }
-        else {
-          value += errorData.message
-        }
-        toast.error("Error", {
-          description: value
-        })
-      } catch (error) {
-        console.error("Error parsing error response:", error)
-      }
-    }
-    else if (response.status == 500) {
-      toast.error("Error", {
-        description: MESSAGES.MSG01
-      })
-    }
-    else if (response.status === 404) {
-      return { status: false, message: "Problem not found" }
-    }
-    throw new Error("Failed to add user")
+    const errorData = await response.json()
+    let errorMessage = "Failed to post solution"
 
+    if (Array.isArray(errorData.message)) {
+      // Extract first error message from array
+      errorMessage = errorData.message[0]?.error || errorMessage
+    } else if (typeof errorData.message === "object") {
+      errorMessage = errorData.message.error || errorMessage
+    } else if (typeof errorData.message === "string") {
+      errorMessage = errorData.message
+    }
+    throw new Error(errorMessage)
   }
-
 }
 
 export async function editSolution(apiCall, solution, id) {
@@ -285,37 +265,22 @@ export async function editSolution(apiCall, solution, id) {
     body: JSON.stringify(solution)
   })
   if (response.ok) {
-    console.log(response)
     const text = await response.json()
     return { status: true, data: text }
   }
   else {
-    if (response.status == 400) {
-      try {
-        const errorData = await response.json()
-        let value = ""
-        if (Array.isArray(errorData.message)) {
-          for (let i = 0; i < errorData.message.length; i++) {
-            value += errorData.message[i].field + ": " + errorData.message[i].error + "; "
-          }
-        }
-        else {
-          value += errorData.message
-        }
-        toast.error("Error", {
-          description: value
-        })
-      } catch (error) {
-        console.error("Error parsing error response:", error)
-      }
-    }
-    else if (response.status == 500) {
-      toast.error("Error", {
-        description: MESSAGES.MSG01
-      })
-    }
-    throw new Error("Failed to edit solution")
+    const errorData = await response.json()
+    let errorMessage = "Failed to edit solution"
 
+    if (Array.isArray(errorData.message)) {
+      // Extract first error message from array
+      errorMessage = errorData.message[0]?.error || errorMessage
+    } else if (typeof errorData.message === "object") {
+      errorMessage = errorData.message.error || errorMessage
+    } else if (typeof errorData.message === "string") {
+      errorMessage = errorData.message
+    }
+    throw new Error(errorMessage)
   }
 
 }

@@ -98,28 +98,7 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
         setComment("")
         setTotalComments(totalComments + 1)
         setComments((prev) => {
-          const newComment = {
-            id: response.data.id,
-            comment: comment,
-            noUpvote: 0,
-            createdBy: {
-              id: user?.id || 0,
-              avatar: user?.avatar || "/placeholder.svg?height=40&width=40",
-              username: user?.username || "you"
-            },
-            noReply: 0,
-            createdAt: new Date().toLocaleString("en-GB", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false
-            }),
-            updatedAt: null,
-            replyId: null,
-            voted: false
-          }
+          const newComment = response.data
 
           // Add new comment at the top and remove the last item if list is too long
           const updatedComments = [newComment, ...prev]
@@ -288,49 +267,22 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
   const submitReply = async (commentId) => {
     const replyText = replyTexts[commentId]
     if (!replyText.trim()) return
-
-    // Create new reply
-    const newReply = {
-      id: `reply-${commentId}-${Date.now()}`,
-      comment: replyText,
-      noUpvote: 0,
-      createdBy: {
-        id: user?.id || 0,
-        avatar: user?.avatar || "/placeholder.svg?height=40&width=40",
-        username: user?.username || "you"
-      },
-      noReply: 0,
-      createdAt: new Date().toLocaleString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      }),
-      updatedAt: null,
-      replyId: commentId,
-      voted: false
-    }
     try {
       const response = await postComment(apiCall, locationId, replyText, commentId, type)
       if (response.status) {
         setTotalComments(totalComments + 1)
       }
-      newReply.id = response.data.id
+      const newReply = response.data
+      // Add reply to loaded replies
+      setLoadedReplies((prev) => ({
+        ...prev,
+        [commentId]: [...(prev[commentId] || []), newReply]
+      }))
     } catch (error) {
       toast.error("Error posting comment", {
         description: error.message || "Failed to post comment"
       })
     }
-
-
-    // Add reply to loaded replies
-    setLoadedReplies((prev) => ({
-      ...prev,
-      [commentId]: [...(prev[commentId] || []), newReply]
-    }))
-
     // Increment reply count on parent comment
     setComments((prev) => prev.map((c) => (c.id === commentId ? { ...c, noReply: (c.noReply || 0) + 1 } : c)))
 
