@@ -72,11 +72,10 @@ export default function DiscussionSection({ id, locationId, type, activeTab }) {
             [content[i].id]: false
           }))
         }
-        setTotalComments((prev) => prev + content[i].noReply)
       }
 
-      setComments(content.filter((c) => c?.replyId === null))
-      setTotalComments((prev) => (data?.totalElements ? prev + data?.totalElements : 0))
+      setComments(content)
+      setTotalComments(data?.totalElements || 0)
       setTotalPages(data?.totalPages || 0)
     } catch (error) {
       toast.warning("Error fetching comments:", error)
