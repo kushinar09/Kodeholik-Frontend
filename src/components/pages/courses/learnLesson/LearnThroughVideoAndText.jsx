@@ -435,7 +435,7 @@ export default function LearnThroughVideoAndText() {
                       lessonId={selectedLesson.id}
                       resourceError={resourceError}
                       onLessonCompleted={handleLessonCompleted}
-                      canCompleted={!selectedLesson.problems || !selectedLesson.problems.length > 0}
+                      canCompleted={selectedLesson.labCompleted}
                     />
                   )}
                   {selectedLesson.type === "DOCUMENT" && selectedLesson.attachedFile && (
@@ -525,7 +525,7 @@ export default function LearnThroughVideoAndText() {
                               className="w-full justify-between h-auto p-2 text-left text-bg-card"
                             >
                               <span className="font-medium truncate line-clamp-1 text-wrap" title={problem.title}>{problem.title}</span>
-                              {problem.solved
+                              {problem.completed
                                 ? <CheckCircle className="text-green-600 size-5" />
                                 : <Badge className={getDifficultyColor(problem.difficulty)}>{problem.difficulty}</Badge>
                               }
