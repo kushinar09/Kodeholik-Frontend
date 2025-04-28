@@ -6,7 +6,6 @@ import UnauthorisedError from "@/components/pages/errors/unauthorized-error"
 import ForbiddenError from "@/components/pages/errors/forbidden"
 import NotFoundError from "@/components/pages/errors/not-found-error"
 import GeneralError from "@/components/pages/errors/general-error"
-import { toast } from "sonner"
 
 const AuthContext = createContext()
 
