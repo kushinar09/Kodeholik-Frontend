@@ -30,7 +30,7 @@ export default function ForgotPassword() {
   useEffect(() => {
     if (location.state?.tokenExpired) {
       toast.error("Error", {
-        description: "Your reset link has expired. Please try again.",
+        description: "Your reset link has expired. Please try again."
       })
     }
   }, [location])

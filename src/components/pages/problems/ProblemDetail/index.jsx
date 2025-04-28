@@ -367,7 +367,7 @@ export default function ProblemDetail() {
   }
 
   return (
-    <div>
+    <div className="relative">
       {isEditMode && <ShareSolution solution={currentSolution} setIsEditMode={setIsEditMode} />}
 
       <div className="h-screen flex flex-col">

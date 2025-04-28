@@ -241,11 +241,9 @@ export default function ShareSolution({ solution, setIsEditMode }) {
   }
 
   return (
-    <div className="min-h-screen bg-bg-primary">
-      <ProblemHeader />
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+    <div className="absolute z-30 right-0 left-0 min-h-screen bg-bg-primary/50 backdrop-blur-md">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 my-6">
         <Card className="shadow-lg border-0">
-
           <CardHeader className="pb-3 border-b">
             <div className="flex gap-2 items-center text-gray-500 cursor-pointer hover:underline" onClick={() => {
               setIsEditMode?.(false) || navigate("/problem-submission/" + (link || solution.problem.link) + "/" + submission)
