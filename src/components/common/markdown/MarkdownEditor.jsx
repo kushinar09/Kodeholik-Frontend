@@ -164,33 +164,34 @@ const MarkdownEditor = ({ canDelete = null, setCanDelete = null, value = "", onC
       parent: document.getElementById("editor")
     })
 
-    // const handleKeyDown = (e) => {
-    //   if (e.ctrlKey || e.metaKey) {
-    //     const shortcut = shortcuts[e.key.toLowerCase()]
-    //     if (shortcut) {
-    //       if (e.key.toLowerCase() !== "s") {
-    //         e.preventDefault()
-    //         applyMarkdown(shortcut.action)
-    //       } else {
-    //         e.preventDefault()
-    //         const currentContent = editorViewRef.current.state.doc.toString()
-    //         setCookie(cookieDraft, currentContent)
-    //         toast.info({
-    //           description: "Saved.",
-    //           duration: 1000
-    //         })
-    //       }
-    //     }
-    //   }
-    // }
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        const shortcut = shortcuts[e.key.toLowerCase()]
+        if (shortcut) {
+          if (e.key.toLowerCase() !== "s") {
+            e.preventDefault()
+            applyMarkdown(shortcut.action)
+          } 
+          // else {
+          //   e.preventDefault()
+          //   const currentContent = editorViewRef.current.state.doc.toString()
+          //   setCookie(cookieDraft, currentContent)
+          //   toast.info({
+          //     description: "Saved.",
+          //     duration: 1000
+          //   })
+          // }
+        }
+      }
+    }
 
-    // document.addEventListener("keydown", handleKeyDown)
+    document.addEventListener("keydown", handleKeyDown)
 
     return () => {
       if (editorViewRef.current) {
         editorViewRef.current.destroy()
       }
-      // document.removeEventListener("keydown", handleKeyDown)
+      document.removeEventListener("keydown", handleKeyDown)
     }
   }, [])
 
