@@ -14,6 +14,7 @@ import CodePanel from "./components/right-panel/code-panel"
 import TestCasePanel from "./components/right-panel/test-case-panel"
 import HeaderOption from "./components/header-option"
 import { toast } from "sonner"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export default function TakeExam({
   idExam,
@@ -56,56 +57,59 @@ export default function TakeExam({
 
   const [isVisible, setIsVisible] = useState(true)
   const [warningCount, setWarningCount] = useState(0)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [dialogMessage, setDialogMessage] = useState("")
   const maxWarnings = 2
 
-  // useEffect(() => {
-  //   const handleVisibilityChange = () => {
-  //     if (document.hidden && warningCount < maxWarnings) {
-  //       setWarningCount((prev) => prev + 1)
-  //       if (warningCount === maxWarnings - 1) {
-  //         alert("Last warning! Do not switch tabs! You will be penalized if you do it again.")
-  //       } else {
-  //         alert(`Warning: Do not switch tabs! Warnings left: ${maxWarnings - (warningCount + 1)}`)
-  //       }
-  //     } else if (!document.hidden) {
-  //       setIsVisible(true)
-  //     }
-  //   }
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && warningCount <= maxWarnings) {
+        setWarningCount(prev => prev + 1)
 
-  //   document.addEventListener("visibilitychange", handleVisibilityChange)
+        if (warningCount === maxWarnings) {
+          setDialogMessage("Last warning! Do not switch tabs! You will be penalized if you do it again.")
+        } else {
+          setDialogMessage(`Warning: Do not switch tabs! Warnings left: ${maxWarnings - (warningCount + 1)}`)
+        }
 
-  //   return () => {
-  //     document.removeEventListener("visibilitychange", handleVisibilityChange)
-  //   }
-  // }, [warningCount, maxWarnings])
+        setIsDialogOpen(true)
+      }
+    }
 
-  // useEffect(() => {
-  //   if (warningCount >= maxWarnings) {
-  //     onPenalty()
-  //   }
-  // }, [warningCount, maxWarnings])
+    document.addEventListener("visibilitychange", handleVisibilityChange)
 
-  // useEffect(() => {
-  //   const handleKeyDown = (event) => {
-  //     if ((event.ctrlKey && (event.key === "c" || event.key === "v")) || event.key === "F12") {
-  //       event.preventDefault()
-  //       alert("Shortcuts are disabled during the test.")
-  //     }
-  //   }
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+    }
+  }, [warningCount, maxWarnings])
 
-  //   const handleRightClick = (event) => {
-  //     event.preventDefault()
-  //     alert("Right-click is disabled during the test.")
-  //   }
+  useEffect(() => {
+    if (warningCount > maxWarnings) {
+      onPenalty()
+    }
+  }, [warningCount, maxWarnings])
 
-  //   window.addEventListener("keydown", handleKeyDown)
-  //   window.addEventListener("contextmenu", handleRightClick)
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if ((event.ctrlKey && (event.key === "c" || event.key === "v")) || event.key === "F12") {
+        event.preventDefault()
+        alert("Shortcuts are disabled during the test.")
+      }
+    }
 
-  //   return () => {
-  //     window.removeEventListener("keydown", handleKeyDown)
-  //     window.removeEventListener("contextmenu", handleRightClick)
-  //   }
-  // }, [])
+    const handleRightClick = (event) => {
+      event.preventDefault()
+      alert("Right-click is disabled during the test.")
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("contextmenu", handleRightClick)
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("contextmenu", handleRightClick)
+    }
+  }, [])
 
   // Panel resize detection
   useEffect(() => {
@@ -171,7 +175,7 @@ export default function TakeExam({
         setShowResult(true)
         setIsResultActive(true)
         setResults({
-          details	: result?.data?.details,
+          details: result?.data?.details,
           error: true,
           message: result?.data?.message,
           testCaseValue: result?.data?.testCaseValue
@@ -252,6 +256,15 @@ export default function TakeExam({
           </Panel>
         </PanelGroup>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Warning</DialogTitle>
+            <DialogDescription>{dialogMessage}</DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
