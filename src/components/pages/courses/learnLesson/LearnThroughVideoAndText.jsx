@@ -15,7 +15,8 @@ import {
   CheckCircle2,
   AlertCircle,
   BookOpen,
-  MessageSquare
+  MessageSquare,
+  CheckCircle
 } from "lucide-react"
 import { getCourse, courseRegisterIn, courseRegisterOUT, completedAndSendMail } from "@/lib/api/course_api"
 import { getLessonById, completedLesson, downloadFileLesson } from "@/lib/api/lesson_api"
@@ -434,6 +435,7 @@ export default function LearnThroughVideoAndText() {
                       lessonId={selectedLesson.id}
                       resourceError={resourceError}
                       onLessonCompleted={handleLessonCompleted}
+                      canCompleted={selectedLesson.labCompleted}
                     />
                   )}
                   {selectedLesson.type === "DOCUMENT" && selectedLesson.attachedFile && (
@@ -501,6 +503,12 @@ export default function LearnThroughVideoAndText() {
                     }
                   </div>
 
+                  {(selectedLesson.problems && selectedLesson.problems.length > 0) &&
+                    <div className="flex gap-2 items-center text-primary mb-3">
+                      <CheckCircle className="h-4 w-4" />
+                      <p>Solving all problems will automatically complete the lesson.</p>
+                    </div>
+                  }
                   {selectedLesson.problems && selectedLesson.problems.length > 0 && (
                     <div className="space-y-4">
                       <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -516,8 +524,11 @@ export default function LearnThroughVideoAndText() {
                               variant="outline"
                               className="w-full justify-between h-auto p-2 text-left text-bg-card"
                             >
-                              <span className="font-medium">{problem.title}</span>
-                              <Badge className={getDifficultyColor(problem.difficulty)}>{problem.difficulty}</Badge>
+                              <span className="font-medium truncate line-clamp-1 text-wrap" title={problem.title}>{problem.title}</span>
+                              {problem.completed
+                                ? <CheckCircle className="text-green-600 size-5" />
+                                : <Badge className={getDifficultyColor(problem.difficulty)}>{problem.difficulty}</Badge>
+                              }
                             </Button>
                           </a>
                         ))}
@@ -533,14 +544,14 @@ export default function LearnThroughVideoAndText() {
 
                   {selectedLesson.type !== "EMPTY" && (
                     <div className="mt-6 flex justify-end">
-                      {!selectedLesson.completed ? (
+                      {(!selectedLesson.problems || !selectedLesson.problems.length > 0) && !selectedLesson.completed ? (
                         <Button
                           className="bg-primary hover:bg-primary-button-hover text-bg-card"
                           onClick={handleMarkComplete}
                         >
                           <CheckCircle2 className="h-4 w-4 mr-2" /> Mark as Complete
                         </Button>
-                      ) : (
+                      ) : (!selectedLesson.problems || !selectedLesson.problems.length > 0) && (
                         <div className="text-green-500 flex items-center">
                           <CheckCircle2 className="h-4 w-4 mr-2" /> Completed
                         </div>
