@@ -1,99 +1,32 @@
-import {
-  Footer,
-  FooterColumn,
-  FooterBottom,
-  FooterContent
-} from "@/components/ui/footer"
-import { Link } from "react-router-dom"
 import { Facebook, Mail } from "lucide-react"
-import { DiscordLogoIcon } from "@radix-ui/react-icons"
 import { LOGO } from "@/lib/constants"
+import { Github } from "lucide-react"
 
 export default function FooterSection() {
   return (
     <footer className="w-full bg-primary-card px-24 mt-8">
-      <div className="mx-auto max-w-container">
-        <Footer className="bg-primary-card pt-8">
-          <FooterContent className="sm:grid-cols-2 md:grid-cols-3">
-            <FooterColumn className="col-span-2 flex-row items-center justify-between gap-8 border-b pb-8 md:col-span-1 md:flex-col md:items-start md:justify-start md:border-b-0">
-              <div className="flex items-center gap-2">
-                <LOGO className="text-primary size-8" />
-                <h3 className="text-primary text-xl font-bold">Kodeholik</h3>
-              </div>
-              <div className="ml-2.5 flex gap-4 sm:ml-0">
-                <Link
-                  href="/"
-                  className="text-muted-foreground"
-                >
-                  <span className="sr-only">Facebook</span>
-                  <Facebook className="h-5 w-5" />
-                </Link>
-                <Link
-                  href="/"
-                  className="text-muted-foreground"
-                >
-                  <span className="sr-only">Email</span>
-                  <Mail className="h-5 w-5" />
-                </Link>
-                <Link href="/" className="text-muted-foreground">
-                  <span className="sr-only">Discord</span>
-                  <DiscordLogoIcon className="h-5 w-5" />
-                </Link>
-              </div>
-            </FooterColumn>
-            <FooterColumn>
-              <h3 className="text-primary text-md pt-1 font-semibold">Product</h3>
-              <a href="#" className="text-sm text-muted-foreground">
-                Changelog
-              </a>
-              <a href="#" className="text-sm text-muted-foreground">
-                Documentation
-              </a>
-            </FooterColumn>
-            <FooterColumn>
-              <h3 className="text-primary text-md pt-1 font-semibold">Company</h3>
-              <a href="#" className="text-sm text-muted-foreground">
-                About
-              </a>
-              <a href="#" className="text-sm text-muted-foreground">
-                Careers
-              </a>
-              <a href="#" className="text-sm text-muted-foreground">
-                Blog
-              </a>
-            </FooterColumn>
-            <FooterColumn>
-              <h3 className="text-primary text-md pt-1 font-semibold">Contact</h3>
-              <a href="#" className="text-sm text-muted-foreground">
-                Discord
-              </a>
-              <a href="#" className="text-sm text-muted-foreground">
-                Twitter
-              </a>
-              <a
-                href="/"
-                className="text-sm text-muted-foreground"
-              >
-                Github
-              </a>
-            </FooterColumn>
-            <FooterColumn>
-              <h3 className="text-primary text-md pt-1 font-semibold">Legal</h3>
-              <a href="#" className="text-sm text-muted-foreground">
-                Privacy Policy
-              </a>
-              <a href="#" className="text-sm text-muted-foreground">
-                Terms of Service
-              </a>
-              <a href="#" className="text-sm text-muted-foreground">
-                Cookie Policy
-              </a>
-            </FooterColumn>
-          </FooterContent>
-          <FooterBottom className="border-0">
-            <div>© 2025 Kodeholik. All rights reserved</div>
-          </FooterBottom>
-        </Footer>
+      <div className="w-full mx-auto p-4 md:py-8">
+        <div className="sm:flex sm:items-center sm:justify-between">
+          <a href="/" className="flex items-center mb-4 sm:mb-0 space-x-3 rtl:space-x-reverse">
+            <LOGO className="text-primary size-8" />
+            <span className="self-center text-2xl font-semibold whitespace-nowrap text-primary dark:text-white">Kodeholik</span>
+          </a>
+          <ul className="flex flex-wrap items-center mb-6 text-sm font-medium text-gray-500 sm:mb-0 dark:text-gray-400">
+            <li>
+              <a href="https://www.facebook.com/duyphong109" target="_blank" rel="noopener noreferrer" className="hover:underline me-4 md:me-6">Facebook</a>
+            </li>
+            <li>
+              <a href="mailto:phongpd109.work@gmail.com" className="hover:underline me-4 md:me-6">Email</a>
+            </li>
+            <li>
+              <a href="https://github.com/kushinar09" target="_blank" rel="noopener noreferrer" className="hover:underline">Github</a>
+            </li>
+          </ul>
+        </div>
+        <hr className="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
+        <span className="block text-sm text-gray-500 sm:text-center dark:text-gray-400">
+          © 2025 Kodeholik. All rights reserved.
+        </span>
       </div>
     </footer>
   )
