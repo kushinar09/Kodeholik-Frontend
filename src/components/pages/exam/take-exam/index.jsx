@@ -63,16 +63,17 @@ export default function TakeExam({
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden && warningCount <= maxWarnings) {
+      if (document.hidden) {
         setWarningCount(prev => prev + 1)
 
-        if (warningCount === maxWarnings) {
-          setDialogMessage("Last warning! Do not switch tabs! You will be penalized if you do it again.")
-        } else {
-          setDialogMessage(`Warning: Do not switch tabs! Warnings left: ${maxWarnings - (warningCount + 1)}`)
+        if (warningCount < maxWarnings) {
+          if (warningCount === maxWarnings - 1) {
+            setDialogMessage("Last warning! Do not switch tabs! You will be penalized if you do it again.")
+          } else {
+            setDialogMessage(`Warning: Do not switch tabs! Warnings left: ${maxWarnings - (warningCount + 1)}`)
+          }
+          setIsDialogOpen(true)
         }
-
-        setIsDialogOpen(true)
       }
     }
 

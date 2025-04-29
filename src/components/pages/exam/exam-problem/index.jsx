@@ -47,6 +47,14 @@ export default function ExamProblems() {
   const timerIntervalRef = useRef(null)
   const examStartTimeRef = useRef(null)
 
+  function parseAsLocal(datetimeString) {
+    let cleaned = datetimeString.replace(/(\+|-)\d{2}:\d{2}$/, "")
+    let [datePart, timePart] = cleaned.split("T")
+    let [year, month, day] = datePart.split("-")
+    let [hour, minute, second] = timePart.split(":")
+    return new Date(year, month - 1, day, hour, minute, second)
+  }
+
   // Load stored code from localStorage
   useEffect(() => {
     try {
@@ -172,24 +180,25 @@ export default function ExamProblems() {
         const parsedData = JSON.parse(storedData)
 
         if (endTime) {
+          console.log(endTime)
           // Calculate elapsed time since last activity
           const now = new Date().getTime()
-          const elapsedSeconds = Math.floor((endTime - now) / 1000)
+          const elapsedSeconds = Math.floor((parseAsLocal(endTime).getTime() - now) / 1000)
 
           // Calculate remaining time
           const remainingTime = Math.max(0, elapsedSeconds)
-
+          console.log(parseAsLocal(endTime), remainingTime)
           // Set the time left
           setTimeLeft(remainingTime)
           examStartTimeRef.current = new Date(now - elapsedSeconds * 1000)
-        } else if (parsedData.endTime) {
+        } else if (parseAsLocal(parsedData.endTime)) {
           // If we have duration from the provider but no lastActiveTime
-          setTimeLeft((parsedData.endTime - new Date().getTime()) / 1000)
+          setTimeLeft((parseAsLocal(parsedData.endTime).getTime() - new Date().getTime()) / 1000)
           examStartTimeRef.current = new Date()
         }
       } else if (endTime) {
         // Fresh exam start
-        setTimeLeft((endTime - new Date().getTime()) / 1000)
+        setTimeLeft((parseAsLocal(endTime).getTime() - new Date().getTime()) / 1000)
         examStartTimeRef.current = new Date()
 
         // Initialize tempData with current time
@@ -211,7 +220,7 @@ export default function ExamProblems() {
     } catch (err) {
       console.error("Error calculating remaining time:", err)
       if (endTime) {
-        setTimeLeft((endTime - new Date().getTime()) / 1000)
+        setTimeLeft((parseAsLocal(endTime).getTime() - new Date().getTime()) / 1000)
       }
     }
   }, [endTime, problems, token, examCode, username])
