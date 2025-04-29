@@ -18,6 +18,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useSocketExam } from "@/providers/SocketExamProvider"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { toast } from "sonner"
+import { useNavigate } from "react-router-dom"
 
 // Debounce function implementation
 function debounce(func, wait) {
@@ -33,10 +35,11 @@ function debounce(func, wait) {
 }
 
 export default function ExamList() {
-  const { apiCall } = useAuth()
+  const { isAuthenticated, apiCall } = useAuth()
   // State for data
   const [allExams, setAllExams] = useState([])
   const [myExams, setMyExams] = useState(null)
+  const navigate = useNavigate()
   // NOT_STARTED: chua bat dau
   // END: da ket thuc
   // IN_PROGRESS: dang dien ra
@@ -144,6 +147,11 @@ export default function ExamList() {
 
   // Initial data fetch
   useEffect(() => {
+    if (!isAuthenticated) {
+      toast.warning("You need login to view this page")
+      navigate("/")
+      return
+    }
     const fetchData = async () => {
       setLoading(true)
       setError(null)
