@@ -46,12 +46,12 @@ export default function LearnThroughVideoAndText() {
   const navigate = useNavigate()
   const { isAuthenticated, apiCall } = useAuth()
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/")
-      toast.warning("You need to be logged in to access this page.")
-    }
-  }, [isAuthenticated])
+  // useEffect(() => {
+  //   if (!isAuthenticated) {
+  //     navigate("/")
+  //     toast.warning("You need to be logged in to access this page.")
+  //   }
+  // }, [isAuthenticated])
 
   // useEffect for course registration IN/OUT with debugging logs
   useEffect(() => {
