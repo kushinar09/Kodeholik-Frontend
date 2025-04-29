@@ -435,7 +435,6 @@ export default function LearnThroughVideoAndText() {
                       lessonId={selectedLesson.id}
                       resourceError={resourceError}
                       onLessonCompleted={handleLessonCompleted}
-                      canCompleted={selectedLesson.labCompleted}
                     />
                   )}
                   {selectedLesson.type === "DOCUMENT" && selectedLesson.attachedFile && (
