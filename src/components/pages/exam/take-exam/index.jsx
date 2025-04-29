@@ -91,23 +91,23 @@ export default function TakeExam({
   }, [warningCount, maxWarnings])
 
   useEffect(() => {
-    const handleKeyDown = (event) => {
-      if ((event.ctrlKey && (event.key === "c" || event.key === "v")) || event.key === "F12") {
-        event.preventDefault()
-        alert("Shortcuts are disabled during the test.")
-      }
-    }
+    // const handleKeyDown = (event) => {
+    //   if ((event.ctrlKey && (event.key === "c" || event.key === "v")) || event.key === "F12") {
+    //     event.preventDefault()
+    //     alert("Shortcuts are disabled during the test.")
+    //   }
+    // }
 
     const handleRightClick = (event) => {
       event.preventDefault()
       alert("Right-click is disabled during the test.")
     }
 
-    window.addEventListener("keydown", handleKeyDown)
+    // window.addEventListener("keydown", handleKeyDown)
     window.addEventListener("contextmenu", handleRightClick)
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown)
+      // window.removeEventListener("keydown", handleKeyDown)
       window.removeEventListener("contextmenu", handleRightClick)
     }
   }, [])
