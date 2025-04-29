@@ -5,7 +5,7 @@ import YouTubePlayer from "./youtubePlayer"
 import { AlertCircle } from "lucide-react"
 import { completedLesson } from "@/lib/api/lesson_api"
 
-export default function VideoLesson({ videoUrl, lessonId, resourceError, onLessonCompleted, canCompleted = true }) {
+export default function VideoLesson({ videoUrl, lessonId, resourceError, onLessonCompleted }) {
   const videoRef = useRef(null) // Reference to the video element
   const [hasReachedNinetyPercent, setHasReachedNinetyPercent] = useState(false) // Track if 90% was reached
 
@@ -17,14 +17,18 @@ export default function VideoLesson({ videoUrl, lessonId, resourceError, onLesso
     const duration = videoRef.current.duration
     const progress = (currentTime / duration) * 100
 
-    if (progress >= 90 && !hasReachedNinetyPercent && canCompleted) {
+    if (progress >= 90 && !hasReachedNinetyPercent) {
       setHasReachedNinetyPercent(true)
       try {
         await completedLesson(lessonId, async (url, options) => {
           const response = await fetch(url, options)
-          return response
+          if (response.ok) {
+            const data = response.json()
+            if (data.completed)
+              if (onLessonCompleted) onLessonCompleted(lessonId)
+          }
         })
-        if (onLessonCompleted) onLessonCompleted(lessonId) // Notify parent
+        // Notify parent
       } catch (err) {
         console.error("Failed to mark lesson as complete:", err)
       }
@@ -34,13 +38,14 @@ export default function VideoLesson({ videoUrl, lessonId, resourceError, onLesso
   // Handle YouTube completion (existing logic)
   const handleNinetyPercentWatched = async () => {
     try {
-      if (canCompleted) {
-        await completedLesson(lessonId, async (url, options) => {
-          const response = await fetch(url, options)
-          return response
-        })
-        if (onLessonCompleted) onLessonCompleted(lessonId)
-      }
+      await completedLesson(lessonId, async (url, options) => {
+        const response = await fetch(url, options)
+        if (response.ok) {
+          const data = response.json()
+          if (data.completed)
+            if (onLessonCompleted) onLessonCompleted(lessonId)
+        }
+      })
     } catch (err) {
       console.error("Failed to mark lesson as complete:", err)
     }
