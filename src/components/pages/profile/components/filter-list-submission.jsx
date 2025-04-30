@@ -11,7 +11,6 @@ import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { Calendar } from "@/components/ui/calendar"
 
-
 export function FilterBarSubmission({ onFilterChange }) {
   const [open, setOpen] = useState(false)
   const calendarRef = useRef(null)
@@ -32,7 +31,6 @@ export function FilterBarSubmission({ onFilterChange }) {
     onFilterChange(newFilters)
   }
 
-
   const clearFilters = () => {
     const clearedFilters = {
       status: "all",
@@ -48,24 +46,27 @@ export function FilterBarSubmission({ onFilterChange }) {
     setFilters(clearedFilters)
     onFilterChange(clearedFilters)
   }
+
   useEffect(() => {
     if (!open) {
       handleFilterChange("date", date)
-
     }
   }, [open])
 
   return (
     <>
-      <div className="flex flex-wrap gap-4 items-center mb-4 mt-4 text-primary-text">
+      <div className="flex flex-wrap gap-2 sm:gap-4 items-center mb-2 sm:mb-4 mt-2 sm:mt-4 text-primary-text">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
               id="date"
               variant={"outline"}
-              className={cn("w-[225px] justify-start text-left font-normal bg-bg-card", !date && "text-muted-foreground")}
+              className={cn(
+                "w-full sm:w-[225px] justify-start text-left font-normal bg-bg-card text-xs sm:text-sm h-8 sm:h-10",
+                !date && "text-muted-foreground"
+              )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
+              <CalendarIcon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               {date?.from ? (
                 date.to ? (
                   <>
@@ -79,11 +80,7 @@ export function FilterBarSubmission({ onFilterChange }) {
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent
-            className="p-0 w-auto"
-            align="start"
-            ref={calendarRef}
-          >
+          <PopoverContent className="p-0 w-auto" align="start" ref={calendarRef}>
             <div className="calendar-wrapper">
               <Calendar
                 initialFocus
@@ -98,7 +95,7 @@ export function FilterBarSubmission({ onFilterChange }) {
           </PopoverContent>
         </Popover>
         <Select value={filters.status} onValueChange={(value) => handleFilterChange("status", value)}>
-          <SelectTrigger className="w-full md:w-40">
+          <SelectTrigger className="w-full md:w-40 text-xs sm:text-sm h-8 sm:h-10">
             <SelectValue className="text-primary-text" placeholder="Status" />
           </SelectTrigger>
           <SelectContent defaultValue="all">
@@ -107,13 +104,11 @@ export function FilterBarSubmission({ onFilterChange }) {
             <SelectItem value="FAILED">Failed</SelectItem>
           </SelectContent>
         </Select>
-
       </div>
-      <Button className="bg-primary text-black" onClick={clearFilters}>
-        <X className="h-4 w-4 mr-1" />
-                Clear Filters
+      <Button className="bg-primary text-black text-xs sm:text-sm h-8 sm:h-10" onClick={clearFilters}>
+        <X className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+        Clear Filters
       </Button>
     </>
   )
 }
-

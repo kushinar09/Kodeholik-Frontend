@@ -10,7 +10,7 @@ export function ChangePasswordDialog({ open, onOpenChange, onSubmit }) {
   const [form, setForm] = useState({
     oldPassword: "",
     newPassword: "",
-    confirmPassword: ""
+    confirmPassword: "",
   })
 
   const handleChange = (e) => {
@@ -23,19 +23,18 @@ export function ChangePasswordDialog({ open, onOpenChange, onSubmit }) {
     onSubmit(form)
   }
 
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[565px]">
+      <DialogContent className="sm:max-w-[565px] w-[95vw] max-w-[95vw]">
         <DialogHeader>
           <DialogTitle>Change Password</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 pt-4">
-            <div className="grid grid-cols-1 gap-6 ">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="oldPassword" className="text-right">
-                    Old Password
+            <div className="grid gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                <Label htmlFor="oldPassword" className="text-left sm:text-right text-sm">
+                  Old Password
                 </Label>
                 <Input
                   id="oldPassword"
@@ -43,15 +42,15 @@ export function ChangePasswordDialog({ open, onOpenChange, onSubmit }) {
                   type="password"
                   value={form.oldPassword}
                   onChange={handleChange}
-                  className="col-span-3"
+                  className="col-span-1 sm:col-span-3"
                   required
                   minLength={1}
                   maxLength={200}
                 />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4 mt-2">
-                <Label htmlFor="newPassword" className="text-right">
-                    New Password
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                <Label htmlFor="newPassword" className="text-left sm:text-right text-sm">
+                  New Password
                 </Label>
                 <Input
                   id="newPassword"
@@ -60,14 +59,14 @@ export function ChangePasswordDialog({ open, onOpenChange, onSubmit }) {
                   required
                   value={form.newPassword}
                   onChange={handleChange}
-                  className="col-span-3"
+                  className="col-span-1 sm:col-span-3"
                   minLength={1}
                   maxLength={200}
                 />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4 mt-2">
-                <Label htmlFor="confirmPassword" className="text-right">
-                    Confirm Password
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                <Label htmlFor="confirmPassword" className="text-left sm:text-right text-sm">
+                  Confirm Password
                 </Label>
                 <Input
                   id="confirmPassword"
@@ -75,14 +74,16 @@ export function ChangePasswordDialog({ open, onOpenChange, onSubmit }) {
                   type="password"
                   value={form.confirmPassword}
                   onChange={handleChange}
-                  className="col-span-3"
+                  className="col-span-1 sm:col-span-3"
                   required
                   minLength={1}
                   maxLength={200}
                 />
               </div>
               <div className="flex justify-end">
-                <Button type="submit">Save</Button>
+                <Button type="submit" size="sm">
+                  Save
+                </Button>
               </div>
             </div>
           </div>

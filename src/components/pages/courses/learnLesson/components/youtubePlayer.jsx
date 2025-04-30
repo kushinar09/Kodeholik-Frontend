@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -35,12 +37,12 @@ export default function YouTubePlayer({ videoId, onNinetyPercentWatched }) {
           controls: 0,
           modestbranding: 1,
           rel: 0,
-          showinfo: 0,
+          showinfo: 0
         },
         events: {
           onReady: onPlayerReady,
-          onStateChange: onPlayerStateChange,
-        },
+          onStateChange: onPlayerStateChange
+        }
       })
     }
 
@@ -160,24 +162,28 @@ export default function YouTubePlayer({ videoId, onNinetyPercentWatched }) {
         className={cn(
           "absolute inset-0 flex items-center justify-center",
           "transition-opacity duration-300",
-          isPlaying && !isControlsVisible ? "opacity-0" : "opacity-100",
+          isPlaying && !isControlsVisible ? "opacity-0" : "opacity-100"
         )}
       >
-        <div className="bg-bg-primary bg-opacity-50 rounded-full p-4">
-          {isPlaying ? <Pause className="h-8 w-8 text-text-primary" /> : <Play className="h-8 w-8 text-text-primary" />}
+        <div className="bg-bg-primary bg-opacity-50 rounded-full p-2 sm:p-4">
+          {isPlaying ? (
+            <Pause className="h-6 w-6 sm:h-8 sm:w-8 text-text-primary" />
+          ) : (
+            <Play className="h-6 w-6 sm:h-8 sm:w-8 text-text-primary" />
+          )}
         </div>
       </button>
 
       <div
         className={cn(
-          "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-bg-primary to-transparent px-4 py-3",
+          "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-bg-primary to-transparent px-2 sm:px-4 py-2 sm:py-3",
           "transition-opacity duration-300",
-          isPlaying && !isControlsVisible ? "opacity-0" : "opacity-100",
+          isPlaying && !isControlsVisible ? "opacity-0" : "opacity-100"
         )}
       >
         <div
           ref={progressBarRef}
-          className="w-full h-1 bg-text-muted rounded-full mb-4 cursor-pointer relative"
+          className="w-full h-1 bg-text-muted rounded-full mb-2 sm:mb-4 cursor-pointer relative"
           onClick={handleProgressChange}
         >
           <div
@@ -187,26 +193,30 @@ export default function YouTubePlayer({ videoId, onNinetyPercentWatched }) {
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Button
               variant="ghost"
               size="icon"
               onClick={togglePlay}
-              className="text-text-primary hover:bg-button-secondary"
+              className="text-text-primary hover:bg-button-secondary h-7 w-7 sm:h-9 sm:w-9"
             >
-              {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+              {isPlaying ? <Pause className="h-4 w-4 sm:h-5 sm:w-5" /> : <Play className="h-4 w-4 sm:h-5 sm:w-5" />}
             </Button>
-            <span className="text-sm text-text-primary">
+            <span className="text-xs sm:text-sm text-text-primary">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={toggleMute}
-                className="text-text-primary hover:bg-button-secondary"
+                className="text-text-primary hover:bg-button-secondary h-7 w-7 sm:h-9 sm:w-9"
               >
-                {isMuted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                {isMuted || volume === 0 ? (
+                  <VolumeX className="h-4 w-4 sm:h-5 sm:w-5" />
+                ) : (
+                  <Volume2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                )}
               </Button>
               <input
                 type="range"
@@ -215,7 +225,7 @@ export default function YouTubePlayer({ videoId, onNinetyPercentWatched }) {
                 step="1"
                 value={volume}
                 onChange={handleVolumeChange}
-                className="w-24 appearance-none bg-text-muted h-1 rounded-full outline-none"
+                className="w-16 sm:w-24 appearance-none bg-text-muted h-1 rounded-full outline-none"
               />
             </div>
           </div>
@@ -223,9 +233,9 @@ export default function YouTubePlayer({ videoId, onNinetyPercentWatched }) {
             variant="ghost"
             size="icon"
             onClick={() => playerRef.current?.getIframe().requestFullscreen()}
-            className="text-text-primary hover:bg-button-ghostHover"
+            className="text-text-primary hover:bg-button-ghostHover h-7 w-7 sm:h-9 sm:w-9"
           >
-            <Maximize2 className="h-5 w-5" />
+            <Maximize2 className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         </div>
       </div>

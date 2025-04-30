@@ -26,35 +26,33 @@ export default function ProblemPage() {
 
   const [topics, setTopics] = useState([])
   const [skills, setKkills] = useState([])
-  const [stats, setStats] = useState(
-    {
-      mainLabel: "Solve",
-      mainCount: 0,
-      mainTotal: 0,
-      mainColor: "#98ff99",
-      sideStats: [
-        {
-          label: "Easy",
-          count: 0,
-          total: 0,
-          color: "rgb(74, 222, 128)"
-        },
-        {
-          label: "Medium",
-          count: 0,
-          total: 0,
-          color: "rgb(234, 179, 8)"
-        },
-        {
-          label: "Hard",
-          count: 0,
-          total: 0,
-          color: "rgb(239, 68, 68)"
-        }
-      ],
-      className: ""
-    }
-  )
+  const [stats, setStats] = useState({
+    mainLabel: "Solve",
+    mainCount: 0,
+    mainTotal: 0,
+    mainColor: "#98ff99",
+    sideStats: [
+      {
+        label: "Easy",
+        count: 0,
+        total: 0,
+        color: "rgb(74, 222, 128)"
+      },
+      {
+        label: "Medium",
+        count: 0,
+        total: 0,
+        color: "rgb(234, 179, 8)"
+      },
+      {
+        label: "Hard",
+        count: 0,
+        total: 0,
+        color: "rgb(239, 68, 68)"
+      }
+    ],
+    className: ""
+  })
 
   const [isLoadingDataProblem, setIsLoadingDataProblem] = useState(false)
   const [selectedTopics, setSelectedTopics] = useState([])
@@ -88,7 +86,6 @@ export default function ProblemPage() {
     }, 500), // Debounce 500ms
     []
   )
-
 
   useEffect(() => {
     const getColorForLabel = (label) => {
@@ -130,12 +127,12 @@ export default function ProblemPage() {
         const data = await response.json()
         const transformedStats = {
           mainLabel: "Solve",
-          mainCount: data.find(item => item.name === "ALL")?.noAchived || 0,
-          mainTotal: data.find(item => item.name === "ALL")?.noTotal || 0,
+          mainCount: data.find((item) => item.name === "ALL")?.noAchived || 0,
+          mainTotal: data.find((item) => item.name === "ALL")?.noTotal || 0,
           mainColor: "#98ff99",
           sideStats: data
-            .filter(item => item.name !== "ALL")
-            .map(item => ({
+            .filter((item) => item.name !== "ALL")
+            .map((item) => ({
               label: item.name.charAt(0) + item.name.slice(1).toLowerCase(),
               count: item.noAchived,
               total: item.noTotal,
@@ -189,7 +186,6 @@ export default function ProblemPage() {
     }))
   }, [])
 
-
   function handleProblemDetail(id) {
     window.location.href = `/problem/${id}`
   }
@@ -226,7 +222,6 @@ export default function ProblemPage() {
 
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
 
-
   const handleDifficultyChange = (newDifficulty) => {
     setSearchQuery((prev) => ({
       ...prev,
@@ -244,15 +239,15 @@ export default function ProblemPage() {
   return (
     <>
       <div className="min-h-screen bg-gradient-to-b from-bg-primary to-bg-primary/90">
-        <HeaderSection currentActive="problems"/>
+        <HeaderSection currentActive="problems" />
         {/* Main Content */}
-        <main className="p-4 px-36">
+        <main className="p-4 sm:p-6 md:px-8 lg:px-12 xl:px-24 2xl:px-36">
           {/* Study Plan Section */}
           <CourseHeader stats={stats} />
 
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             {/* Left Content */}
-            <div className="col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 lg:space-y-6 order-2 lg:order-1">
               {/* Problem Section */}
               <ProblemSection
                 problems={problems}
@@ -273,7 +268,12 @@ export default function ProblemPage() {
             </div>
 
             {/* Right Sidebar */}
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-6 order-1 lg:order-2">
+              {isAuthenticated && (
+                <Card className="p-4 bg-bg-card border-0 aspect-video rounded-xl">
+                  <RadialChart {...stats} />
+                </Card>
+              )}
               <FilterPanel
                 isFiltersOpen={isFiltersOpen}
                 setIsFiltersOpen={setIsFiltersOpen}
@@ -290,11 +290,6 @@ export default function ProblemPage() {
                 onDifficultyChange={handleDifficultyChange}
                 onSkillsChange={handleSkillsChange}
               />
-              {isAuthenticated &&
-                <Card className="p-4 bg-bg-card border-0 aspect-video rounded-xl">
-                  <RadialChart {...stats} />
-                </Card>
-              }
             </div>
           </div>
         </main>
@@ -303,4 +298,3 @@ export default function ProblemPage() {
     </>
   )
 }
-

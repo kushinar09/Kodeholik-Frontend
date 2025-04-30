@@ -12,10 +12,11 @@ import { GLOBALS } from "@/lib/constants"
 import HeaderSection from "@/components/common/shared/header"
 import placeholder from "@/assets/images/placeholder_square.jpg"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { BookOpenCheck, BookText } from "lucide-react"
+import { BookOpenCheck, BookText, Filter, Search, X } from "lucide-react"
 import { StarFilledIcon } from "@radix-ui/react-icons"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/providers/AuthProvider"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 const ITEMS_PER_PAGE = 9
 
@@ -34,6 +35,7 @@ export default function CoursePage() {
   const [showAllTopics, setShowAllTopics] = useState(false)
   const [sortBy, setSortBy] = useState("title")
   const [ascending, setAscending] = useState(true)
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
   const navigate = useNavigate()
 
   const { apiCall } = useAuth()
@@ -97,6 +99,8 @@ export default function CoursePage() {
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page)
+      // Scroll to top on page change
+      window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
 
@@ -131,63 +135,89 @@ export default function CoursePage() {
 
   const displayedTopics = showAllTopics ? topics : topics.slice(0, 5)
 
+  // Filter component for both desktop and mobile
+  const FiltersComponent = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between">
+        <h2 className="text-xl font-bold">Filter by</h2>
+        {(selectedTopics.length > 0 || searchQuery) && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleClearFilters}
+            className="text-sm bg-bg-card text-text-primary hover:text-text-primary border-none hover:bg-bg-card/90"
+          >
+            Clear all
+          </Button>
+        )}
+      </div>
+
+      <div className="mb-8">
+        <h3 className="font-semibold mb-3">Topics</h3>
+        <div className="space-y-2">
+          {displayedTopics.map((topic) => {
+            const topicName = typeof topic === "string" ? topic : topic.name || ""
+            const topicId = typeof topic === "string" ? topic : topic.id || topicName
+            return (
+              <div key={topicId} className="flex items-center">
+                <Checkbox
+                  id={`topic-${topicId}`}
+                  checked={selectedTopics.includes(topicName)}
+                  onCheckedChange={() => handleTopicChange(topicName)}
+                  className="mr-2 text-bg-card"
+                />
+                <label
+                  htmlFor={`topic-${topicId}`}
+                  className="text-sm flex justify-between w-full cursor-pointer"
+                >
+                  <span>{topicName}</span>
+                </label>
+              </div>
+            )
+          })}
+        </div>
+        {topics.length > 5 && (
+          <button
+            onClick={toggleShowAllTopics}
+            className="text-sm text-primary mt-2 hover:underline"
+          >
+            {showAllTopics ? "Show less" : "Show more"}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+
   return (
     <div className="min-h-screen flex flex-col bg-bg-primary">
       <HeaderSection currentActive="courses" />
-      <div className="flex-grow mx-36 py-8 text-text-primary">
+      <div className="flex-grow px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-36 py-8 text-text-primary">
         <div className="flex flex-col md:flex-row gap-8">
-          <div className="w-full md:w-64 shrink-0">
-            <div className="flex justify-between">
-              <h2 className="text-xl font-bold mb-6">Filter by</h2>
-              {(selectedTopics.length > 0 || searchQuery) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleClearFilters}
-                  className="text-sm bg-bg-card text-text-primary hover:text-text-primary border-none hover:bg-bg-card/90"
-                >
-                  Clear all
-                </Button>
-              )}
-            </div>
+          {/* Sidebar for desktop */}
+          <div className="hidden md:block w-64 shrink-0">
+            <FiltersComponent />
+          </div>
 
-            <div className="mb-8">
-              <h3 className="font-semibold mb-3">Topics</h3>
-              <div className="space-y-2">
-                {displayedTopics.map((topic) => {
-                  const topicName = typeof topic === "string" ? topic : topic.name || ""
-                  const topicId = typeof topic === "string" ? topic : topic.id || topicName
-                  return (
-                    <div key={topicId} className="flex items-center">
-                      <Checkbox
-                        id={`topic-${topicId}`}
-                        checked={selectedTopics.includes(topicName)}
-                        onCheckedChange={() => handleTopicChange(topicName)}
-                        className="mr-2 text-bg-card"
-                      />
-                      <label
-                        htmlFor={`topic-${topicId}`}
-                        className="text-sm flex justify-between w-full cursor-pointer"
-                      >
-                        <span>{topicName}</span>
-                      </label>
-                    </div>
-                  )
-                })}
-              </div>
-              {topics.length > 5 && (
-                <button
-                  onClick={toggleShowAllTopics}
-                  className="text-sm text-primary mt-2 hover:underline"
-                >
-                  {showAllTopics ? "Show less" : "Show more"}
-                </button>
-              )}
-            </div>
+          {/* Mobile filter button */}
+          <div className="md:hidden flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold">Courses</h2>
+            <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="sm" className="flex items-center gap-2 bg-bg-card text-primary hover:text-primary border-none hover:bg-bg-card/90">
+                  <Filter className="h-4 w-4" />
+                  Filters
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[300px] sm:w-[400px] bg-bg-primary border-r-gray-700">
+                <div className="py-6 text-text-primary">
+                  <FiltersComponent />
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
 
           <div className="flex-1">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
               <h2 className="text-xl font-semibold">
                 {searchQuery ? `Results for "${searchQuery}"` : "All Courses"}
               </h2>
@@ -195,7 +225,7 @@ export default function CoursePage() {
                 onValueChange={handleSortChange}
                 defaultValue="title"
               >
-                <SelectTrigger className="w-[220px] bg-white text-black border-none">
+                <SelectTrigger className="w-full sm:w-[220px] bg-white text-black border-none">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent className="bg-white text-black border-none">
@@ -218,20 +248,9 @@ export default function CoursePage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
+                <Search
                   className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
+                />
               </div>
             </div>
 
@@ -243,8 +262,9 @@ export default function CoursePage() {
                     <button
                       onClick={() => handleTopicChange(topic)}
                       className="ml-2 text-muted-foreground hover:text-primary"
+                      aria-label={`Remove ${topic} filter`}
                     >
-                      ×
+                      <X className="h-3 w-3" />
                     </button>
                   </div>
                 ))}
@@ -280,7 +300,7 @@ export default function CoursePage() {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 sm:gap-x-6 gap-y-4">
                 {courses.map((course) => (
                   <Card
                     key={course.id}
@@ -294,15 +314,15 @@ export default function CoursePage() {
                         className="w-full aspect-[5/3] object-cover"
                       />
                       {course.numberOfParticipant > 0 && (
-                        <div className="absolute top-2 right-2 bg-bg-primary text-primary font-semibold px-2 py-0.5 text-sm rounded">
+                        <div className="absolute top-2 right-2 bg-bg-primary text-primary font-semibold px-2 py-0.5 text-xs sm:text-sm rounded">
                           {course.numberOfParticipant} Students
                         </div>
                       )}
                     </div>
-                    <div className="p-4 flex flex-col flex-1 gap-3">
+                    <div className="p-3 sm:p-4 flex flex-col flex-1 gap-2 sm:gap-3">
                       <div className="flex gap-2">
-                        <Avatar className="cursor-pointer bg-white size-6 border-2 border-primary hover:border-primary/80 transition-colors">
-                          <AvatarImage src={course.createdBy?.avatar} alt={course.createdBy?.fullname || "User"} className="object-cover" />
+                        <Avatar className="cursor-pointer size-6 border-2 border-primary hover:border-primary/80 transition-colors">
+                          <AvatarImage src={course.createdBy?.avatar || "/placeholder.svg"} alt={course.createdBy?.fullname || "User"} className="object-cover" />
                           <AvatarFallback className="bg-primary/10 text-bg-card font-semibold">
                             {course.createdBy?.username ? course.createdBy?.username
                               .split(" ")
@@ -312,30 +332,30 @@ export default function CoursePage() {
                               .substring(0, 2) : "U"}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="font-medium text-sm">{course.createdBy?.username}</span>
+                        <span className="font-medium text-xs sm:text-sm">{course.createdBy?.username}</span>
                       </div>
-                      <h3 className="font-bold line-clamp-2">{course.title}</h3>
+                      <h3 className="font-bold text-sm sm:text-base line-clamp-2">{course.title}</h3>
                       {course.topics && course.topics.length > 0 && (
-                        <p className="text-sm line-clamp-2">
+                        <p className="text-xs sm:text-sm line-clamp-2">
                           <span className="font-semibold">Topics: </span>
                           {course.topics.join(", ")}
                         </p>
                       )}
-                      <div className="flex gap-4 text-sm">
-                        <div className="flex gap-2 items-center">
-                          <BookText className="size-4" />
+                      <div className="flex gap-3 sm:gap-4 text-xs sm:text-sm">
+                        <div className="flex gap-1 sm:gap-2 items-center">
+                          <BookText className="size-3 sm:size-4" />
                           {course.noChapter} Chapters
                         </div>
-                        <div className="flex gap-2 items-center">
-                          <BookOpenCheck className="size-4" />
+                        <div className="flex gap-1 sm:gap-2 items-center">
+                          <BookOpenCheck className="size-3 sm:size-4" />
                           {course.noLesson} Lessons
                         </div>
                       </div>
                       <div className="mt-auto">
-                        <div className="flex items-center text-sm gap-2">
+                        <div className="flex items-center text-xs sm:text-sm gap-2">
                           <div className="flex items-center text-amber-500">
                             <span className="mr-1 font-semibold">{course.rate}</span>
-                            <StarFilledIcon className="size-4" />
+                            <StarFilledIcon className="size-3 sm:size-4" />
                           </div>
                           -
                           <span>{course.noVote} Reviews</span>
@@ -348,23 +368,23 @@ export default function CoursePage() {
             )}
 
             {totalPages > 1 && (
-              <div className="flex justify-center mt-10 mb-6 gap-2">
+              <div className="flex flex-wrap justify-center mt-10 mb-6 gap-2">
                 <Button
                   variant="ghost"
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="rounded-md px-4 hover:bg-bg-card/70 hover:text-text-primary"
+                  className="rounded-md px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm hover:bg-bg-card/70 hover:text-text-primary"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-1"
+                    className="h-4 w-4 mr-1"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
-                  Prev
+                  <span className="hidden sm:inline">Prev</span>
                 </Button>
                 <div className="flex gap-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
@@ -383,7 +403,7 @@ export default function CoursePage() {
                       <Button
                         key={pageToShow}
                         onClick={() => handlePageChange(pageToShow)}
-                        className={`min-w-[40px] h-10 rounded-md ${currentPage === pageToShow ? "bg-bg-card text-primary hover:bg-bg-card hover:text-primary" : "bg-transparent text-text-primary hover:bg-bg-card/70"}`}
+                        className={`min-w-[32px] sm:min-w-[40px] h-8 sm:h-10 rounded-md text-xs sm:text-sm ${currentPage === pageToShow ? "bg-bg-card text-primary hover:bg-bg-card hover:text-primary" : "bg-transparent text-text-primary hover:bg-bg-card/70"}`}
                       >
                         {pageToShow}
                       </Button>
@@ -395,7 +415,7 @@ export default function CoursePage() {
                       <Button
                         variant="outline"
                         onClick={() => handlePageChange(totalPages)}
-                        className="min-w-[40px] h-10 rounded-md"
+                        className="min-w-[32px] sm:min-w-[40px] h-8 sm:h-10 rounded-md text-xs sm:text-sm"
                       >
                         {totalPages}
                       </Button>
@@ -406,12 +426,12 @@ export default function CoursePage() {
                   variant="ghost"
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="rounded-md px-4 hover:bg-bg-card/70 hover:text-text-primary"
+                  className="rounded-md px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm hover:bg-bg-card/70 hover:text-text-primary"
                 >
-                  Next
+                  <span className="hidden sm:inline">Next</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 ml-1"
+                    className="h-4 w-4 ml-1"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"

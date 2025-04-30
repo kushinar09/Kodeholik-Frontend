@@ -1,8 +1,15 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
-import { DifficultyFilter } from "./items/difficulty-filter"
+"use client"
+
+import { CollapsibleContent } from "@/components/ui/collapsible"
+
+import { Collapsible } from "@/components/ui/collapsible"
+
+import { CardContent } from "@/components/ui/card"
+
+import { Card } from "@/components/ui/card"
 import { TopicsFilter } from "./items/topics-filter"
 import { SkillsFilter } from "./items/skills-filter"
+import { DifficultyFilter } from "./items/difficulty-filter"
 
 export function FilterPanel({
   isFiltersOpen,
@@ -22,11 +29,11 @@ export function FilterPanel({
 }) {
   return (
     <Card className={`border-primary bg-bg-card backdrop-blur-sm mb-4 ${isFiltersOpen ? "" : "hidden"}`}>
-      <CardContent className="p-6 space-y-6">
+      <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
         <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
-          <CollapsibleContent className="space-y-6">
+          <CollapsibleContent className="space-y-4 md:space-y-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold text-white">Filters</h3>
+              <h3 className="text-lg md:text-xl font-bold text-white">Filters</h3>
               <span
                 onClick={() => clearAllFilter()}
                 className="cursor-pointer text-sm text-gray-400 bg-unset hover:bg-unset hover:underline transition"
@@ -63,4 +70,3 @@ export function FilterPanel({
     </Card>
   )
 }
-

@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
-import { getCourse, getCourseDiscussion, discussionCourse, getDiscussionReply, upvoteDiscussion, unUpvoteDiscussion } from "@/lib/api/course_api"
+import {
+  getCourse,
+  getCourseDiscussion,
+  discussionCourse,
+  getDiscussionReply,
+  upvoteDiscussion,
+  unUpvoteDiscussion,
+} from "@/lib/api/course_api"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { GLOBALS } from "@/lib/constants"
@@ -48,8 +55,8 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
       const courseData = await getCourse(apiCall, id)
       setCourse(courseData)
       const discussionData = await getCourseDiscussion(apiCall, id, { page, size: 5, sortBy, sortDirection })
-      const replyPromises = discussionData.content.map(comment =>
-        getDiscussionReply(apiCall, comment.id).catch(() => [])
+      const replyPromises = discussionData.content.map((comment) =>
+        getDiscussionReply(apiCall, comment.id).catch(() => []),
       )
       const repliesData = await Promise.all(replyPromises)
       const allReplies = repliesData.flat()
@@ -104,8 +111,8 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
     try {
       const data = {
         comment: newMessage,
-        courseId: parseInt(id),
-        commentReply: replyingTo ? parseInt(replyingTo.id) : null,
+        courseId: Number.parseInt(id),
+        commentReply: replyingTo ? Number.parseInt(replyingTo.id) : null,
       }
       const response = await discussionCourse(data, (url, options) => fetch(url, options))
       await fetchData()
@@ -121,10 +128,10 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
   const toggleLike = async (messageId, isReply = false, parentId = null) => {
     try {
       const message = isReply
-        ? messages.find(m => m.id === parentId).replies.find(r => r.id === messageId)
-        : messages.find(m => m.id === messageId)
+        ? messages.find((m) => m.id === parentId).replies.find((r) => r.id === messageId)
+        : messages.find((m) => m.id === messageId)
 
-      setMessages(prevMessages =>
+      setMessages((prevMessages) =>
         prevMessages.map((msg) => {
           if (isReply && msg.id === parentId) {
             return {
@@ -132,11 +139,11 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
               replies: msg.replies.map((reply) =>
                 reply.id === messageId
                   ? {
-                    ...reply,
-                    liked: !reply.liked,
-                    likes: reply.liked ? reply.likes - 1 : reply.likes + 1,
-                  }
-                  : reply
+                      ...reply,
+                      liked: !reply.liked,
+                      likes: reply.liked ? reply.likes - 1 : reply.likes + 1,
+                    }
+                  : reply,
               ),
             }
           }
@@ -148,7 +155,7 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
             }
           }
           return msg
-        })
+        }),
       )
 
       if (!message.liked) {
@@ -157,7 +164,7 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
         await unUpvoteDiscussion(apiCall, messageId)
       }
     } catch (error) {
-      setMessages(prevMessages =>
+      setMessages((prevMessages) =>
         prevMessages.map((msg) => {
           if (isReply && msg.id === parentId) {
             return {
@@ -165,11 +172,11 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
               replies: msg.replies.map((reply) =>
                 reply.id === messageId
                   ? {
-                    ...reply,
-                    liked: !reply.liked,
-                    likes: reply.liked ? reply.likes - 1 : reply.likes + 1,
-                  }
-                  : reply
+                      ...reply,
+                      liked: !reply.liked,
+                      likes: reply.liked ? reply.likes - 1 : reply.likes + 1,
+                    }
+                  : reply,
               ),
             }
           }
@@ -181,17 +188,15 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
             }
           }
           return msg
-        })
+        }),
       )
       setError(`Failed to toggle like: ${error.message}`)
     }
   }
 
   const toggleReplies = (messageId) => {
-    setMessages(prevMessages =>
-      prevMessages.map((msg) =>
-        msg.id === messageId ? { ...msg, showReplies: !msg.showReplies } : msg
-      )
+    setMessages((prevMessages) =>
+      prevMessages.map((msg) => (msg.id === messageId ? { ...msg, showReplies: !msg.showReplies } : msg)),
     )
   }
 
@@ -214,15 +219,15 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
 
   if (loading) {
     return (
-      <Card className="flex flex-col h-full items-center justify-center p-8 border-border shadow-lg">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-button"></div>
-        <p className="text-sm text-text-muted mt-4">Loading discussion...</p>
+      <Card className="flex flex-col h-full items-center justify-center p-4 sm:p-8 border-border shadow-lg">
+        <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-b-2 border-primary-button"></div>
+        <p className="text-xs sm:text-sm text-text-muted mt-4">Loading discussion...</p>
       </Card>
     )
   }
 
   const MessageActions = ({ message, isReply = false, parentId = null }) => (
-    <div className="flex items-center gap-3 mt-2">
+    <div className="flex items-center gap-2 sm:gap-3 mt-2">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -240,23 +245,21 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
       <Button
         variant="ghost"
         size="sm"
-        className={`h-7 px-2 rounded-full ${message.liked ? "text-primary bg-primary/10 hover:bg-primary/30 hover:text-primary" : "text-text-muted hover:bg-bg-muted hover:text-primary"}`}
+        className={`h-6 sm:h-7 px-1.5 sm:px-2 rounded-full ${message.liked ? "text-primary bg-primary/10 hover:bg-primary/30 hover:text-primary" : "text-text-muted hover:bg-bg-muted hover:text-primary"}`}
         onClick={() => toggleLike(message.id, isReply, parentId)}
       >
         <ArrowBigUp className={`size-3 ${message.liked ? "fill-primary-button" : ""}`} />
-        {message.likes > 0 &&
-          <span className="text-xs ml-1">{message.likes}</span>
-        }
+        {message.likes > 0 && <span className="text-xs ml-1">{message.likes}</span>}
       </Button>
 
       {!isReply && (
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 px-2 rounded-full text-text-muted hover:bg-bg-muted hover:text-text-primary"
+          className="h-6 sm:h-7 px-1.5 sm:px-2 rounded-full text-text-muted hover:bg-bg-muted hover:text-text-primary"
           onClick={() => handleReplyClick(message)}
         >
-          <MessageSquare className="h-3.5 w-3.5 mr-1" />
+          <MessageSquare className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
           <span className="text-xs">Reply</span>
         </Button>
       )}
@@ -264,27 +267,37 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
   )
 
   return (
-    <Card className="flex flex-col h-[600px] w-full max-w-3xl bg-bg-primary rounded-lg overflow-hidden border border-border-muted shadow-lg">
-      <CardHeader className="flex flex-row items-center justify-between p-4 bg-bg-card border-b border-border-muted space-y-0">
+    <Card className="flex flex-col h-[500px] sm:h-[600px] w-full max-w-3xl bg-bg-primary rounded-lg overflow-hidden border border-border-muted shadow-lg">
+      <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-4 bg-bg-card border-b border-border-muted space-y-0">
         <div className="flex items-center gap-2">
-          <h3 className="text-base font-semibold text-text-primary">{course?.title ? `${course.title} ${title}` : title}</h3>
-          <Badge variant="outline" className="bg-primary-button/10 text-primary-button border-primary-button/20">
+          <h3 className="text-sm sm:text-base font-semibold text-text-primary">
+            {course?.title ? `${course.title} ${title}` : title}
+          </h3>
+          <Badge
+            variant="outline"
+            className="bg-primary-button/10 text-primary-button border-primary-button/20 text-xs"
+          >
             Live
           </Badge>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary rounded-full hover:bg-primary" onClick={onClose}>
-          <X className="h-4 w-4" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 sm:h-8 sm:w-8 text-primary rounded-full hover:bg-primary"
+          onClick={onClose}
+        >
+          <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           <span className="sr-only">Close</span>
         </Button>
       </CardHeader>
 
-      <div className="p-4 bg-bg-secondary border-b border-border-muted">
-        <div className="flex gap-3 items-center">
-          <div className="flex items-center gap-1 text-sm text-text-muted">
+      <div className="p-3 sm:p-4 bg-bg-secondary border-b border-border-muted">
+        <div className="flex gap-2 sm:gap-3 items-center flex-wrap">
+          <div className="flex items-center gap-1 text-xs sm:text-sm text-text-muted">
             <span>Sort by:</span>
           </div>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[140px] h-8 text-sm bg-bg-muted text-primary border-border-muted">
+          <Select value={sortBy} onValueChange={setSortBy} className="flex-1 min-w-[120px]">
+            <SelectTrigger className="h-7 sm:h-8 text-xs sm:text-sm bg-bg-muted text-primary border-border-muted">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -292,8 +305,8 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
               <SelectItem value="createdAt">Date Created</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={sortDirection} onValueChange={setSortDirection}>
-            <SelectTrigger className="w-[140px] h-8 text-sm bg-bg-muted text-primary border-border-muted">
+          <Select value={sortDirection} onValueChange={setSortDirection} className="flex-1 min-w-[120px]">
+            <SelectTrigger className="h-7 sm:h-8 text-xs sm:text-sm bg-bg-muted text-primary border-border-muted">
               <SelectValue placeholder="Sort direction" />
             </SelectTrigger>
             <SelectContent>
@@ -304,36 +317,34 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 p-3 sm:p-4">
         {error && (
-          <div className="mb-4 p-3 bg-bg-error rounded-lg text-text-error text-sm">
-            {error}
-          </div>
+          <div className="mb-4 p-2 sm:p-3 bg-bg-error rounded-lg text-text-error text-xs sm:text-sm">{error}</div>
         )}
 
         {messages.length === 0 && !loading && (
           <div className="flex flex-col items-center justify-center h-40 text-text-muted">
-            <MessageSquare className="h-10 w-10 mb-2 opacity-30" />
-            <p>No discussions yet. Be the first to comment!</p>
+            <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 mb-2 opacity-30" />
+            <p className="text-xs sm:text-sm">No discussions yet. Be the first to comment!</p>
           </div>
         )}
 
         {messages.map((message) => (
-          <div key={message.id} className="mb-6">
-            <div className="flex gap-3">
-              <Avatar className="h-9 w-9 flex-shrink-0 border border-border-muted">
-                <AvatarImage src={message.avatar} alt={message.user} className="object-cover" />
-                <AvatarFallback className="bg-bg-muted text-text-primary">{message.user[0]}</AvatarFallback>
+          <div key={message.id} className="mb-4 sm:mb-6">
+            <div className="flex gap-2 sm:gap-3">
+              <Avatar className="h-7 w-7 sm:h-9 sm:w-9 flex-shrink-0 border border-border-muted">
+                <AvatarImage src={message.avatar || "/placeholder.svg"} alt={message.user} className="object-cover" />
+                <AvatarFallback className="bg-bg-muted text-text-primary text-xs">{message.user[0]}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <div className="bg-bg-muted rounded-lg p-3 border border-border-muted shadow-sm">
-                  <p className="font-medium text-sm text-text-primary flex items-center">
+                <div className="bg-bg-muted rounded-lg p-2 sm:p-3 border border-border-muted shadow-sm">
+                  <p className="font-medium text-xs sm:text-sm text-text-primary flex items-center">
                     {message.user}
                     {message.role === "TEACHER" && (
-                      <GraduationCap className="ml-1 h-3.5 w-3.5 text-primary-button" />
+                      <GraduationCap className="ml-1 h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary-button" />
                     )}
                   </p>
-                  <p className="text-sm mt-1 text-text-secondary whitespace-pre-wrap">{message.text}</p>
+                  <p className="text-xs sm:text-sm mt-1 text-text-secondary whitespace-pre-wrap">{message.text}</p>
                 </div>
                 <MessageActions message={message} />
 
@@ -341,15 +352,15 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="mt-2 h-7 px-3 text-primary-button hover:bg-primary-button/10 hover:text-primary rounded-full"
+                    className="mt-2 h-6 sm:h-7 px-2 sm:px-3 text-primary-button hover:bg-primary-button/10 hover:text-primary rounded-full text-xs"
                     onClick={() => toggleReplies(message.id)}
                   >
                     {message.showReplies ? (
-                      <ChevronUp className="h-3.5 w-3.5 mr-1" />
+                      <ChevronUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     ) : (
-                      <ChevronDown className="h-3.5 w-3.5 mr-1" />
+                      <ChevronDown className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     )}
-                    <span className="text-xs">
+                    <span>
                       {message.showReplies ? "Hide" : "View"} {message.replies.length}{" "}
                       {message.replies.length === 1 ? "reply" : "replies"}
                     </span>
@@ -357,24 +368,32 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
                 )}
 
                 {message.showReplies && message.replies.length > 0 && (
-                  <div className="ml-6 mt-3 space-y-4 pl-3 border-l-2 border-border-muted">
+                  <div className="ml-4 sm:ml-6 mt-2 sm:mt-3 space-y-3 sm:space-y-4 pl-2 sm:pl-3 border-l-2 border-border-muted">
                     {message.replies.map((reply) => (
-                      <div key={reply.id} className="flex gap-3">
-                        <Avatar className="h-8 w-8 flex-shrink-0 border border-border-muted">
-                          <AvatarImage src={reply.avatar} alt={reply.user} className="object-cover" />
-                          <AvatarFallback className="bg-bg-muted text-text-primary">{reply.user[0]}</AvatarFallback>
+                      <div key={reply.id} className="flex gap-2 sm:gap-3">
+                        <Avatar className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0 border border-border-muted">
+                          <AvatarImage
+                            src={reply.avatar || "/placeholder.svg"}
+                            alt={reply.user}
+                            className="object-cover"
+                          />
+                          <AvatarFallback className="bg-bg-muted text-text-primary text-xs">
+                            {reply.user[0]}
+                          </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                          <div className="bg-bg-muted rounded-lg p-3 border border-border-muted shadow-sm">
+                          <div className="bg-bg-muted rounded-lg p-2 sm:p-3 border border-border-muted shadow-sm">
                             <p
-                              className={`${reply.user === user?.username ? "font-semibold" : "font-medium"} text-sm text-text-primary flex items-center`}
+                              className={`${reply.user === user?.username ? "font-semibold" : "font-medium"} text-xs sm:text-sm text-text-primary flex items-center`}
                             >
                               {reply.user === user?.username ? "You" : reply.user}
                               {reply.role === "TEACHER" && (
-                                <GraduationCap className="ml-1 h-3.5 w-3.5 text-primary-button" />
+                                <GraduationCap className="ml-1 h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary-button" />
                               )}
                             </p>
-                            <p className="text-sm mt-1 text-text-secondary whitespace-pre-wrap">{reply.text}</p>
+                            <p className="text-xs sm:text-sm mt-1 text-text-secondary whitespace-pre-wrap">
+                              {reply.text}
+                            </p>
                           </div>
                           <MessageActions message={reply} isReply={true} parentId={message.id} />
                         </div>
@@ -388,7 +407,7 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
         ))}
       </ScrollArea>
 
-      <CardFooter className="flex flex-col p-4 border-t border-border-muted bg-bg-secondary">
+      <CardFooter className="flex flex-col p-3 sm:p-4 border-t border-border-muted bg-bg-secondary">
         {totalPages > 1 && (
           <div className="flex justify-between items-center w-full mb-3">
             <Button
@@ -396,17 +415,19 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
               onClick={() => setPage(page - 1)}
               variant="ghost"
               size="sm"
-              className="text-xs h-8 bg-bg-muted text-primary border-border-muted hover:bg-primary-button"
+              className="text-xs h-7 sm:h-8 bg-bg-muted text-primary border-border-muted hover:bg-primary-button"
             >
               Previous
             </Button>
-            <span className="text-sm text-text-muted">Page {page + 1} of {totalPages}</span>
+            <span className="text-xs sm:text-sm text-text-muted">
+              Page {page + 1} of {totalPages}
+            </span>
             <Button
               disabled={page === totalPages - 1}
               onClick={() => setPage(page + 1)}
               variant="ghost"
               size="sm"
-              className="text-xs h-8 bg-bg-muted text-primary border-border-muted hover:bg-primary-button"
+              className="text-xs h-7 sm:h-8 bg-bg-muted text-primary border-border-muted hover:bg-primary-button"
             >
               Next
             </Button>
@@ -419,12 +440,7 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
               <p className="text-xs text-text-muted">
                 Replying to <span className="font-medium text-primary-button">{replyingTo.user}</span>
               </p>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 rounded-full"
-                onClick={cancelReply}
-              >
+              <Button variant="ghost" size="icon" className="h-5 w-5 sm:h-6 sm:w-6 rounded-full" onClick={cancelReply}>
                 <X className="h-3 w-3" />
               </Button>
             </div>
@@ -433,30 +449,34 @@ export default function CourseDiscussion({ courseId, title = "Course Discussion"
         )}
 
         <form onSubmit={handleSendMessage} className="flex items-center gap-2 w-full">
-          <Avatar className="h-9 w-9 flex-shrink-0 border border-border-muted">
-            <AvatarImage src={user && user.avatar || "/placeholder.svg?height=40&width=40"} alt="You" className="object-cover" />
-            <AvatarFallback className="bg-bg-muted text-text-primary">Y</AvatarFallback>
+          <Avatar className="h-7 w-7 sm:h-9 sm:w-9 flex-shrink-0 border border-border-muted">
+            <AvatarImage
+              src={(user && user.avatar) || "/placeholder.svg?height=40&width=40"}
+              alt="You"
+              className="object-cover"
+            />
+            <AvatarFallback className="bg-bg-muted text-text-primary text-xs">Y</AvatarFallback>
           </Avatar>
-          <div className="flex-1 flex items-center gap-2 bg-bg-muted rounded-full px-4 border border-border-muted focus-within:border-primary-button transition-colors">
+          <div className="flex-1 flex items-center gap-2 bg-bg-muted rounded-full px-3 sm:px-4 border border-border-muted focus-within:border-primary-button transition-colors">
             <Input
               type="text"
               placeholder={replyingTo ? `Reply to ${replyingTo.user}...` : "Write a comment..."}
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              className="flex-1 h-10 text-sm border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-0 text-text-primary placeholder:text-text-placeholder"
+              className="flex-1 h-8 sm:h-10 text-xs sm:text-sm border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-0 text-text-primary placeholder:text-text-placeholder"
               disabled={posting}
             />
             <Button
               type="submit"
               size="sm"
               variant="ghost"
-              className={`h-8 w-8 p-0 rounded-full ${newMessage.trim() ? "text-primary-button hover:bg-primary-button/10" : "text-text-muted"}`}
+              className={`h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full ${newMessage.trim() ? "text-primary-button hover:bg-primary-button/10" : "text-text-muted"}`}
               disabled={posting || !newMessage.trim()}
             >
               {posting ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-button"></div>
+                <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-primary-button"></div>
               ) : (
-                <Send className="h-4 w-4" />
+                <Send className="h-3 w-3 sm:h-4 sm:w-4" />
               )}
               <span className="sr-only">Send</span>
             </Button>

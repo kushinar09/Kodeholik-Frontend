@@ -1,8 +1,9 @@
 "use client"
 
-import { Check, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
+
 import { Skeleton } from "@/components/ui/skeleton"
+import { Check, ChevronDown, ChevronUp } from "lucide-react"
 
 export function ProblemTable({
   problems,
@@ -13,7 +14,7 @@ export function ProblemTable({
   handleSort,
   handleProblemDetail,
   setCurrentPage,
-  isLoading
+  isLoading,
 }) {
   const getSortIcon = (columnKey) => {
     if (sortConfig.key !== columnKey) {
@@ -27,10 +28,10 @@ export function ProblemTable({
   }
 
   return (
-    <div className="bg-bg-card rounded-lg p-4">
-      <table className="w-full">
+    <div className="bg-bg-card rounded-lg p-2 sm:p-4 overflow-x-auto">
+      <table className="w-full min-w-[600px]">
         <thead>
-          <tr className="text-primary-text text-sm">
+          <tr className="text-primary-text text-xs sm:text-sm">
             <th className="text-left py-2 w-10">#</th>
             <th
               className="text-left py-2 cursor-pointer hover:text-primary transition-colors"
@@ -39,22 +40,25 @@ export function ProblemTable({
               Title {getSortIcon("titleSearchAndSort")}
             </th>
             <th
-              className="text-left py-2 cursor-pointer hover:text-primary transition-colors w-24"
+              className="text-left py-2 cursor-pointer hover:text-primary transition-colors w-20 sm:w-24"
               onClick={() => handleSort("acceptanceRate")}
             >
-              Acceptance {getSortIcon("acceptanceRate")}
+              <span className="hidden xs:inline">Acceptance</span>
+              <span className="xs:hidden">Acc.</span> {getSortIcon("acceptanceRate")}
             </th>
             <th
-              className="text-left py-2 cursor-pointer hover:text-primary transition-colors w-24"
+              className="text-left py-2 cursor-pointer hover:text-primary transition-colors w-20 sm:w-24"
               onClick={() => handleSort("difficulty")}
             >
-              Difficulty {getSortIcon("difficulty")}
+              <span className="hidden xs:inline">Difficulty</span>
+              <span className="xs:hidden">Diff.</span> {getSortIcon("difficulty")}
             </th>
             <th
-              className="text-left py-2 cursor-pointer hover:text-primary transition-colors w-24"
+              className="text-left py-2 cursor-pointer hover:text-primary transition-colors w-20 sm:w-24"
               onClick={() => handleSort("noSubmission")}
             >
-              Participant {getSortIcon("noSubmission")}
+              <span className="hidden xs:inline">Participant</span>
+              <span className="xs:hidden">Part.</span> {getSortIcon("noSubmission")}
             </th>
           </tr>
         </thead>
@@ -72,14 +76,14 @@ export function ProblemTable({
                     <td className="py-2">
                       <Skeleton className="h-5 rounded-full" style={{ width: `${randomWidth}px` }} />
                     </td>
-                    <td className="py-2 w-36">
-                      <Skeleton className="h-5 w-16" />
+                    <td className="py-2 w-20 sm:w-36">
+                      <Skeleton className="h-5 w-12 sm:w-16" />
                     </td>
-                    <td className="py-2 w-36">
-                      <Skeleton className="h-5 w-24" />
+                    <td className="py-2 w-20 sm:w-36">
+                      <Skeleton className="h-5 w-16 sm:w-24" />
                     </td>
-                    <td className="py-2 w-24">
-                      <Skeleton className="h-5 w-12" />
+                    <td className="py-2 w-20 sm:w-24">
+                      <Skeleton className="h-5 w-10 sm:w-12" />
                     </td>
                   </tr>
                 )
@@ -89,29 +93,30 @@ export function ProblemTable({
               <tr
                 key={problem.id}
                 onClick={() => handleProblemDetail(problem.link)}
-                className="text-white cursor-pointer hover:bg-gray-800"
+                className="text-white cursor-pointer hover:bg-gray-800 text-xs sm:text-sm"
               >
                 <td className="py-2 w-10" title="Solved">
-                  {problem.solved && <Check className="w-5 h-5 text-green-500" />}
+                  {problem.solved && <Check className="w-4 sm:w-5 h-4 sm:h-5 text-green-500" />}
                 </td>
                 <td
-                  className="py-2 pe-4 max-w-[240px] overflow-hidden text-ellipsis whitespace-nowrap"
+                  className="py-2 pe-2 sm:pe-4 max-w-[120px] sm:max-w-[240px] overflow-hidden text-ellipsis whitespace-nowrap"
                   title={problem.title}
                 >
                   {problem.title}
                 </td>
-                <td className="py-2 w-36">{problem.acceptanceRate}%</td>
+                <td className="py-2 w-20 sm:w-36">{problem.acceptanceRate}%</td>
                 <td
-                  className={`py-2 w-36 ${problem.difficulty === "EASY"
-                    ? "text-text-difficultEasy"
-                    : problem.difficulty === "MEDIUM"
-                      ? "text-text-difficultMedium"
-                      : "text-text-difficultHard"
+                  className={`py-2 w-20 sm:w-36 ${
+                    problem.difficulty === "EASY"
+                      ? "text-text-difficultEasy"
+                      : problem.difficulty === "MEDIUM"
+                        ? "text-text-difficultMedium"
+                        : "text-text-difficultHard"
                   }`}
                 >
                   {problem.difficulty}
                 </td>
-                <td className="py-2 w-24">{problem.noSubmission}</td>
+                <td className="py-2 w-20 sm:w-24">{problem.noSubmission}</td>
               </tr>
             ))
           ) : (
@@ -126,19 +131,19 @@ export function ProblemTable({
       {isLoading && (
         <div className="flex items-center justify-between mt-4 border-t border-gray-800 pt-4">
           <div className="flex gap-2">
-            <Skeleton className="h-9 w-16 rounded-md" />
-            <Skeleton className="h-9 w-20 rounded-md" />
+            <Skeleton className="h-8 sm:h-9 w-14 sm:w-16 rounded-md" />
+            <Skeleton className="h-8 sm:h-9 w-16 sm:w-20 rounded-md" />
           </div>
-          <Skeleton className="h-5 w-32 rounded-md" />
+          <Skeleton className="h-4 sm:h-5 w-24 sm:w-32 rounded-md" />
           <div className="flex gap-2">
-            <Skeleton className="h-9 w-16 rounded-md" />
-            <Skeleton className="h-9 w-16 rounded-md" />
+            <Skeleton className="h-8 sm:h-9 w-14 sm:w-16 rounded-md" />
+            <Skeleton className="h-8 sm:h-9 w-14 sm:w-16 rounded-md" />
           </div>
         </div>
       )}
       {!isLoading && Array.isArray(problems) && problems.length > 0 && (
-        <div className="flex items-center justify-between px-2 py-4 border-t border-gray-800">
-          <div className="flex items-center gap-2">
+        <div className="flex md:flex-row flex-col items-center justify-between px-2 py-4 border-t border-gray-800 gap-4 xs:gap-0">
+          <div className="flex items-center gap-2 order-1">
             <Button variant="outline" size="sm" onClick={() => setCurrentPage(0)} disabled={currentPage === 0}>
               First
             </Button>
@@ -151,10 +156,10 @@ export function ProblemTable({
               Previous
             </Button>
           </div>
-          <div className="text-sm text-gray-400">
+          <div className="text-xs sm:text-sm text-gray-400 order-2">
             Page {currentPage + 1} of {totalPages}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 order-3">
             <Button
               variant="outline"
               size="sm"
@@ -177,4 +182,3 @@ export function ProblemTable({
     </div>
   )
 }
-

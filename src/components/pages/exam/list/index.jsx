@@ -288,7 +288,7 @@ export default function ExamList() {
     return (
       <div className="min-h-screen flex flex-col bg-bg-primary">
         <HeaderSection currentActive="exams" />
-        <div className="flex-grow p-4 px-24">
+        <div className="flex-grow px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-36">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
             <h2 className="text-lg font-medium mb-2">Error Loading Data</h2>
             <p>{error}</p>
@@ -315,7 +315,7 @@ export default function ExamList() {
       {loading
         ? <LoadingSkeleton />
         :
-        <div className="flex-grow p-4 px-36">
+        <div className="flex-grow px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-36">
           {/* Happening Now Section - Special Highlight */}
           {happeningExams.length > 0 && (
             <div className="mb-10">

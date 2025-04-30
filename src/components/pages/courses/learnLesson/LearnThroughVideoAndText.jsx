@@ -16,7 +16,8 @@ import {
   AlertCircle,
   BookOpen,
   MessageSquare,
-  CheckCircle
+  CheckCircle,
+  Menu
 } from "lucide-react"
 import { getCourse, courseRegisterIn, courseRegisterOUT, completedAndSendMail } from "@/lib/api/course_api"
 import { getLessonById, completedLesson, downloadFileLesson } from "@/lib/api/lesson_api"
@@ -29,6 +30,7 @@ import CourseDiscussion from "@/components/pages/courses/CourseDetail/components
 import HeaderSection from "@/components/common/shared/header"
 import { useAuth } from "@/providers/AuthProvider"
 import { toast } from "sonner"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 export default function LearnThroughVideoAndText() {
   const { id } = useParams()
@@ -43,15 +45,9 @@ export default function LearnThroughVideoAndText() {
   const [progress, setProgress] = useState(0)
   const [activeAccordion, setActiveAccordion] = useState("")
   const [showChat, setShowChat] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   const navigate = useNavigate()
   const { isAuthenticated, apiCall } = useAuth()
-
-  // useEffect(() => {
-  //   if (!isAuthenticated) {
-  //     navigate("/")
-  //     toast.warning("You need to be logged in to access this page.")
-  //   }
-  // }, [isAuthenticated])
 
   // useEffect for course registration IN/OUT with debugging logs
   useEffect(() => {
@@ -106,14 +102,6 @@ export default function LearnThroughVideoAndText() {
           // Try to find a chapter with lessons
           let chapterWithLessons = null
 
-          // First check if the first chapter has lessons
-          // const firstChapter = courseData.chapters[0]
-          // if (firstChapter.lessons && firstChapter.lessons.length > 0) {
-          //   chapterWithLessons = firstChapter
-          // } else {
-          //   // If not, look for any chapter with lessons
-          //   chapterWithLessons = courseData.chapters.find((chapter) => chapter.lessons && chapter.lessons.length > 0)
-          // }
           chapterWithLessons = courseData.chapters.find((chapter) => chapter.lessons && chapter.lessons.length > 0)
           if (chapterWithLessons) {
             // Found a chapter with lessons
@@ -157,6 +145,7 @@ export default function LearnThroughVideoAndText() {
     if (chapter) setSelectedChapter(chapter)
     setVideoUrl(null)
     setResourceError(null)
+    setShowMobileMenu(false) // Close mobile menu when selecting a lesson
 
     try {
       const lessonDetails = await getLessonById(apiCall, lesson.id)
@@ -327,19 +316,19 @@ export default function LearnThroughVideoAndText() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 p-6">
-        <div className="mx-36">
-          <Skeleton className="h-12 w-3/4 bg-gray-800 mb-8" />
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 p-4 sm:p-6">
+        <div className="container mx-auto max-w-7xl">
+          <Skeleton className="h-8 sm:h-12 w-3/4 bg-gray-800 mb-4 sm:mb-8" />
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
             <div className="lg:col-span-3">
-              <Skeleton className="h-[422px] w-full bg-gray-800 mb-6" />
-              <Skeleton className="h-8 w-1/2 bg-gray-800 mb-4" />
+              <Skeleton className="h-[250px] sm:h-[350px] md:h-[422px] w-full bg-gray-800 mb-4 sm:mb-6" />
+              <Skeleton className="h-6 sm:h-8 w-1/2 bg-gray-800 mb-3 sm:mb-4" />
               <Skeleton className="h-4 w-full bg-gray-800 mb-2" />
               <Skeleton className="h-4 w-full bg-gray-800 mb-2" />
               <Skeleton className="h-4 w-3/4 bg-gray-800" />
             </div>
-            <div>
-              <Skeleton className="h-[600px] w-full bg-gray-800" />
+            <div className="hidden lg:block">
+              <Skeleton className="h-[400px] sm:h-[500px] md:h-[600px] w-full bg-gray-800" />
             </div>
           </div>
         </div>
@@ -349,12 +338,12 @@ export default function LearnThroughVideoAndText() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-gray-800 border-red-500/50">
-          <CardContent className="p-6">
-            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-center text-white mb-2">Error Loading Course</h2>
-            <p className="text-red-400 text-center">{error}</p>
+          <CardContent className="p-4 sm:p-6">
+            <AlertCircle className="h-8 sm:h-12 w-8 sm:w-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-lg sm:text-xl font-bold text-center text-white mb-2">Error Loading Course</h2>
+            <p className="text-red-400 text-center text-sm sm:text-base">{error}</p>
             <Button className="w-full mt-4 bg-red-500 hover:bg-red-600" onClick={() => window.location.reload()}>
               Try Again
             </Button>
@@ -369,33 +358,33 @@ export default function LearnThroughVideoAndText() {
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty.toUpperCase()) {
-      case "EASY":
-        return "bg-green-500 hover:bg-green-600"
-      case "MEDIUM":
-        return "bg-yellow-500 hover:bg-yellow-600"
-      case "HARD":
-        return "bg-red-500 hover:bg-red-600"
-      default:
-        return "bg-gray-500 hover:bg-gray-600"
+    case "EASY":
+      return "bg-green-500 hover:bg-green-600"
+    case "MEDIUM":
+      return "bg-yellow-500 hover:bg-yellow-600"
+    case "HARD":
+      return "bg-red-500 hover:bg-red-600"
+    default:
+      return "bg-gray-500 hover:bg-gray-600"
     }
   }
 
   return (
     <div className="min-h-screen bg-bg-primary text-white">
       <HeaderSection currentActive="courses" />
-      <div className="mx-36">
-        <div className="mb-8 top-0 z-10 bg-bg-primary">
+      <div className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-36 py-4 sm:py-6">
+        <div className="mb-4 sm:mb-8 top-0 z-10 bg-bg-primary">
           <Button
             variant="ghost"
-            className="my-3 text-primary hover:bg-primary transition group"
+            className="my-2 sm:my-3 text-primary hover:bg-primary transition group"
             onClick={() => navigate(-1)}
           >
-            <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
-            <span className="font-medium">Back</span>
+            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:-translate-x-1" />
+            <span className="font-medium text-sm sm:text-base">Back</span>
           </Button>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 sm:gap-4 mb-2 sm:mb-4">
             <div>
-              <h1 className="text-3xl font-bold bg-clip-text text-text-primary to-bg-card/50">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-clip-text text-text-primary to-bg-card/50">
                 {course?.title || "Course"}
               </h1>
               <div className="w-full md:w-96 mt-2">
@@ -405,18 +394,21 @@ export default function LearnThroughVideoAndText() {
                 </div>
                 <Progress
                   value={progress}
-                  className="h-3 bg-gray-800"
+                  className="h-2 sm:h-3 bg-gray-800"
                   indicatorClassName="bg-gradient-to-r from-blue-500 to-purple-500"
                 />
               </div>
             </div>
             <div className="flex flex-col items-start md:items-end">
               <div className="flex items-center gap-2 mb-2">
-                <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/30">
+                <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/30 text-xs sm:text-sm">
                   <Clock className="h-3 w-3 mr-1" />{" "}
                   {chapters.reduce((sum, chapter) => sum + (chapter.lessons?.length || 0), 0)} Lessons
                 </Badge>
-                <Badge variant="outline" className="bg-purple-500/10 text-purple-400 border-purple-500/30">
+                <Badge
+                  variant="outline"
+                  className="bg-purple-500/10 text-purple-400 border-purple-500/30 text-xs sm:text-sm"
+                >
                   <BookOpen className="h-3 w-3 mr-1" /> {chapters.length} Chapters
                 </Badge>
               </div>
@@ -424,8 +416,31 @@ export default function LearnThroughVideoAndText() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-3 space-y-6">
+        {/* Mobile Course Outline Button */}
+        <div className="lg:hidden mb-4">
+          <Sheet open={showMobileMenu} onOpenChange={setShowMobileMenu}>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="w-full flex justify-between items-center text-bg-card">
+                <span>Course Outline</span>
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[85vw] sm:w-[400px] p-0 bg-gray-900 border-gray-700">
+              <div className="h-full overflow-auto">
+                <CourseOutline
+                  chapters={chapters}
+                  selectedLesson={selectedLesson}
+                  activeAccordion={activeAccordion}
+                  setActiveAccordion={setActiveAccordion}
+                  handleLessonSelect={handleLessonSelect}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="lg:col-span-3 space-y-4 sm:space-y-6">
             {selectedLesson && (
               <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 overflow-hidden">
                 <div className="relative">
@@ -445,12 +460,12 @@ export default function LearnThroughVideoAndText() {
                     />
                   )}
                   {selectedLesson.type === "EMPTY" && (
-                    <div className="aspect-[5/2] bg-gray-900 flex items-center justify-center">
+                    <div className="aspect-[5/2] bg-gray-900 flex items-center justify-center p-4">
                       <Card className="w-full max-w-md bg-gray-800 border-gray-700">
-                        <CardContent className="p-6 text-center">
-                          <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-                          <h3 className="text-xl font-bold text-white mb-2">No Content Available</h3>
-                          <p className="text-gray-400">
+                        <CardContent className="p-4 sm:p-6 text-center">
+                          <AlertCircle className="h-8 w-8 sm:h-12 sm:w-12 text-yellow-500 mx-auto mb-3 sm:mb-4" />
+                          <h3 className="text-lg sm:text-xl font-bold text-white mb-2">No Content Available</h3>
+                          <p className="text-gray-400 text-sm sm:text-base">
                             {resourceError || "This course doesn't have any lesson content yet."}
                           </p>
                         </CardContent>
@@ -459,10 +474,10 @@ export default function LearnThroughVideoAndText() {
                   )}
                 </div>
 
-                <div className="p-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="p-3 sm:p-4 md:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
                     <div>
-                      <Badge className="mb-2 bg-gray-700 hover:bg-gray-700 text-gray-300">
+                      <Badge className="mb-2 bg-gray-700 hover:bg-gray-700 text-gray-300 text-xs sm:text-sm">
                         {selectedChapter?.title} • Lesson{" "}
                         {selectedLesson.type !== "EMPTY"
                           ? selectedChapter?.lessons.findIndex((l) => l.id === selectedLesson.id) + 1
@@ -472,45 +487,49 @@ export default function LearnThroughVideoAndText() {
                     <div className="flex gap-2">
                       <Button
                         variant="ghost"
-                        className="text-primary hover:bg-primary hover:text-black disabled:opacity-50 rounded-md px-4"
+                        className="text-primary hover:bg-primary hover:text-black disabled:opacity-50 rounded-md px-2 sm:px-4 text-xs sm:text-sm"
                         onClick={handlePreviousLesson}
                         disabled={!prevLesson || selectedLesson.type === "EMPTY"}
                       >
-                        <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                        <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> Previous
                       </Button>
                       <Button
                         variant="ghost"
-                        className="text-primary hover:bg-primary hover:text-black disabled:opacity-50 rounded-md px-4"
+                        className="text-primary hover:bg-primary hover:text-black disabled:opacity-50 rounded-md px-2 sm:px-4 text-xs sm:text-sm"
                         onClick={handleNextLesson}
                         disabled={!nextLesson || selectedLesson.type === "EMPTY"}
                       >
-                        Next <ChevronRight className="h-4 w-4 ml-1" />
+                        Next <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
                       </Button>
                     </div>
                   </div>
 
-                  <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
                     <div>
-                      <h2 className="text-xl font-bold">{selectedLesson.title}</h2>
+                      <h2 className="text-lg sm:text-xl font-bold">{selectedLesson.title}</h2>
                     </div>
-                    {selectedLesson.attachedFile &&
+                    {selectedLesson.attachedFile && (
                       <div className="flex gap-2">
-                        <button type="button" className="font-sm text-blue-500 dark:text-blue-500 hover:underline" onClick={handleDownload}>
+                        <button
+                          type="button"
+                          className="text-xs sm:text-sm text-blue-500 dark:text-blue-500 hover:underline"
+                          onClick={handleDownload}
+                        >
                           Download materials
                         </button>
                       </div>
-                    }
+                    )}
                   </div>
 
-                  {(selectedLesson.problems && selectedLesson.problems.length > 0) &&
-                    <div className="flex gap-2 items-center text-primary mb-3">
-                      <CheckCircle className="h-4 w-4" />
-                      <p>Solving all problems will automatically complete the lesson.</p>
-                    </div>
-                  }
                   {selectedLesson.problems && selectedLesson.problems.length > 0 && (
-                    <div className="space-y-4">
-                      <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="flex gap-2 items-center text-primary mb-3">
+                      <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <p className="text-xs sm:text-sm">Learn and Solve all problems to complete the lesson.</p>
+                    </div>
+                  )}
+                  {selectedLesson.problems && selectedLesson.problems.length > 0 && (
+                    <div className="space-y-3 sm:space-y-4">
+                      <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                         {selectedLesson.problems.map((problem) => (
                           <a
                             href={`/problem/${problem.problemLink}`}
@@ -521,13 +540,18 @@ export default function LearnThroughVideoAndText() {
                           >
                             <Button
                               variant="outline"
-                              className="w-full justify-between h-auto p-2 text-left text-bg-card"
+                              className="w-full justify-between h-auto p-1.5 sm:p-2 text-left text-bg-card text-xs sm:text-sm"
                             >
-                              <span className="font-medium truncate line-clamp-1 text-wrap" title={problem.title}>{problem.title}</span>
-                              {problem.completed
-                                ? <CheckCircle className="text-green-600 size-5" />
-                                : <Badge className={getDifficultyColor(problem.difficulty)}>{problem.difficulty}</Badge>
-                              }
+                              <span className="font-medium truncate line-clamp-1 text-wrap" title={problem.title}>
+                                {problem.title}
+                              </span>
+                              {problem.completed ? (
+                                <CheckCircle className="text-green-600 size-4 sm:size-5" />
+                              ) : (
+                                <Badge className={`${getDifficultyColor(problem.difficulty)} text-xs`}>
+                                  {problem.difficulty}
+                                </Badge>
+                              )}
                             </Button>
                           </a>
                         ))}
@@ -536,25 +560,26 @@ export default function LearnThroughVideoAndText() {
                   )}
 
                   {selectedLesson.description && selectedLesson.type !== "EMPTY" && (
-                    <div className="prose prose-invert max-w-none mt-4 text-gray-300">
+                    <div className="prose prose-invert max-w-none mt-3 sm:mt-4 text-gray-300 text-sm sm:text-base">
                       <RenderMarkdown content={selectedLesson.description} />
                     </div>
                   )}
 
                   {selectedLesson.type !== "EMPTY" && (
-                    <div className="mt-6 flex justify-end">
-                      {(!selectedLesson.problems || !selectedLesson.problems.length > 0) && !selectedLesson.completed ? (
-                        <Button
-                          className="bg-primary hover:bg-primary-button-hover text-bg-card"
-                          onClick={handleMarkComplete}
-                        >
-                          <CheckCircle2 className="h-4 w-4 mr-2" /> Mark as Complete
-                        </Button>
-                      ) : (!selectedLesson.problems || !selectedLesson.problems.length > 0) && (
-                        <div className="text-green-500 flex items-center">
-                          <CheckCircle2 className="h-4 w-4 mr-2" /> Completed
-                        </div>
-                      )}
+                    <div className="mt-4 sm:mt-6 flex justify-end">
+                      {(!selectedLesson.problems || !selectedLesson.problems.length > 0) &&
+                      !selectedLesson.completed ? (
+                          <Button
+                            className="bg-primary hover:bg-primary-button-hover text-bg-card text-xs sm:text-sm"
+                            onClick={handleMarkComplete}
+                          >
+                            <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" /> Mark as Complete
+                          </Button>
+                        ) : !selectedLesson.problems || !selectedLesson.problems.length > 0 ? (
+                          <div className="text-green-500 flex items-center text-xs sm:text-sm">
+                            <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" /> Completed
+                          </div>
+                        ) : null}
                     </div>
                   )}
                 </div>
@@ -562,27 +587,30 @@ export default function LearnThroughVideoAndText() {
             )}
           </div>
 
-          <CourseOutline
-            chapters={chapters}
-            selectedLesson={selectedLesson}
-            activeAccordion={activeAccordion}
-            setActiveAccordion={setActiveAccordion}
-            handleLessonSelect={handleLessonSelect}
-          />
+          {/* Desktop Course Outline - Hidden on mobile */}
+          <div className="hidden lg:block">
+            <CourseOutline
+              chapters={chapters}
+              selectedLesson={selectedLesson}
+              activeAccordion={activeAccordion}
+              setActiveAccordion={setActiveAccordion}
+              handleLessonSelect={handleLessonSelect}
+            />
+          </div>
         </div>
       </div>
 
       {/* Floating Chat Icon */}
       <button
         onClick={() => setShowChat(!showChat)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-black rounded-full flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors z-50"
+        className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-10 h-10 sm:w-14 sm:h-14 bg-primary text-black rounded-full flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors z-50"
       >
-        <MessageSquare className="w-6 h-6" />
+        <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6" />
       </button>
 
       {/* Chat Window */}
       {showChat && (
-        <div className="text-black fixed bottom-24 right-6 w-[400px] h-[600px] bg-bg-card rounded-lg shadow-lg z-50 flex flex-col">
+        <div className="text-black fixed bottom-16 sm:bottom-24 right-4 sm:right-6 w-[90vw] sm:w-[400px] h-[70vh] sm:h-[600px] bg-bg-card rounded-lg shadow-lg z-50 flex flex-col">
           <CourseDiscussion courseId={id} title="Discussion" onClose={() => setShowChat(false)} />
         </div>
       )}

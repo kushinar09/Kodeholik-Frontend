@@ -66,13 +66,13 @@ export function EditProfileDialog({ open, onOpenChange, onSubmit, profile, setPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[1025px] w-fit">
+      <DialogContent className="sm:max-w-[1025px] w-[95vw] sm:w-fit max-w-[95vw]">
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4">
-            <div className="flex gap-6">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between mb-2">
                   <input
@@ -86,7 +86,7 @@ export function EditProfileDialog({ open, onOpenChange, onSubmit, profile, setPr
                 </div>
                 <div
                   style={{ marginTop: "12px" }}
-                  className="max-w-[150px] aspect-square rounded-full border border-gray-700 overflow-hidden flex flex-col items-center justify-center relative group"
+                  className="max-w-[120px] sm:max-w-[150px] aspect-square rounded-full border border-gray-700 overflow-hidden flex flex-col items-center justify-center relative group mx-auto sm:mx-0"
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
                 >
@@ -118,28 +118,30 @@ export function EditProfileDialog({ open, onOpenChange, onSubmit, profile, setPr
                     </>
                   ) : (
                     <div
-                      className="flex flex-col items-center justify-center h-full w-full p-6 cursor-pointer rounded-lg"
+                      className="flex flex-col items-center justify-center h-full w-full p-4 sm:p-6 cursor-pointer rounded-lg"
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      <Upload className="h-8 w-8 text-black mb-4" />
-                      <p className="text-black text-center">
+                      <Upload className="h-6 w-6 sm:h-8 sm:w-8 text-black mb-2 sm:mb-4" />
+                      <p className="text-black text-center text-xs sm:text-sm">
                         Drag and drop an image here
                         <br />
                         or click to browse
                       </p>
-                      <Button type="button" variant="outline" size="sm" className="mt-4">
+                      <Button type="button" variant="outline" size="sm" className="mt-2 sm:mt-4 text-xs">
                         Select Image
                       </Button>
                     </div>
                   )}
                 </div>
-                <div className={`text-red-500 font-medium ${errorImage ? "block" : "hidden"}`}>
+                <div
+                  className={`text-red-500 font-medium text-xs sm:text-sm text-center sm:text-left ${errorImage ? "block" : "hidden"}`}
+                >
                   Please select an avatar for this user
                 </div>
               </div>
-              <div className="flex flex-col">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="username" className="text-right">
+              <div className="flex flex-col flex-1">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                  <Label htmlFor="username" className="text-left sm:text-right text-sm">
                     Username
                   </Label>
                   <Input
@@ -148,13 +150,13 @@ export function EditProfileDialog({ open, onOpenChange, onSubmit, profile, setPr
                     name="username"
                     value={profile.username}
                     onChange={handleChange}
-                    className="col-span-3"
+                    className="col-span-1 sm:col-span-3"
                     minLength={1}
                     maxLength={200}
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4 mt-4">
-                  <Label htmlFor="email" className="text-right">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4 mt-3 sm:mt-4">
+                  <Label htmlFor="email" className="text-left sm:text-right text-sm">
                     Email
                   </Label>
                   <Input
@@ -163,14 +165,14 @@ export function EditProfileDialog({ open, onOpenChange, onSubmit, profile, setPr
                     name="email"
                     value={profile.email}
                     onChange={handleChange}
-                    className="col-span-3"
+                    className="col-span-1 sm:col-span-3"
                     required
                     minLength={1}
                     maxLength={200}
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4 mt-4">
-                  <Label htmlFor="fullname" className="text-right">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4 mt-3 sm:mt-4">
+                  <Label htmlFor="fullname" className="text-left sm:text-right text-sm">
                     Full Name
                   </Label>
                   <Input
@@ -178,14 +180,16 @@ export function EditProfileDialog({ open, onOpenChange, onSubmit, profile, setPr
                     name="fullname"
                     value={profile.fullname}
                     onChange={handleChange}
-                    className="col-span-3"
+                    className="col-span-1 sm:col-span-3"
                     required
                     minLength={1}
                     maxLength={200}
                   />
                 </div>
                 <div className="mt-4 flex justify-end">
-                  <Button type="submit" disabled={!profile.fullname.trim()}>Edit</Button>
+                  <Button type="submit" disabled={!profile.fullname.trim()} size="sm">
+                    Edit
+                  </Button>
                 </div>
               </div>
             </div>
